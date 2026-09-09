@@ -7,27 +7,29 @@
 ```
 agent-creator/                     agent-creator 技能的工作区（把工作角色蒸馏为 AGENT.md 代理）
   skills/agent-creator/            ← 技能成品 = 唯一源（编辑就在这里）
-  tests/ INSTALL.md README.md      仅 dev：pytest（含成品自包含自检）+ 安装手册 + 工作区说明
+  AGENTS.md tests/ INSTALL.md README.md   仅 dev：角色守则 + pytest（含成品自包含自检）+ 安装手册 + 工作区说明
 skill-creator/                     同上（把工作流蒸馏为 SKILL.md 技能；更成熟，含评测工具链）
   skills/skill-creator/            ← 成品
-  tests/ INSTALL.md README.md      仅 dev：pytest + 安装手册 + 工作区说明
+  AGENTS.md tests/ INSTALL.md README.md   仅 dev：角色守则 + pytest + 安装手册 + 工作区说明
 ```
 
-- 工作区根可放 `AGENTS.md` 作为 dev-only **角色守则**（skill-creator 已有：成品演进维护者），随工作区存留、不随成品分发；它与仓库根 `AGENTS.md`（全局布局/铁律/命令）分工不同，也与已删除的「成品内 AGENTS.md」无关——成品根一律不放 `AGENTS.md`/`INSTALL.md`。
+- 工作区根可放 `AGENTS.md` 作为 dev-only **角色守则**（两工作区均已建：`agent-creator/AGENTS.md` 与 `skill-creator/AGENTS.md` 各为「成品演进维护者」，前者为后者的同构镜像），随工作区存留、不随成品分发；它与仓库根 `AGENTS.md`（全局布局/铁律/命令）分工不同，也与已删除的「成品内 AGENTS.md」无关——成品根一律不放 `AGENTS.md`/`INSTALL.md`。
 
-- 两工作区**同构**（已统一精简，无 `build/`）：成品 = `SKILL.md` + `README.md`（产品文档，随技能分发）+ `scripts/`/`references/`/`templates/`/`indexes/`/`evolutions/`（及 skill-creator 独有 `agents/`/`examples/`）；工作区根 = `README.md` + `INSTALL.md`（安装手册，不随成品分发）+ `tests/`（仅 dev）。成品 `AGENTS.md` 均已删除、`INSTALL.md` 均已移至各自工作区根，**SKILL.md 为唯一入口**。同名不同物，别搞混。
+- 两工作区**同构**（已统一精简，无 `build/`）：成品 = `SKILL.md` + `README.md`（产品文档，随技能分发）+ `scripts/`/`references/`/`templates/`/`indexes/`/`evolutions/`（及 skill-creator 独有 `agents/`/`examples/`）；工作区根 = `README.md` + `INSTALL.md`（安装手册，不随成品分发）+ `tests/`（仅 dev）+ `AGENTS.md`（角色守则，仅 dev）。成品 `AGENTS.md` 均已删除、`INSTALL.md` 均已移至各自工作区根，**SKILL.md 为唯一入口**。同名不同物，别搞混。
 - 根目录 `agents/` 与 `skills/` 是**已验证能力库**（区别于两个工作区 `skills/` 下的创建器成品）：`skills/` = 3 个已验证技能（code-review-skill / pr-summarizer / prd-generator），`agents/` = 32 个已验证代理（academic×5 / code-quality×2 / ue-game-studio×25）。两个「skills」同名不同物：**根 `skills/` = 能力库**、`<creator>/skills/<creator>/` = 创建器成品。
 - 环境：纯 stdlib + pytest（无 requirements/锁文件），Python 3.10+（代码用 `X | None` 类型注解，实测 3.11）。
 
 ## 能力库（根 `skills/` 与 `agents/`）
 
-- 能力库是**已验证可安装**的技能/代理集合：创建用两创建器（成品在 `<creator>/skills/<creator>/`），校验用同一成品的验证器：
+- 能力库是**已验证可安装**的技能/代理集合：创建用两创建器（成品在 `<creator>/skills/<creator>/`），校验用同一成品的验证器、目录用根 `tools/scripts/build_catalog.py` 生成：
   ```bash
   python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir skills
   python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --dir agents
+  python tools/scripts/build_catalog.py            # 刷新 skills/CATALOG.md + agents/CATALOG.md
+  python tools/scripts/build_catalog.py --check    # 目录过期校验（发布门）
   ```
 - **安装 = 复制**：把 `skills/<name>` / `agents/<name>` 复制到目标客户端的 `skills/` / `agents/` 目录（本仓库无 manifest 安装器；落点见各库 `README.md`）。
-- `skills/CATALOG.md` 与 `agents/CATALOG.md` 是**静态快照**能力目录（本仓库无目录生成器）：LLM 读目录匹配需求 → 命中给复制提示，人类确认后执行；新增/删除/改进能力后**手工同步条目**。
+- `skills/CATALOG.md` 与 `agents/CATALOG.md` 由 `tools/scripts/build_catalog.py` **自动生成**（源自 frontmatter，禁止手改）：LLM 读目录匹配需求 → 命中给复制提示，人类确认后执行；新增/删除/改进能力后**重跑生成器刷新**（发布门校验用 `python tools/scripts/build_catalog.py --check`）。
 - **能力库准入与审计**（新增能力入库须同时满足；与两审计文件 `agents/AGENTS-AUDIT.md` / `skills/SKILLS-AUDIT.md` 对应）：
   1. 入库 `agents/` 的代理**必经 agent-creator**（创建/改进 → 验证 → 对比择优），并在 `agents/AGENTS-AUDIT.md` 登记
   2. 入库 `skills/` 的技能**必经 skill-creator**（创建/改进 → 检索上游对比 → 验证），并在 `skills/SKILLS-AUDIT.md` 登记
@@ -74,7 +76,7 @@ python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --
 - skill-creator 更完整：评测工具链（`run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`）、子代理提示（`agents/grader|comparator|analyzer.md`）、`examples/`、`templates/evals.json.template`。agent-creator 目前只有 validate/search/build/compare/create + `evolutions/`。
 - 脚本通过 `scripts/_project_paths.py` 自定位成品根，不依赖宿主仓库布局；文档可从任意 cwd 以绝对路径调用脚本。
 - 约定：产品文档用**中文**撰写（含 frontmatter description）；frontmatter 必须含 `version: "0.x.y"`（新产出物从 `0.1.0` 起步，校验器会查）；`evolutions/` 以 `YYYY-MM-DD-<slug>.md` 记录「上游更优」对比结论（反馈闭环）。
-- 改动创建器后跑通 §命令发布门、改动能力库后跑通 §能力库校验并同步审计/CATALOG 即可推送；**提交/推送前必做收尾交接，见 §三条铁律 3**。
+- 改动创建器后跑通 §命令发布门、改动能力库后跑通 §能力库校验并同步审计、重跑 `tools/scripts/build_catalog.py` 刷新 CATALOG 即可推送；**提交/推送前必做收尾交接，见 §三条铁律 3**。
 
 ## 权威文档
 

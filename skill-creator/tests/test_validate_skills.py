@@ -78,3 +78,20 @@ def test_module_style_self_reference_resolves_outside_repo(temp_skill):
     r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(temp_skill))
     assert r.returncode == 0, r.stdout + r.stderr
     assert "Backtick reference" not in r.stdout
+
+
+def test_nonexistent_dir_fails(tmp_path):
+    """`--dir` pointing at a missing directory must FAIL loudly instead of
+    printing "Checked 0 skills" and exiting 0 (os.walk on a missing path yields
+    nothing, which would silently turn a wrong --dir into a green release gate)."""
+    from conftest import run_script
+
+    r = run_script(
+        "scripts/validate_skills.py",
+        "--strict",
+        "--dir",
+        str(tmp_path / "no-such-skill-dir"),
+    )
+    assert r.returncode == 1
+    assert "Scan directory does not exist" in r.stdout
+    assert "All skills passed" not in r.stdout

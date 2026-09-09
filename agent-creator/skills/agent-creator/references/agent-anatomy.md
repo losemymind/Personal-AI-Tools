@@ -12,7 +12,7 @@ agents/
     └── README.md             ← 可选：附加说明
 ```
 
-**关键规则：** 只有 `AGENT.md` 是必需的。安装到客户端时，兼容单文件（直接复制 .md）或目录（复制整个文件夹）两种形式（由 `install_agent.py` 处理）。
+**关键规则：** 只有 `AGENT.md` 是必需的。安装到客户端时，兼容单文件（直接复制 .md）或目录（复制整个文件夹）两种形式（落点与各客户端字段转换见 SKILL.md「多客户端安装指引」与 `agent-template.md` 的兼容矩阵导读）。
 
 ## AGENT.md 结构
 
@@ -25,7 +25,7 @@ agents/
 - `description`：触发依据（何时被调用），前端加载特定术语
 - `mode`（opencode）：`primary`（用户直接对话）/ `subagent`（被主代理调用）/ `all`
 - `tools` / `permission`：最小权限的关键声明位置
-- 字段完整对照与兼容矩阵见 `references/agent-template.md`
+- 字段完整对照与兼容矩阵在 SKILL.md「前置元数据字段规范」与「读取规则」处导读——需要细读时经 SKILL.md 进入对应 reference（本文件不直接链接其它 reference，保持 references 一层深、不互链成图）
 
 ## 内容推荐结构
 

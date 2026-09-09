@@ -13,7 +13,7 @@
    - `static-verified`：仅通过静态严格校验、**尚未真实试跑**，待运行时验证后升档
 4. 符合各客户端代理定义规范（claude 的 `.claude/agents/`、opencode 的 `agent/*.md` 等）
 
-> `maturity` 是 frontmatter 字段，本仓库无目录生成器，`agents/CATALOG.md` 条目为静态快照，请人工照抄，供 LLM 检索时区分「可立即用」与「待验证」。
+> `maturity` 是 frontmatter 字段，`agents/CATALOG.md` 由根 `tools/scripts/build_catalog.py` 从各 frontmatter 自动生成，供 LLM 检索时区分「可立即用」与「待验证」；无需手改，新增/改进代理后重跑生成器即可。
 
 ## 目录结构约定
 
@@ -22,7 +22,7 @@
 ```
 agents/
 ├── README.md
-├── CATALOG.md             # 能力目录（静态快照，手工同步）
+├── CATALOG.md             # 能力目录（自动生成：tools/scripts/build_catalog.py，禁止手改）
 ├── academic/              # 公共通用代理（学术研究层，不随 UE 包移动）
 │   └── anthropologist/    #   人类学家/地理学家/历史学家/叙事学家/心理学家…
 ├── code-quality/          # 通用代码质量代理
@@ -54,12 +54,17 @@ agents/
 ## 与 agent-creator 的关系
 
 - 创建/改进/验证代理 → 使用本仓库内代理创建器成品（`agent-creator/skills/agent-creator/`，方法论见其 `SKILL.md`，脚手架 `scripts/create_agent.py`，验证器 `scripts/validate_agents.py`）
-- 从本目录安装代理到 LLM 客户端 → **复制** `agents/<name>` 到客户端 `agents/` 目录（落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`；工作区版本放 `<项目根>/.<客户端>/agents/`）
-- 代理更新/卸载 → 更新即重新复制覆盖；卸载即删除目标副本（本仓库无 manifest 生命周期工具）
+- 从本目录安装代理到 LLM 客户端 → **先转换 frontmatter、再复制**：用 agent-creator 成品转换器把仓库规范形适配到目标客户端，再把产物放到该客户端 agents/ 目录（落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`；工作区版本放 `<项目根>/.<客户端>/agents/`）：
+  ```bash
+  python agent-creator/skills/agent-creator/scripts/adapt_agent.py agents/<name> --client <claude|opencode|codex|deepseek> --out <落点>/AGENT.md
+  ```
+  `claude`/`opencode` 会自动把 `tools:[...]` 白名单转为该端合法形态并做 post-check（转换失败即退出、不产出无法加载的文件）；`codex`/`deepseek` 无官方 frontmatter schema，YAML 校验后逐字节原样。
+- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` + `ue-game-studio/` 30 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。前者落 `claude`/`opencode` 前**必须**先 `adapt_agent.py` 转换；后者按目标端校验后复制（含 opencode-only 字段在其它端被忽略）。
+- 代理更新/卸载 → 更新即重新转换复制覆盖；卸载即删除目标副本（本仓库无 manifest 生命周期工具）
 
 ## 能力目录（CATALOG.md）
 
-`CATALOG.md` 是静态快照（本仓库无目录生成器）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「复制到客户端目录」提示，用户确认后执行。新增/删除/改进代理后**手工同步条目**。
+`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 从各 `AGENT.md` frontmatter **自动生成**（禁止手改）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「先 `adapt_agent.py` 转换、再复制到客户端 agents/ 目录」提示，用户确认后执行。新增/删除/改进代理后**重跑生成器刷新**（发布门可用 `python tools/scripts/build_catalog.py --check` 校验）。
 
 ## 审计（AGENTS-AUDIT.md）
 
@@ -69,7 +74,7 @@ agents/
 
 1. 代理验证通过并稳定使用一段时间
 2. 完善 frontmatter 元数据（含 `maturity`）
-3. 手工同步 `CATALOG.md` 条目
+3. 重跑根 `tools/scripts/build_catalog.py` 刷新 `CATALOG.md`
 4. 提交到仓库
 
 ## 注意

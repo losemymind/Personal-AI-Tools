@@ -15,12 +15,13 @@ Personal-AI-Tools/
 │   └── skills/skill-creator/   成品 = 技能唯一源（编辑在此；随仓库提交）
 └── agent-creator/              # dev 工作区（同构）
     ├── README.md
+    ├── AGENTS.md               dev 角色守则：成品演进维护者
     ├── INSTALL.md              安装手册（不随成品分发）
     ├── tests/                  pytest（成品自包含自检 + validate 回归）
     └── skills/agent-creator/   成品 = 技能唯一源（编辑在此；随仓库提交）
 ```
 
-两工作区**同构精简**（无 `build/`）：成品 = `SKILL.md`（唯一入口）+ `README.md` + `scripts/` 等；`AGENTS.md` 均已删除、`INSTALL.md` 均移至工作区根。
+两工作区**同构精简**（无 `build/`）：成品 = `SKILL.md`（唯一入口）+ `README.md` + `scripts/` 等；成品内 `AGENTS.md` 均已删除、成品内 `INSTALL.md` 均已移至工作区根（工作区根各有 dev-only `AGENTS.md` 角色守则 + `INSTALL.md`，不随成品分发）。
 
 成品即源：两创建器的能力本体**只**存于各自 `skills/<creator>/`（源即成品，随仓库提交，无生成/拷贝步骤）；工作区根不保留副本，从根上避免重合与漂移。成品须**自包含**——不依赖本仓库任何 dev-only 文件（tests/、INSTALL.md、README.md），也不依赖宿主仓库。
 

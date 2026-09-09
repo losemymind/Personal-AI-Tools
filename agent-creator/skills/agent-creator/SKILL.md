@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流代理（Agents）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.4.0"
+version: "0.6.0"
 date_added: "2026-09-02"
 author: losemymind
 tags: [agent-creator, agents, workflow, llm-clients]
@@ -56,6 +56,8 @@ tools: [claude, opencode, codex, deepseek]
 
 代理定义同样遵循三层加载：frontmatter（元数据，始终在上下文）→ AGENT.md 主体（身份/边界/协作）→ 捆绑资源（references/，按需加载）。主体保持克制（理想 <500 行），细节下沉到 `references/`。
 
+**references 引用纪律（硬规则）**：references 只允许从 SKILL.md「读取规则」**一层深**导读，references 之间不互相链接成图（保持按需加载路径可预期）；单文件 >100 行在顶部加**目录**；超大文件（>10k 词）在 SKILL.md 引用处附 **grep 模式**（如 `grep -n "阶段 6" references/xxx.md`）让代理跳过读全文直接定位。
+
 ## 资源路径基准
 
 本技能是**自包含完整体**：内部所有引用（`scripts/`、`references/`、`templates/`、`indexes/upstream.db`、`evolutions/`）一律以 **agent-creator 目录自身为根**书写，不依赖任何外部布局。脚本调用：在本技能目录内执行 `python scripts/xxx.py ...`；不在技能目录内执行时加目录前缀 `python "<技能目录>/scripts/xxx.py" ...`。定位本技能目录的方法：codex 的技能列表自带文件路径，直接使用；claude/opencode 按存在性依次探测——工作区候选 `<项目>/.claude/skills/agent-creator/`、`<项目>/.opencode/skills/agent-creator/`、`<项目>/.agents/skills/agent-creator/`；全局候选 `~/.claude/skills/agent-creator/`、`~/.config/opencode/skills/agent-creator/`、`~/.agents/skills/agent-creator/`。
@@ -93,6 +95,8 @@ tools_clients: [claude, opencode, codex, deepseek]  # 可选：声明适用客�
 ```
 
 **字段细节与四端兼容矩阵见 `references/agent-template.md`。**
+
+**description 触发面（硬约束）**：description 是代理被**检索/触发/调度**的唯一门面——必须单行、≤200 字符、含「做什么 + 何时被调用/被谁调用」、**不含 `<`/`>` 占位符**、不写步骤摘要。占位符或抽象泛化词会直接扭曲下游的触发匹配，导致代理该出现时不出现、不该出现时乱入。
 
 ## 内容结构与写作指南
 
@@ -206,11 +210,19 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 
 提出 2-3 个该代理会被调用的真实场景，让代理实际跑一次：验证身份表述、边界执行、权限遵守、汇报格式。根据结果迭代 AGENT.md。
 
+**触发失败分类（改前先归因）**：被调用行为不符预期时，先归因再决定改哪里——**假阴性**（该出现未出现 → description 漏触发词/说法没覆盖）、**假阳性**（不该出现却乱入 → description 过度泛化/兜底词过多）、**run_error**（被正确调用但运行失败 → 客户端格式/工具/环境问题，与 description 无关别乱改）。三类混改会把「改错病」当成「改好病」。
+
 ### 阶段 7：安装与验证
 
 安装 = 把 AGENT.md（或代理目录）放到目标客户端的 agents 目录，重启后调用验证。
 
-- **直接放置**：按目标客户端官方文档说明，将文件放置到对应目录即可。
+- **先按目标客户端转换 frontmatter**：仓库内保持规范形式（`tools: [...]` 白名单 + provider 前缀 model），安装前用本技能适配器转为目标客户端合法形态再放置（各端转换规则与 post-check 见 `references/agent-template.md`）：
+  ```bash
+  python scripts/adapt_agent.py <代理目录> --client opencode --out <落点>/AGENT.md
+  python scripts/adapt_agent.py <代理目录> --client claude  --out <落点>/AGENT.md
+  # codex / deepseek：无官方 frontmatter 规范，适配器仅做 YAML 校验后逐字节原样输出
+  ```
+- **直接放置**：转换产物按目标客户端官方文档说明放入 agents 目录（兼容矩阵与落点见「多客户端安装指引」）。
 
 ### 阶段 8：沉淀稳定代理
 
@@ -220,7 +232,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 
 **元数据：**
 - [ ] frontmatter 是有效 YAML，`name` kebab-case 且与目录一致
-- [ ] `description` ≤200 字符，包含做什么 + 何时调用
+- [ ] `description` 单行、≤200 字符，包含做什么 + 何时调用，无 `<`/`>` 占位符
 - [ ] 声明了代理所需客户端（tools_clients）与版本
 
 **边界与权限：**
@@ -240,6 +252,17 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 - [ ] 解决一个真实角色需求，而非泛泛职责堆砌
 - [ ] 涉及命令/安装的内容通过安全审查
 
+**渐进披露与引用组织：**
+- [ ] 主体克制（理想 <500 行），细节下沉 `references/`
+- [ ] references 由 SKILL.md 一层深导读，references 之间不互链成图
+- [ ] 大文件顶部有目录；正文/资源引用不悬空
+
+## 入库与发布纪律（提交/入库前逐项）
+
+- **secret 扫描**：提交/入库前扫一遍代理目录与脚本，确认无明文密钥/token/凭据示例；危险管道（curl 下载执行等）按「安全护栏」处理，必要时显式声明授权边界。
+- **隔离验证再交付**：非直推——代理先在本技能验证（阶段 5）+ 真实场景试跑（阶段 6），在**隔离环境**（独立客户端/临时目录）安装实测一次通过后再宣告入库；未经验证的草稿不得直接当成品交付。
+- **版本化原子补丁**：代理或方法论改动记录版本与原因（代理 frontmatter `version`；本技能改进记 `evolutions/`），不要把未经单独验证的草稿直接应用进 `SKILL.md`。
+
 ## 安全护栏
 
 - 代理执行权限遵循最小权限；涉及破坏性动作的代理必须显式声明并默认拒绝。
@@ -251,7 +274,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 
 本技能自身是**技能形态**（SKILL.md + scripts/ + references/…）：安装 = 把本技能目录复制到目标客户端的 **skills** 目录，重启客户端生效（落点：claude `~/.claude/skills/`、opencode `~/.config/opencode/skills/`、codex `~/.agents/skills/`；工作区对应 `<项目根>/.claude/skills/` 等）。安装后用一个真实代理请求触发一次验证。
 
-产出的**代理**本体是单文件 `AGENT.md`（或含 references 的目录 `agents/<name>/`）。安装 = 放到目标客户端的 agents 目录，重启客户端生效：
+产出的**代理**本体是单文件 `AGENT.md`（或含 references 的目录 `agents/<name>/`）。安装 = 用 `scripts/adapt_agent.py` 按目标客户端转换 frontmatter → 放到目标客户端的 agents 目录 → 重启客户端生效：
 
 | 端 | 代理目录（全局） | 代理目录（工作区） |
 |---|---|---|
@@ -260,7 +283,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 | codex | 代理放置无官方约定（best-effort，以官方文档为准） | 同左 |
 | deepseek | 随版本，`DEEPSEEK_HARNESS_ROOT` 兜底 | 同左 |
 
-不同客户端对代理的字段支持不同（兼容矩阵见 `references/agent-template.md`），安装时以目标客户端文档为准。
+不同客户端对代理的字段支持不同（兼容矩阵见 `references/agent-template.md`）；仓库规范形 → 目标客户端形的前置转换由 `scripts/adapt_agent.py` 完成（转换失败即退出、不产出无法加载的文件）。
 
 ## 相关技能
 
@@ -272,7 +295,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 A: 需要常驻角色、权限、协作协议 → 代理；只是一次性步骤流程 → 技能。技能是代理的「工具包」。
 
 **Q: 四端 frontmatter 不兼容怎么办？**
-A: 用兼容子集（name/description/version/tags）+ `tools_clients` 声明；安装时按客户端转换（见 `agent-template.md` 的兼容矩阵）。
+A: 仓库内保持规范形式（name/description/version/tags + `tools: [...]` 白名单 + `tools_clients`）；安装时用 `scripts/adapt_agent.py --client <端>` 转换（claude/opencode 自动适配 + post-check，codex/deepseek 原样校验后输出）。
 
 **Q: 代理需要跨多个职责？**
 A: 保持单一职责——一个代理一件事，协作流程解决多角色需求（多个代理通过协作协议互相调用）。

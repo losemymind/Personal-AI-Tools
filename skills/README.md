@@ -15,7 +15,7 @@
 ```
 skills/
 ├── README.md
-├── CATALOG.md             # 能力目录（静态快照，手工同步）
+├── CATALOG.md             # 能力目录（自动生成：tools/scripts/build_catalog.py，禁止手改）
 └── <分类>/<skill-name>/   # kebab-case，与 SKILL.md 的 name 一致
     ├── SKILL.md
     ├── scripts/           # 可选：辅助脚本
@@ -32,7 +32,7 @@ skills/
 
 ## 能力目录（CATALOG.md）
 
-`CATALOG.md` 是静态快照（本仓库无目录生成器）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「复制到客户端目录」提示，用户确认后执行。新增/删除/改进技能后**手工同步条目**。
+`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 从各 `SKILL.md` frontmatter **自动生成**（禁止手改）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「复制到客户端目录」提示，用户确认后执行。新增/删除/改进技能后**重跑生成器刷新**（发布门可用 `python tools/scripts/build_catalog.py --check` 校验）。
 
 ## 审计（SKILLS-AUDIT.md）
 
@@ -42,5 +42,5 @@ skills/
 
 1. 技能在本目录验证通过并稳定使用一段时间
 2. 补充 frontmatter 元数据（source/date_added/author/tags/version）
-3. 手工同步 `CATALOG.md` 条目（maturity 等字段照抄 frontmatter）
+3. 重跑根 `tools/scripts/build_catalog.py` 刷新 `CATALOG.md`（maturity 等字段照抄 frontmatter）
 4. 提交到仓库（含对比择优的 `evolutions/` 记录）

@@ -135,7 +135,19 @@ def agent_name_from_path(agent_path: str) -> str:
 
 
 def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> dict:
+    agents_dir = os.path.abspath(agents_dir)
     errors = []
+    if not os.path.isdir(agents_dir):
+        # A wrong/typo'd --dir must FAIL loudly. os.walk on a missing path yields
+        # nothing, so without this guard we'd print "Checked 0 agents" and exit 0.
+        errors.append(f"❌ Scan directory does not exist: {agents_dir}")
+        return {
+            "agent_count": 0,
+            "warnings": [],
+            "advisories": [],
+            "errors": errors,
+            "strict_mode": strict_mode,
+        }
     warnings = []
     advisories = []
     agent_count = 0
@@ -200,6 +212,21 @@ def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> di
                     errors.append(f"❌ {rel_path}: 'description' must be a string, got {type(desc).__name__}")
                 elif len(desc) > 300:
                     errors.append(f"❌ {rel_path}: Description is oversized ({len(desc)} chars). Must be concise.")
+                else:
+                    # Trigger-surface discipline (mirror of validate_skills.py):
+                    # description is the only always-loaded field — keep it single-line
+                    # and free of angle-bracket placeholders so trigger matching stays
+                    # reliable. Advisory only, never a failure.
+                    if any(ch in desc for ch in ("<", ">")):
+                        advisories.append(
+                            f"ℹ️  {rel_path}: Description contains '<'/'>' placeholder chars — "
+                            "these distort trigger matching (use plain wording, not placeholders)."
+                        )
+                    if "\n" in desc:
+                        advisories.append(
+                            f"ℹ️  {rel_path}: Description is multi-line — keep it single-line "
+                            "(description is the only unconditionally loaded trigger surface)."
+                        )
 
             risk = metadata.get("risk")
             if risk == "offensive" and not any(p.search(content) for p in SECURITY_DISCLAIMER_PATTERNS):

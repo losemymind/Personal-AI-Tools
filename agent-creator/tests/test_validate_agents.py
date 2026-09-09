@@ -68,3 +68,49 @@ def test_audit_file_is_exempt(temp_agent):
     )
     assert r.returncode == 0, r.stdout + r.stderr
     assert "Checked 1 agents" in r.stdout
+
+
+def test_nonexistent_dir_fails(tmp_path):
+    """`--dir` pointing at a missing directory must FAIL loudly instead of
+    printing "Checked 0 agents" and exiting 0 (os.walk on a missing path yields
+    nothing, which would silently turn a wrong --dir into a green release gate)."""
+    from conftest import run_script
+
+    r = run_script(
+        "scripts/validate_agents.py",
+        "--strict",
+        "--dir",
+        str(tmp_path / "no-such-agent-dir"),
+    )
+    assert r.returncode == 1
+    assert "Scan directory does not exist" in r.stdout
+    assert "All agents passed" not in r.stdout
+
+
+def test_description_angle_bracket_advisory(temp_agent):
+    """Angle-bracket placeholders in description distort trigger matching; flagged
+    as advisory (never a failure), mirroring validate_skills.py discipline."""
+    from conftest import run_script
+
+    content = (temp_agent / "AGENT.md").read_text(encoding="utf-8")
+    content = content.replace(
+        'description: "测试代理"', 'description: "测试 <agent-name> 代理"'
+    )
+    (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
+
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "placeholder" in r.stdout
+
+
+def test_description_multiline_advisory(temp_agent):
+    """Multi-line description breaks the single-line trigger surface; advisory only."""
+    from conftest import run_script
+
+    content = (temp_agent / "AGENT.md").read_text(encoding="utf-8")
+    content = content.replace('description: "测试代理"', 'description: "首行\\n次行"')
+    (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
+
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "multi-line" in r.stdout

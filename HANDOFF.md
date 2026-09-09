@@ -4,9 +4,10 @@
 
 ## 仓库状态速览
 
-- git：`main` 分支已有**首次提交**（涵盖本会话全部仓库结构文件），已推送 origin = `losemymind/Personal-AI-Tools`。`.opencode/` 已加入 `.gitignore`（安装测试副本不入库）；`codingflow.md`（个人 URL 记录）已随提交入库。
-- 两工作区已**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 均在各自工作区根、成品 `SKILL.md` 为唯一入口）。发布检查差异只在**成品自校验能力**：skill-creator 用成品 `validate_skills.py --strict` 自检；agent-creator 的 `validate_agents.py` 校验 AGENT.md 代理库（非自身成品），故自包含扫描落在 dev-only pytest。
-- 能力库：根 `skills/` = 3 技能（development/code-review-skill、git/pr-summarizer、product-design/prd-generator），根 `agents/` = 3 顶层分类（academic/code-quality/ue-game-studio）。`CATALOG.md` 为静态快照，本会话未改动能力库内容，无需同步。
+- git：`main` 分支已有两次提交，均已推送 origin = `losemymind/Personal-AI-Tools`。首次 `6824c79`（仓库结构）+ 本会话收尾提交（改动 13–20 与 CATALOG 生成器等，见下）。`.opencode/` 已加入 `.gitignore`（安装测试副本不入库）；`codingflow.md`（个人 URL 记录）已随首次提交入库。
+- 根 `opencode.json`（已提交）：项目级 opencode 配置，`instructions` 显式注册三份 `AGENTS.md`（根 / skill-creator / agent-creator）——保证任意 cwd 下会话都加载全部角色守则（不依赖 opencode 按 cwd 就近自动发现）。不入 `.gitignore`，随仓库分发。
+- 两工作区已**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 均在各自工作区根、成品 `SKILL.md` 为唯一入口）。发布检查差异只在**成品自校验能力**：skill-creator 用成品 `validate_skills.py --strict` 自检；agent-creator 的 `validate_agents.py` 校验 AGENT.md 代理库（非自身成品），故自包含扫描落在 dev-only pytest。两工作区根均已有 dev-only `AGENTS.md` **角色守则**（成品演进维护者；agent-creator 版为本会话补齐，见改动 13）。
+- 能力库：根 `skills/` = 3 技能（development/code-review-skill、git/pr-summarizer、product-design/prd-generator），根 `agents/` = 3 顶层分类（academic/code-quality/ue-game-studio）。`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 自动生成（见改动 18）。
 
 ## 本会话已完成的改动
 
@@ -85,6 +86,73 @@
 - 首次提交范围（用户确认）：全部仓库结构文件 + `codingflow.md` 入库；`.opencode/`（本会话 skill-creator 安装测试副本）加入 `.gitignore` 排除。
 - 发布门全绿后执行首次提交并推送 origin。
 
+**13. agent-creator 工作区 AGENTS.md（本会话，用户指令「补工作区 AGENTS.md」）**
+- 新建 `agent-creator/AGENTS.md`：dev-only **角色守则**——skill-creator 版的同构镜像，把在该工作区运行的代理塑造成「agent-creator 成品演进维护者」。内容结构同 skill-creator 版（角色与边界 / 演进闭环 SOP 8 步 / 硬约束 / 质量自检 / 命令速查 / 何时问用户），但按 agent 侧事实改写：产品部件列 agent-template/anatomy/quality-bar/index/comparison + create/validate/compare/search/build 脚本；发布门 = `pytest tests/ -q`（无成品 strict，自包含在 pytest 内）；命令速查含库校验与索引完整性；引用纪律标注 agent 版现状（references 交叉引用合法、未声明互不互链，如需对齐孪生纪律属方法论升级）；Step 4 注明当前无 `.opencode/skills/agent-creator/` 测试副本（仅 skill-creator 有）。
+- 同步：根 `AGENTS.md` 布局树两行与「工作区根」清单补 `AGENTS.md`、定位段改为「两工作区均已建…前者为后者的同构镜像」；根 `README.md` 结构树 agent-creator 块补 `AGENTS.md`、同构句改为「成品内 AGENTS.md 均已删除、成品内 INSTALL.md 均已移至工作区根（工作区根各有 dev-only AGENTS.md 角色守则 + INSTALL.md）」；工作区 `agent-creator/README.md` 布局树补 `AGENTS.md`。
+- 门禁不受影响（dev-only，成品未改）：agent pytest 6、skill pytest 15、成品 strict（skill 自检 + 库 agents 32/skills 3）全绿。
+- 至此上一版 HANDOFF「已知待办」中的「agent-creator 无工作区 AGENTS.md 守则」已落地：两工作区同为「成品演进维护者」角色守则，同构补全（该待办已从清单移除）。
+- 注意：opencode 会在 agent-creator/ 下工作时自动加载该 AGENTS.md（按 cwd 就近生效），与 skill-creator 侧一致。
+
+**14. 根 opencode.json 注册三份 AGENTS.md（本会话，用户指令「使用 instructions 加入工作区 opencode」）**
+- 新建仓库根 `opencode.json`（用户确认入库，非 `.opencode/` 或全局）：`$schema` + `instructions: ["AGENTS.md", "skill-creator/AGENTS.md", "agent-creator/AGENTS.md"]`。相对路径自配置所在目录（仓库根）解析，三份均存在。
+- 效果：仓库内任意 cwd 的 opencode 会话都无条件加载全部三份守则（根 AGENTS.md 本就按 cwd 自动发现；两工作区角色守则此前仅在对应子目录工作时才加载）。注意两工作区 AGENTS.md 现为 always-on，且各自声明「只负责本工作区成品、不负责根能力库」，多份同时在场时以任务所处 cwd/目录为准。
+- 配置改动需**重启 opencode 生效**（本会话运行时已加载的配置不含该指令）。
+- 同步：`HANDOFF.md` 仓库状态速览补该文件说明。新文件尚未 git add/提交，属待提交改动。
+
+**15. validate_*.py 目录守卫修复（本会话，用户指令「修复两脚本守卫」）**
+- 背景：巡检确认原 HANDOFF 待办 2 的根因 = 两层——(a) `--dir ../../skills` 本身就是错误相对路径（skill-creator 根到仓库 skills 应为 `../skills`）；(b) 更本质的缺陷：两验证器对**不存在的目录**静默通过（`os.walk` 空 → `Checked 0` → exit 0「✨ 全绿」），传错目录会让发布门假绿。
+- 修改（同构孪生，两侧同步）：
+  - `skill-creator/skills/skill-creator/scripts/validate_skills.py` `collect_validation_results`：`os.path.abspath` 后加 `isdir` 守卫，缺失即返回含 ❌ `Scan directory does not exist: <abs>` 的结果（→ exit 1）。
+  - `agent-creator/skills/agent-creator/scripts/validate_agents.py` `collect_validation_results`：同款守卫（并把 `agents_dir` abs 化，显示路径与解析一致）。
+  - 各补 pytest：`test_nonexistent_dir_fails`（skill tests 现 16 例、agent tests 现 7 例），断言 returncode==1、报错文案在、`All … passed` 不出现。
+- 版本 bump：skill-creator 0.6.0 → **0.6.1**、agent-creator 0.4.0 → **0.4.1**（patch，验证器行为修复）。
+- 实测：`--dir ../../skills` 现报 `❌ Scan directory does not exist: E:\GitHub\skills` 且 exit=1；`--dir ../skills` 正常 3 技能全绿。
+- `.opencode/skills/skill-creator/` 测试副本已同步（validate_skills.py + SKILL.md version 0.6.1）。
+- 门禁全绿：skill pytest 16、agent pytest 7、skill 成品 strict、能力库 strict（agents 32 / skills 3）。一致性巡检另确认：能力库目录 = CATALOG = 审计登记全部一致，frontmatter 字段（mode/version/maturity/category/risk/source/date_added）与 CATALOG 表一致；prd-generator `category: product` vs 目录 `product-design/` 属规则 4 的功能目录差异，非缺陷。
+
+**16. prd-generator 合规闭环（本会话，用户指令「补 prd-generator 合规闭环」）**
+- 背景：`skills/SKILLS-AUDIT.md` 中 prd-generator 曾标 ⚠️「待补 evolutions 记录」，合规闭环未完成。本任务补全。
+- 证据与对比：检索 skill-creator 成品自带上游索引（aas/addy 2132 条）`prd`/`requirements`/`spec` 关键词 **0 命中**（A 空，无择优竞争者）；抓取上游 `snarktank/ralph`（MIT，已核 LICENSE）`skills/prd/SKILL.md` 原文比对。
+- 新增 `skill-creator/skills/skill-creator/evolutions/2026-09-09-import-prd-generator.md`：记录「本地 A 空 → 上游 B 直接导入（方法论吸收 + 中文产品化）」，含适配要点（frontmatter 补 category/risk/source/version/author/tools、补何时使用/示例/限制/安全章节、PRD 输出模板章节名保留英文、description 双语触发词）与 4 条学习点（单文件方法论型 vs 整目录语料型导入策略分流；叙述汉化但产物模板保上游结构）。
+- `skills/SKILLS-AUDIT.md` 同步：prd-generator ⚠️→✅（摘要「经 skill-creator 生成流程」2✅/1⚠️ → 3✅；审计结论第 3 条转合规；§2 数据来源表增「远程仓库（方法论导入，MIT）」行；§3 技能清单行 ⚠️→✅；evaluations 指针补 `2026-09-09-import-prd-generator.md`）。
+- 无成品版本 bump（SKILL.md/scripts 未改，仅 evolutions 记录 + 库审计）；`.opencode/skills/skill-creator/evolutions/` 测试副本已同步。
+- 门禁全绿：skill pytest 16、skill 成品 strict、能力库 skills strict（3）全通过。
+
+**17. agent-creator 成品升级 0.4.1 → 0.5.0（本会话，用户指令「全做」对标孪生 skill-creator 0.6 纪律）**
+- 升级内容（A/B/C/D/E 全套）：
+  - **A 引用纪律**：SKILL.md「渐进式披露」节增 references 引用纪律硬规则（一层深、refs 不互链成图、>100 行目录、超大文件 grep）；`references/agent-anatomy.md` refs→refs（→agent-template）改经 SKILL.md 导读；同文件修复悬空的 `install_agent.py` 引用（脚本从未存在）→ 改指 SKILL.md「多客户端安装指引」。
+  - **B description 触发纪律**：SKILL.md 增「description 触发面（硬约束）」段（单行/≤200/无 `<>`/不写步骤摘要）；阶段 6 增触发失败分类（假阴/假阳/run_error，改前先归因）；质量清单「元数据」组补单行/无占位符；`agent-template.md` 字段说明与 `agent-quality-bar.md` 元数据项同步补约束。
+  - **C 发布纪律**：SKILL.md 新增「入库与发布纪律」节（secret 扫描/隔离安装实测/版本化原子补丁）。
+  - **D 验证器**：`validate_agents.py` description 加 `<>`/跨行 advisory（不失败，镜像 skill，不改变库门禁语义）；补 pytest 2 例 → agent tests 7→9。
+  - **E 质量条**：`agent-quality-bar.md` 5→6 项（新增「渐进披露与引用纪律」）；SKILL.md 质量清单增「渐进披露与引用组织」组。
+- 版本：SKILL.md frontmatter 0.4.1 → **0.5.0**（minor）。evolutions 新增 `2026-09-09-adopt-ref-description-release-discipline.md`（对齐孪生记录）。
+- agent-creator 无 `.opencode` 测试副本（仅 skill-creator 有），无需同步。
+- 门禁全绿：agent pytest 9（含自包含/布局）、能力库 agents strict 32、skill pytest 16、skill 成品 strict、能力库 skills strict 3；库 description 无 advisory 噪音。
+
+**18. 移植 CATALOG 生成器（本会话，用户指令「CATALOG 源自 personal-workflow，参照其完成实现」）**
+- 来源：`E:\GitHub\personal-workflow\tools\scripts\build_catalog.py`（本仓库 CATALOG.md 实际移植自该生成器的产物；此前迁移/精简时未把生成器一起带回，文档长期以「本仓库无目录生成器/手工同步」记之，用户本次指出并指示参照实现）。
+- 新建根 `tools/scripts/build_catalog.py`（同源布局 tools/scripts/）：扫描 skills/SKILL.md + agents/AGENT.md frontmatter → 渲染两份 CATALOG.md；`--check`（过期即 exit 1）/`--verbose`/`--root`。两处适配本仓库约定：install 列改为「复制 `<库>/<name>` → 客户端 库/ 目录」（本仓库无 install_*.py launcher）；docstring 标注移植来源。新增「库目录不存在即 ❌ + exit 1」守卫（与 validate_*.py 守卫同纪律，含 `--root` 传错场景）。
+- 重生成两份 CATALOG：正文与既有手写条目**逐字节一致**（3 技能 + 32 代理零漂移），仅文件头由「静态快照/手工同步」改为「自动生成/禁止手改/--check 发布门」。
+- 同步表述（去除「无目录生成器/静态快照/手工同步」）：根 `AGENTS.md`（§能力库 bullet + 命令块加生成器 2 行 + 结尾刷新 CATALOG 表述）、`agents/README.md`（maturity 注释/CATALOG 树注释/§能力目录/回馈流程 step3）、`skills/README.md`（树注释/§能力目录/回馈流程 step3）。全仓扫描无残留旧表述（仅 HANDOFF 历史行已随本记录更新）。
+- 门禁：`--check` exit 0；坏 `--root` exit 1。能力库校验无涉（未改能力内容）。后续改能力库 = 跑生成器刷新 + `--check` 把关。
+
+**19. agent-creator 移植安装适配器 adapt_agent.py（本会话，用户指令「移植为 agent-creator 工具」）**
+- 背景：用户问 personal-workflow 的 `agent_format.py` 是否也移植——它是该仓库 install_agent.py/update_agent.py 的 frontmatter 适配层（与 build_catalog 无依赖）。诊断：本仓库「安装=复制、无 launcher」，直接照搬会成孤儿；但 `agent-template.md` 整段描述的转换语义被推给**不存在的「宿主安装器」**（与上次清除的 install_agent.py 幽灵引用同源悬空），`agents/` 的 `tools:[...]` 规范形直接复制到 claude/opencode 可能无法加载。
+- 决策（用户选）：移植为 agent-creator 成品工具——复制前转换器 CLI，而非照搬 install launcher 形态。
+- 落点 `agent-creator/skills/agent-creator/scripts/adapt_agent.py`：输入规范 AGENT.md/目录 → `--client claude|opencode|codex|deepseek` → stdout/`--out` 输出目标客户端合法 AGENT.md；保留上游全部语义（opencode tools→permission 显式条目优先 + write/patch 折叠 edit；claude tools→Comma 串映射大写名 + model→alias；codex/deepseek YAML 校验后逐字节原样）+ 每端 post-check + fail loudly（exit 1 不产出）；docstring 标注移植来源。
+- 接线：SKILL.md 阶段 7 改「先转换再放置」+ 多客户端安装指引 + FAQ 指向 adapt_agent.py；`references/agent-template.md` 三处「宿主安装器/安装器」改指 adapt_agent.py（悬空清除）；产品 README 脚本树补 adapt_agent.py 行 + 顺带修 quality-bar 注释 5→6（#17 漏改）；dev `agent-creator/AGENTS.md` scripts 列举 + adapt。
+- 测试：agent pytest 9→16（新增 `tests/test_adapt_agent.py` 7 例：opencode 转换/显式权限胜出/write→edit 折叠/claude tools+model 映射/全无映射拒绝/codex 逐字节原样/缺路径失败/--out 写盘）。
+- 版本：SKILL.md 0.5.0 → **0.6.0**（minor）。evolutions 新增 `2026-09-09-adopt-agent-format-tool.md`。
+- 同步计数：`skill-creator/AGENTS.md` 命令速查 15→16 例、`agent-creator/AGENTS.md` 6→16 例（此前改动已漂移）。
+- 门禁全绿：agent pytest 16、能力库 agents strict 32、skill pytest 16、skill 成品 strict、能力库 skills strict 3。agent-creator 无 .opencode 副本。
+
+**20. 核心需求体检修复 A 全修（本会话，用户指令「检查缺陷与多余设计」→ 选 A 全修）**
+- 体检结论（只读分析）：核心工具闭环健康；缺陷集中在周边断点与文档债；多余/负载（examples 103 文件、双 upstream.db 2.2MB、能力库 30 迁移垂直内容）供后续定夺未动。
+- **A1 库安装指引接 adapt_agent**：`agents/README.md` 安装 bullet 改「先转换 frontmatter 再复制」+ 库内**两种形**说明（code-quality 2 = tools 数组规范形；academic+ue-game-studio 30 = opencode permission map 形含 color/temperature/lsp）；`tools/scripts/build_catalog.py` header 给 agents 增加「落地前转换」提示行（skill 不加）→ 重跑 `agents/CATALOG.md`（仅头多 1 行）；`agent-creator` 产品 README 使用步 5 补 `adapt_agent.py --client` 提示。
+- **A2 evolutions 模板补齐**：两份 `evolutions/README.md` 从只定义 compare- 扩为三类表格（compare- 择优 / import- 上游导入 / adopt- 采纳升级，各配真实示例）+ import/adopt 记录要点。
+- **A3 文档同步债扫描**：全仓 grep 计数/版本/幽灵工具名——skill 8 项、agent 6 项、10 阶段、0.6.x/0.5.0 引用均一致；无 install_/rollback_/uninstall_ 残留（除 evolutions 历史）；skill-creator/README.md:65 pytest 15 例属历史沿革保留。
+- 门禁全绿：agent pytest 16、skill pytest 16、skill 成品 strict、能力库 strict（agents 32/skills 3）、CATALOG `--check` exit 0。
+
 ## 已知待办 / 潜在风险（给下一会话）
 
 1. **升级中「记为纪律、未实现为工具」的项**（对应 evolutions 记录的「待真实场景验证后再升级为脚本」）：
@@ -92,10 +160,10 @@
    - gold-standards 独立记忆库——当前以 run_loop 上一轮胜出描述当先例，未做独立 gold_store CLI。
    - `.skill` 打包（package_skill.py）——未做。
    - skill-forge 的 Tier 分级模板 / 加权健康分——评估过、用户未确认采纳。
-2. **能力库校验建议用绝对路径**：本会话发现 `validate_skills.py --dir ../../skills`（相对路径）从工作区根跑会报「Checked 0 skills」，用绝对路径 `--dir E:\...\skills` 正常（3 技能）。原因未深究，别被相对路径的空结果误导。
+2. **能力库校验的「相对路径漏扫」已修复（本会话，见改动 15）**：`--dir` 指向不存在目录时两脚本现会打 ❌ 并 exit 1，不再静默 `Checked 0` 假绿。从 skill-creator 根校验能力库用 `../skills`（`../../skills` 会解析到 `E:\GitHub\skills` 不存在 → 现报错退出）。
 3. **能力库 / 审计一致性**：根 AGENTS.md 称 agents/ = 32 代理（academic×5/code-quality×2/ue-game-studio×25），与审计文件登记一致；若后续增删代理/技能，须按 AGENTS.md §能力库规则同步 `agents/AGENTS-AUDIT.md`/`skills/SKILLS-AUDIT.md` 与两份 `CATALOG.md`。
-4. **agent-creator 成品已升 0.4.0**（删 AGENTS.md、INSTALL.md 移出、SKILL.md 唯一入口）；宿主/客户端若在旧版上按 AGENTS.md 或成品内 INSTALL.md 引用，需按新形态更新路径。
-5. **agent-creator 无工作区 AGENTS.md 守则**：skill-creator 有（成品演进维护者）；agent-creator 仍是纯 dev 布局。若用户想让孪生同构，可在 `agent-creator/` 补同款角色守则（动前先读 `agent-creator/README.md` 与 skill-creator 版作模板）。
+4. **agent-creator 成品已升 0.6.0**（删 AGENTS.md、INSTALL.md 移出、SKILL.md 唯一入口；0.5.0 对齐孪生引用/description/发布纪律、0.6.0 新增 adapt_agent.py 安装适配器，见改动 17/19）；宿主/客户端若在旧版上按 AGENTS.md 或成品内 INSTALL.md 引用，需按新形态更新路径。
+5. **已评估、用户明确「B 不需要修复」的项（勿再主动提出/改动）**：核心需求体检（改动 20）中判为「多余/负载」的 3 项维持现状——(a) skill-creator 成品 `examples/` 103 文件（含 react-best-practices 55 rules + loki-mode 40 文件整树拷贝，验证豁免、作学习样本）；(b) 两份 `indexes/upstream.db`（skill 1.7MB + agent 0.5MB）随成品提交；(c) 能力库 30 个 UE/academic 迁移垂直内容 + 逐条审计开销。后续会话别再据此提瘦身。
 6. **提交纪律**：本仓库所有 git 提交/推送前，必先跑发布门全绿 + 更新 `HANDOFF.md` + 输出可点击复制的新会话交接提示（根 AGENTS.md §三条铁律 3）。
 
 ## 验证命令备忘

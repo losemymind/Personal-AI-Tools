@@ -1,7 +1,12 @@
 # agents/ — 已验证代理（Agent）能力目录
 
-> 本文件是**静态快照**（本仓库无目录生成器）：事实源 = 各 `AGENT.md` frontmatter；新增/删除/改进代理后**手工同步本文件条目**。
-> 检索：让 LLM 读本文件匹配需求 → 命中即复制对应代理目录到目标客户端的 `agents/` 目录（落点见 `agents/README.md`），人类确认后执行。
+> 本文件由 `python tools/scripts/build_catalog.py` 自动生成，**禁止手改**。事实源 = 各 `SKILL.md` / `AGENT.md` 的 frontmatter。
+
+> 新增/删除/改进能力后重跑 `python tools/scripts/build_catalog.py`；发布门可用 `python tools/scripts/build_catalog.py --check` 校验目录是否过期。
+
+> 检索：让 LLM 读本文件匹配需求 → 命中即复制对应 `agents/<name>` 目录到目标客户端对应目录，人类确认后执行。
+
+> 落地前转换：仓库规范形 frontmatter 复制到 claude/opencode 前，先用 `python agent-creator/skills/agent-creator/scripts/adapt_agent.py <目录> --client <claude|opencode> --out <落点>` 转换。
 
 
 ## 分组：academic

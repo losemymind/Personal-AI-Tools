@@ -18,13 +18,13 @@ tools_clients: [claude, opencode, codex, deepseek]
 ---
 ```
 
-**安装时注意事项**：此形是仓库内使用的**规范形式**。安装到不同客户端时必须转换（见下方矩阵与适配规则）。例如 `tools: [...]` 数组形式的列表在 opencode AgentConfig schema（要求 `object<str,bool>`）下会导致加载失败——安装器会自动将其转换为对应客户端的合法形态。**切勿**将带 `tools: []` 的仓库规范文件直接粘贴到客户端目录。
+**安装时注意事项**：此形是仓库内使用的**规范形式**。安装到不同客户端时必须转换（见下方矩阵与适配规则）。例如 `tools: [...]` 数组形式的列表在 opencode AgentConfig schema（要求 `object<str,bool>`）下会导致加载失败——用 `scripts/adapt_agent.py --client <端>` 自动转换为对应客户端的合法形态。**切勿**将带 `tools: []` 的仓库规范文件直接粘贴到客户端目录。
 
 ## 字段说明
 
 **必需字段：**
 - `name`：kebab-case，与目录名一致，单行，≤50 字符
-- `description`：≤200 字符（验证器上限 300），前端加载「做什么 + 何时被调用」
+- `description`：≤200 字符（验证器上限 300），单行、含「做什么 + 何时被调用」、无 `<`/`>` 占位符（description 是唯一无条件加载的触发面）
 
 **可选字段（按客户端支持程度声明）：**
 - `mode`：`primary` / `subagent` / `all`（opencode 语义）
@@ -50,7 +50,7 @@ tools_clients: [claude, opencode, codex, deepseek]
 | `permission` | ✅（Claude 格式） | ✅（opencode 格式） | ⚠️ | ⚠️ |
 | `version`/`tags` | 忽略（自定义） | ✅ | ⚠️ | ⚠️ |
 
-**兼容策略**：仓库内保持规范形式（`tools: [read, ...]` 数组白名单），**安装时经宿主安装器的 frontmatter 适配**自动转换为对应客户端的合法形态并执行 post-check：
+**兼容策略**：仓库内保持规范形式（`tools: [read, ...]` 数组白名单），**安装时用 `scripts/adapt_agent.py` 做 frontmatter 适配**自动转换为对应客户端的合法形态并执行 post-check：
 
 | 操作 | 效果 |
 |---|---|
@@ -58,7 +58,7 @@ tools_clients: [claude, opencode, codex, deepseek]
 | claude | `tools` 数组 → 转为逗号分隔字符串（小写名映射为 Claude 工具名，如 `read` → `Read`；未映射名标记丢弃）；`model` 前缀形式（如 `anthropic/claude-sonnet-4-6`）→ 简化为 alias（`sonnet`/`opus`/`haiku`/`inherit`） |
 | codex / deepseek | 无官方 agent frontmatter schema → YAML 语法检查通过后逐字节保留 |
 
-任何客户端 post-check 不通过时安装**拒绝写盘**（fail loudly）。具体转换规则由宿主安装器的适配器实现。
+任何客户端 post-check 不通过时适配器**拒绝产出/写盘**（fail loudly）。具体转换规则由 `scripts/adapt_agent.py` 实现（移植自 personal-workflow `tools/scripts/agent_format.py`，原为 install/update launcher 的适配层；本仓库无 launcher，故作为复制前的转换步骤）。
 
 ## 章节要求（AGENT.md 主体）
 

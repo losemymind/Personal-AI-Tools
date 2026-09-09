@@ -161,6 +161,17 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
     # real folder name for the name-vs-folder check and stable relative paths.
     skills_dir = os.path.abspath(skills_dir)
     errors = []
+    if not os.path.isdir(skills_dir):
+        # A wrong/typo'd --dir must FAIL loudly. os.walk on a missing path yields
+        # nothing, so without this guard we'd print "Checked 0 skills" and exit 0.
+        errors.append(f"❌ Scan directory does not exist: {skills_dir}")
+        return {
+            "skill_count": 0,
+            "warnings": [],
+            "advisories": [],
+            "errors": errors,
+            "strict_mode": strict_mode,
+        }
     warnings = []
     advisories = []
     skill_count = 0

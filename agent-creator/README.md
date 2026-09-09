@@ -4,6 +4,7 @@
 
 ```
 agent-creator/                     ← 开发工作区（本目录）
+├── AGENTS.md                      ← dev 角色守则：成品演进维护者（不随成品分发）
 ├── README.md                      ← 本文件：布局与开发指引
 ├── INSTALL.md                     ← 安装手册：把成品 skills/agent-creator/ 装到各客户端（不随成品分发）
 ├── tests/                         ← dev-only：pytest 回归 + 成品自包含自检
