@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 工作区级安装测试副本（本会话验证 skill-creator 安装用；不属于仓库结构）
+.opencode/

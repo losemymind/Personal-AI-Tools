@@ -1,0 +1,19 @@
+{
+  "skill_name": "your-skill-name",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "用户真实会说的任务提示词（应当触发该技能的场景）",
+      "should_trigger": true,
+      "expected_output": "预期结果描述",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "近似干扰项：关键词重叠但实际需要别的东西（不应触发）",
+      "should_trigger": false,
+      "expected_output": "",
+      "files": []
+    }
+  ]
+}
