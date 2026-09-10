@@ -84,6 +84,42 @@
       "query": "今天天气怎么样",
       "should_trigger": false,
       "expected_output": ""
+    },
+    {
+      "id": 15,
+      "query": "帮我把团队的代码评审流程做成一个可复用技能",
+      "should_trigger": true,
+      "expected_output": "进入创作流程，沉淀为技能"
+    },
+    {
+      "id": 16,
+      "query": "给现有的技能补一组触发测试用例",
+      "should_trigger": true,
+      "expected_output": "补充 evals.json 并跑触发评测"
+    },
+    {
+      "id": 17,
+      "query": "这个技能的 description 太长了，帮我精简同时别丢触发场景",
+      "should_trigger": true,
+      "expected_output": "description 优化闭环"
+    },
+    {
+      "id": 18,
+      "query": "帮我重构这个 Python 函数，去掉重复逻辑",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 19,
+      "query": "解释一下这段 SQL 在干什么",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 20,
+      "query": "帮我写一份这周的工作周报",
+      "should_trigger": false,
+      "expected_output": ""
     }
   ]
 }

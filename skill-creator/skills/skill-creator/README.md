@@ -30,18 +30,19 @@
 skill-creator/
   README.md                 # 说明
   SKILL.md                  # 核心：创建/改进/验证/安装技能的方法论（唯一入口，10 阶段工作流）
+  evals.json                # 本技能自身的触发测试用例（随技能回归）
   scripts/
     build_index.py          # 构建上游技能索引（tarball→SQLite，支持 --incremental）
     search_index.py         # 检索上游索引（FTS5 全文/分类/风险过滤）
     compare_skills.py       # 自建 vs 上游对比评分（质量6维+结构4维）
-    create_skill.py         # 交互式脚手架生成器（含 version 字段）
+    create_skill.py         # 交互式脚手架生成器（含 version 字段 + evals/evals.json）
     validate_skills.py      # 自动验证器（frontmatter/章节/安全/链接/密钥扫描）
-    utils.py                # 共享：frontmatter 解析 + 章节模式 + 触发启发式（四端通用）
-    run_eval.py             # 触发评测（heuristic 默认 / cli 双模式；--output-dir 落盘）
-    run_loop.py             # description 自动优化循环（train/test 60/40）
-    run_scenario.py         # 场景执行器（跑单个任务、落盘 run 目录供评分/汇总）
-    aggregate_benchmark.py  # 量化基准汇总（benchmark.json + benchmark.md，纯 stdlib；--notes 合并分析笔记）
-    _project_paths.py       # 仓库根定位辅助
+    utils.py                # 共享：frontmatter 解析 + 章节模式 + 触发启发式 + 安全扫描 + 进程树终止客户端运行器（四端通用）
+    run_eval.py             # 触发评测（heuristic 默认 / cli 双模式；--concurrency 有界并行；逐查询隔离工作区；--output-dir 落盘）
+    run_loop.py             # description 自动优化循环（train/test 60/40；cli 隔离运行）
+    run_scenario.py         # 场景执行器（跑单个任务、落盘 run 目录供评分/汇总；超时也留档）
+    aggregate_benchmark.py  # 量化基准汇总（benchmark.json + benchmark.md，纯 stdlib；--primary/--baseline 定 delta 方向；--notes 合并分析笔记）
+    _project_paths.py       # 技能根定位辅助（自包含，不依赖宿主仓库）
   agents/                   # 子代理指令（SKILL.md 按需拉起，不自动加载）
     grader.md               # 评分子代理：断言判定 → grading.json
     reviewer.md             # 评审子代理：评分/审核 → pass·revise + review.json（无人工评审闭环）

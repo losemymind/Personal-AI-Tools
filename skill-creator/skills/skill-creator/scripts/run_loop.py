@@ -25,16 +25,20 @@ evaluation). Exit code 0 = loop completed.
 
 import argparse
 import json
+import math
 import os
 import random
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from utils import parse_skill_md
+from utils import load_eval_set, parse_skill_md, run_client
 from run_eval import run_heuristic, summarize
+from run_scenario import extract_text
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -52,6 +56,18 @@ def configure_utf8_output() -> None:
             pass
 
 
+def _split_count(n: int, holdout: float) -> int:
+    """Number of items to hold out, keeping at least one item on each side.
+
+    A bare `max(1, ...)` steals a lone item into test and empties train (or vice
+    versa); keep both splits non-empty whenever n >= 2.
+    """
+    if n < 2 or not math.isfinite(holdout) or not (0.0 <= holdout <= 1.0):
+        return 0
+    k = int(round(n * holdout))
+    return min(max(k, 1), n - 1)
+
+
 def split_eval_set(eval_items: list[dict], holdout: float, seed: int = 42) -> tuple[list[dict], list[dict]]:
     """Stratified split: separate should-trigger / should-not-trigger, shuffle, split each by holdout."""
     random.seed(seed)
@@ -59,8 +75,8 @@ def split_eval_set(eval_items: list[dict], holdout: float, seed: int = 42) -> tu
     no_trigger = [e for e in eval_items if not e.get("should_trigger")]
     random.shuffle(trigger)
     random.shuffle(no_trigger)
-    n_t_test = max(1, int(len(trigger) * holdout)) if trigger else 0
-    n_nt_test = max(1, int(len(no_trigger) * holdout)) if no_trigger else 0
+    n_t_test = _split_count(len(trigger), holdout)
+    n_nt_test = _split_count(len(no_trigger), holdout)
     test = trigger[:n_t_test] + no_trigger[:n_nt_test]
     train = trigger[n_t_test:] + no_trigger[n_nt_test:]
     return train, test
@@ -142,28 +158,38 @@ Respond with ONLY the new description text inside <new_description> tags.
 def call_improver_cli(prompt: str, client: str, timeout: int = 300, model: str = "") -> str:
     """Shell out to a client's headless CLI to improve the description.
 
+    Runs in a throwaway workspace (a triggered improver call must not execute the
+    skill or write into the caller's repo) and kills the process tree on timeout.
     --model is appended only when given (a client whose default model is unset or
     misconfigured needs it, else the improver call fails).
     """
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+    tmp = Path(tempfile.mkdtemp(prefix="improver-"))
     try:
         if client == "claude":
             # claude -p reads the prompt from stdin when no positional arg is given.
             cmd = ["claude", "-p"] + (["--model", model] if model else [])
-            proc = subprocess.run(cmd, input=prompt, capture_output=True,
-                                  text=True, env=env, timeout=timeout)
+            rc, out, err = run_client(cmd, timeout=timeout, cwd=str(tmp), env=env, input_text=prompt)
         elif client == "opencode":
             cmd = ["opencode", "run", "--format", "json"] + (["-m", model] if model else []) + [prompt]
-            proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=timeout)
+            rc, out, err = run_client(cmd, timeout=timeout, cwd=str(tmp), env=env)
         else:
             raise RuntimeError(f"--improve-mode cli not available for client '{client}'")
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         raise RuntimeError(f"improver CLI failed: {e}") from e
-    if proc.returncode != 0:
-        raise RuntimeError(f"improver CLI exited {proc.returncode}: {proc.stderr[-500:]}")
-    text = proc.stdout
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    if rc != 0:
+        raise RuntimeError(f"improver CLI exited {rc}: {(err or '')[-500:]}")
+    # opencode emits a JSON event stream; claude emits plain text. extract_text
+    # passes plain text through unchanged, so this is safe for both.
+    text = extract_text(out or "")
     m = re.search(r"<new_description>(.*?)</new_description>", text, re.DOTALL)
     desc = m.group(1).strip().strip('"') if m else text.strip().strip('"')
+    if not desc:
+        # An empty description classifies every query as non-trigger; on a test set
+        # skewed to negatives it could even win _test_rank. Reject it outright.
+        raise RuntimeError("improver returned an empty description")
     if len(desc) > 1024:
         raise RuntimeError("improver output exceeded 1024 chars; rerun with --improve-mode manual")
     return desc
@@ -171,7 +197,8 @@ def call_improver_cli(prompt: str, client: str, timeout: int = 300, model: str =
 
 def call_improver_manual(prompt: str) -> str:
     print("\n=== IMPROVEMENT PROMPT (paste reply below; end with a line containing exactly EOF) ===\n", file=sys.stderr)
-    print(prompt)
+    # Prompt goes to stderr so stdout stays the pure JSON result (machine-readable).
+    print(prompt, file=sys.stderr)
     print("\n=== END PROMPT ===\n", file=sys.stderr)
     lines = []
     for line in sys.stdin:
@@ -207,9 +234,23 @@ def main() -> int:
         print(f"Error: no SKILL.md at {skill_dir}", file=sys.stderr)
         return 1
 
-    evals = json.loads(eval_set_path.read_text(encoding="utf-8-sig"))
-    eval_items = evals.get("evals", evals) if isinstance(evals, dict) else evals
-    name, original_description, content = parse_skill_md(skill_dir)
+    try:
+        eval_items = load_eval_set(eval_set_path)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    try:
+        name, original_description, content = parse_skill_md(skill_dir)
+    except (ValueError, OSError) as e:
+        print(f"Error: cannot read SKILL.md at {skill_dir}: {e}", file=sys.stderr)
+        return 1
+
+    if args.max_iterations < 1:
+        print("Error: --max-iterations must be >= 1", file=sys.stderr)
+        return 1
+    if not math.isfinite(args.holdout) or not (0.0 <= args.holdout <= 1.0):
+        print("Error: --holdout must be a finite number between 0 and 1", file=sys.stderr)
+        return 1
 
     train, test = split_eval_set(eval_items, args.holdout, seed=args.seed)
     if not train:
@@ -246,13 +287,37 @@ def main() -> int:
         prompt = build_improve_prompt(name, content, current, train_results, best_so_far)
         try:
             if args.improve_mode == "cli":
-                current = call_improver_cli(prompt, args.client, model=args.model)
+                new_desc = call_improver_cli(prompt, args.client, model=args.model)
             else:
-                current = call_improver_manual(prompt)
+                new_desc = call_improver_manual(prompt)
+            if not new_desc.strip():
+                # Empty description classifies everything as non-trigger; never let
+                # it enter history (it can even win _test_rank on negative-heavy sets).
+                raise RuntimeError("improver returned an empty description")
+            current = new_desc
         except RuntimeError as e:
             print(f"Improver failed: {e}", file=sys.stderr)
             exit_reason = f"improver_error (iteration {iteration})"
             break
+
+    # The improvement produced on the final iteration was assigned to `current`
+    # but never scored (history is appended at the *start* of each iteration), so
+    # `--max-iterations N` would silently drop the Nth candidate and never select
+    # it. Score the final candidate now and let it compete.
+    if current != history[-1]["description"]:
+        final_train = run_heuristic(train, current)
+        final_test = run_heuristic(test, current) if test else []
+        f_train = summarize(final_train)
+        f_test = summarize(final_test) if test else {"passed": 0, "failed": 0, "total": 0}
+        history.append({
+            "iteration": len(history) + 1,
+            "description": current,
+            "train_passed": f_train["passed"],
+            "train_total": f_train["total"],
+            "test_passed": f_test["passed"],
+            "test_total": f_test["total"],
+            "train_results": final_train,
+        })
 
     best = max(history, key=_test_rank)
     output = {
@@ -268,7 +333,15 @@ def main() -> int:
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
     if args.report:
-        args.report.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+        if args.report.is_dir():
+            print(f"Error: --report is a directory: {args.report}", file=sys.stderr)
+            return 1
+        try:
+            args.report.parent.mkdir(parents=True, exist_ok=True)
+            args.report.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+        except OSError as e:
+            print(f"Error: cannot write report: {e}", file=sys.stderr)
+            return 1
         print(f"Report written: {args.report}", file=sys.stderr)
     return 0
 

@@ -40,7 +40,18 @@ def test_ascii_query_uses_fts5_match():
     sql, params = mod.build_query(_make_args("code review"))
     assert "skills_fts MATCH ?" in sql
     assert "LIKE ?" not in sql
-    assert params[0] == "code review"
+    # Each whitespace token is quoted as a literal FTS5 string so punctuation
+    # (c++, parens, quotes) cannot inject FTS5 syntax and crash the MATCH.
+    assert params[0] == '"code" "review"'
+
+
+def test_fts5_special_chars_are_quoted_literally():
+    mod = _load_module()
+    for q in ("c++", "(", '"', "foo:bar", "NEAR("):
+        sql, params = mod.build_query(_make_args(q))
+        assert "skills_fts MATCH ?" in sql
+        # every quote in the payload is doubled, never left as raw syntax
+        assert params[0].startswith('"') and params[0].endswith('"')
 
 
 def test_cjk_query_falls_back_to_like():

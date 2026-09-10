@@ -142,26 +142,68 @@ def unpack_tarball(tar_path: Path, dest: Path) -> Path:
 # Entry extraction (per source)
 # ---------------------------------------------------------------------------
 
-def frontmatter_of(skill_md: Path) -> dict:
-    try:
-        content = skill_md.read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        return {}
+def _frontmatter_fallback(content: str) -> dict:
+    """Minimal YAML subset parse used only if PyYAML is unavailable.
+
+    Handles scalar keys, quoted scalars, inline lists (`[a, b]`), and block
+    scalars (`>`/`|`) so a scanned source still yields category/risk/tags/tools
+    rather than dropping every key but name/description.
+    """
     m = re.match(r"^---\s*\n(.*?)\n?---(?:\s*\n|$)", content, re.DOTALL)
     if not m:
         return {}
-    try:
-        data = json.loads(m.group(1))  # not yaml; fall back below
-    except Exception:
-        data = {}
-    if not isinstance(data, dict) or not data:
-        # minimal yaml-ish parse for name/description lines
-        for line in m.group(1).splitlines():
-            if line.startswith("name:"):
-                data["name"] = line.split(":", 1)[1].strip().strip('"')
-            elif line.startswith("description:"):
-                data["description"] = line.split(":", 1)[1].strip().strip('"')
+    data: dict = {}
+    lines = m.group(1).splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if ":" not in line or line.lstrip().startswith("#"):
+            i += 1
+            continue
+        key, _, raw = line.partition(":")
+        key = key.strip()
+        raw = raw.strip()
+        if raw in (">", "|", ">-", "|-", ">+", "|+"):
+            block = []
+            i += 1
+            while i < len(lines) and (lines[i].startswith((" ", "\t")) or not lines[i].strip()):
+                block.append(lines[i].strip())
+                i += 1
+            data[key] = " ".join(x for x in block if x)
+            continue
+        if raw.startswith("[") and raw.endswith("]"):
+            data[key] = [x.strip().strip("'\"") for x in raw[1:-1].split(",") if x.strip()]
+        else:
+            data[key] = raw.strip("'\"")
+        i += 1
     return data
+
+
+def frontmatter_of(skill_md: Path) -> dict:
+    """Parse a SKILL.md frontmatter into a metadata dict (real YAML).
+
+    The previous hand-rolled parser read only scalar `name:`/`description:`
+    lines: block-scalar descriptions (`>`/`|`) were stored as the literal
+    indicator and structured keys (`category`/`risk`/`tags`/`tools`) were
+    dropped — silently corrupting committed index rows (e.g. `description ==
+    '>'`) and making `--category`/`--risk` filters dead for scan-based sources.
+    Reuse the shared PyYAML parser (utils.parse_frontmatter); fall back to a
+    minimal parser only when PyYAML is absent.
+    """
+    try:
+        content = skill_md.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        return {}
+    if str(SCRIPT_DIR) not in sys.path:
+        sys.path.insert(0, str(SCRIPT_DIR))
+    try:
+        from utils import parse_frontmatter
+        metadata, _errs = parse_frontmatter(content)
+        if isinstance(metadata, dict):
+            return metadata
+    except Exception:
+        pass
+    return _frontmatter_fallback(content)
 
 
 def load_official_index(repo_root: Path, source: dict) -> list[dict]:
@@ -190,17 +232,24 @@ def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
         if not skill_md.exists():
             continue
         fm = frontmatter_of(skill_md)
-        entries.append(
-            {
-                "id": d.name,
-                "path": f"{root_rel}/{d.name}" if root_rel else d.name,
-                "name": fm.get("name") or d.name,
-                "description": fm.get("description"),
-                "category": fm.get("category"),
-                "risk": fm.get("risk"),
-                "source": "community",
-            }
-        )
+        entry = {
+            "id": d.name,
+            "path": f"{root_rel}/{d.name}" if root_rel else d.name,
+            "name": fm.get("name") or d.name,
+            "description": fm.get("description"),
+            "category": fm.get("category"),
+            "risk": fm.get("risk"),
+            "source": "community",
+        }
+        # Preserve tags/tools when a scanned upstream declares them (extract_fields
+        # reads tags and plugin.targets); dropping them would make --tool and tag
+        # search silently fail for scan-based sources.
+        if fm.get("tags"):
+            entry["tags"] = fm["tags"]
+        tools = fm.get("tools")
+        if isinstance(tools, list) and tools:
+            entry["plugin"] = {"targets": {str(t): {} for t in tools}}
+        entries.append(entry)
     print(f"🗂️  {source['repo']}: scanned {root_rel or '.'}/*/SKILL.md ({len(entries)} entries)")
     return entries
 
@@ -471,7 +520,10 @@ def load_source_checkout(source: dict, args, tmp: Path) -> tuple[Path, list[dict
         root = Path(args.from_extracted)
         print(f"🗂️  {source['repo']}: using extracted checkout {root}")
     elif args.no_dl:
-        root = Path(__file__).resolve().parents[2]
+        # Scan the CURRENT directory as the repo root (run it from an upstream
+        # checkout). The old `parents[2]` pointed one level too high (the skills/
+        # dir), so skills_root="skills" resolved to a non-existent skills/skills.
+        root = Path.cwd()
         print(f"🗂️  {source['repo']}: using local repo root {root}")
     else:
         tar_path = download_tarball(source, tmp)
@@ -489,7 +541,8 @@ def main() -> int:
     parser.add_argument("--source", choices=["all", *SOURCES.keys()], default="all", help="Which upstream source to index (default: all)")
     parser.add_argument("--incremental", action="store_true", help="Reuse upstream.db; sync only added/updated/removed")
     parser.add_argument("--keep", action="store_true", help="Keep downloaded tarballs")
-    parser.add_argument("--no-dl", action="store_true", help="Scan local repo root instead of downloading")
+    parser.add_argument("--no-dl", action="store_true",
+                        help="Scan the current directory as repo root instead of downloading (run from an upstream checkout)")
     parser.add_argument("--from-extracted", default=None, help="Build from an already-extracted checkout dir")
     args = parser.parse_args()
 

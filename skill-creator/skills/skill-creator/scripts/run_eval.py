@@ -15,7 +15,12 @@ Run errors (missing/timeout/failed CLI) are reported separately as `errors`
 instead of being silently counted as "did not trigger".
 
 Usage:
-    python scripts/run_eval.py --eval-set <evals.json> --skill-dir <skill> [--mode heuristic|cli] [--client claude|opencode] [--model <id>] [--timeout 60] [--runs-per-query 1] [--threshold 0.5] [--json] [--output-dir <dir>]
+    python scripts/run_eval.py --eval-set <evals.json> --skill-dir <skill> [--mode heuristic|cli] [--client claude|opencode] [--model <id>] [--timeout 60] [--runs-per-query 1] [--threshold 0.5] [--concurrency 1] [--keep-workspace] [--json] [--output-dir <dir>]
+
+In `cli` mode each query runs in its own throwaway workspace (skill installed
+under the client's discovery path) which is deleted afterwards, so a real trigger
+cannot mutate the caller's repository and concurrent queries cannot interfere;
+`--keep-workspace` retains the per-query workspaces for debugging.
 
 Exit code 0 = evaluation produced; 1 if error.
 """
@@ -23,11 +28,14 @@ Exit code 0 = evaluation produced; 1 if error.
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from utils import classify, eval_query, parse_skill_md
+from utils import classify, eval_query, load_eval_set, parse_skill_md, run_client
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -44,6 +52,12 @@ CLI_COMMANDS = {
     ),
 }
 
+# client -> workspace subpath the client discovers skills from (mirrors run_scenario).
+SKILL_SUBPATHS = {
+    "opencode": ".opencode/skills",
+    "claude": ".claude/skills",
+}
+
 
 def configure_utf8_output() -> None:
     if sys.platform != "win32":
@@ -56,6 +70,31 @@ def configure_utf8_output() -> None:
             stream.reconfigure(encoding="utf-8", errors="backslashreplace")
         except Exception:
             pass
+
+
+def build_workspace(skill_dir: Path, client: str) -> Path:
+    """Create a throwaway client workspace with `skill_dir` installed; return its root.
+
+    cli trigger evaluation must NOT run in the caller's real workspace. A real
+    trigger lets the client actually execute the skill, which can create files
+    (eval outputs, indexes) and even spawn long-lived child processes — observed
+    against opencode, where a triggered skill-creator ran its own eval tooling and
+    mutated the repository. Copying the skill into a temp dir and running the
+    client there confines every side effect to a directory we delete afterwards
+    (the same isolation `run_scenario` uses). The skill is placed at the client's
+    discovery subpath so the run still exercises a real install.
+    """
+    tmp = Path(tempfile.mkdtemp(prefix="eval-"))
+    try:
+        subpath = SKILL_SUBPATHS.get(client)
+        if subpath:
+            dest = tmp / subpath / skill_dir.resolve().name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(skill_dir, dest)
+    except Exception:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
+    return tmp
 
 
 def detect_triggered(client: str, raw: str, skill_name: str) -> bool:
@@ -82,36 +121,86 @@ def detect_triggered(client: str, raw: str, skill_name: str) -> bool:
                 ev = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            part = ev.get("part") or {}
-            if ev.get("type") == "tool_use" and part.get("tool") == "skill":
-                name = ((part.get("state") or {}).get("input") or {}).get("name")
-                if isinstance(name, str) and name.lower() == target:
-                    return True
+            if not isinstance(ev, dict):
+                continue
+            # Accept the same event shapes as run_scenario.count_tool_calls so the
+            # trigger verdict and the tool-call count agree: current opencode emits
+            # `type=="tool_use"`, older/simplified streams use `type=="tool"`.
+            if ev.get("type") not in ("tool_use", "tool"):
+                continue
+            part = ev.get("part")
+            if not isinstance(part, dict):
+                continue
+            if part.get("tool") != "skill":
+                continue
+            state = part.get("state")
+            if not isinstance(state, dict):
+                continue
+            inputs = state.get("input")
+            if not isinstance(inputs, dict):
+                continue
+            name = inputs.get("name")
+            if isinstance(name, str) and name.lower() == target:
+                return True
         return False
+    # Non-opencode clients (e.g. claude) expose no structured skill-dispatch event
+    # in the plain JSON output, so this is a best-effort substring check. It can
+    # false-positive when the transcript merely *mentions* the skill or lists its
+    # path — treat claude trigger numbers as approximate (see SKILL.md stage 7).
     return target in raw.lower()
 
 
+def _partial_text(e: subprocess.TimeoutExpired) -> str:
+    """Best-effort text of whatever the timed-out process had emitted so far.
+
+    `run_client` (utils) attaches the partial capture to the TimeoutExpired it
+    raises. Fields are str in text mode; decode defensively for bytes.
+    """
+    chunks = []
+    for chunk in (e.stdout, e.stderr):
+        if chunk is None:
+            continue
+        chunks.append(chunk.decode("utf-8", "replace") if isinstance(chunk, bytes) else chunk)
+    return "".join(chunks)
+
+
 def run_cli(query: str, skill_name: str, description: str, client: str, timeout: int = 60,
-            model: str = "") -> bool:
+            model: str = "", workspace: str | os.PathLike | None = None) -> bool:
     """Run one query via the client's headless CLI; return whether it triggered.
 
     Raises RuntimeError when the CLI cannot be run or fails — such run_error
     cases are surfaced separately and must not be counted as "did not trigger"
     (see SKILL.md stage 7 attribution).
+
+    A timeout is different: the skill tool may already have fired before the
+    client got stuck on the (often long) task the skill kicked off. Discarding
+    that partial stream would silently convert a real trigger into a run_error
+    and systematically under-count recall, so a timeout that already shows the
+    skill dispatch is a trigger; a timeout with no trigger evidence stays a
+    run_error.
+
+    `workspace` is the cwd for the client process. Callers pass a throwaway
+    workspace (see `build_workspace`) so a real trigger cannot mutate the caller's
+    repository; when omitted the client inherits the current directory.
     """
     if client not in CLI_COMMANDS:
         raise RuntimeError(f"--mode cli not available for client '{client}'; use --mode heuristic")
     cmd = CLI_COMMANDS[client](query, model)
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
+        returncode, out, err = run_client(
+            cmd, timeout=timeout, env=env,
+            cwd=str(workspace) if workspace is not None else None,
+        )
     except subprocess.TimeoutExpired as e:
+        if detect_triggered(client, _partial_text(e), skill_name):
+            return True
         raise RuntimeError(f"cli timeout after {timeout}s ({client})") from e
     except FileNotFoundError as e:
         raise RuntimeError(f"cli not found: {cmd[0]} ({client})") from e
-    if proc.returncode != 0:
-        raise RuntimeError(f"cli exited {proc.returncode} ({client}): {(proc.stderr or '')[-300:]}")
-    output = (proc.stdout or "") + (proc.stderr or "")
+    if returncode != 0:
+        raise RuntimeError(f"cli exited {returncode} ({client}): {(err or '')[-300:]}")
+    output = (out or "") + (err or "")
     return detect_triggered(client, output, skill_name)
 
 
@@ -128,6 +217,81 @@ def run_heuristic(evals, description: str) -> list[dict]:
             "pass": triggered == bool(item.get("should_trigger")),
         })
     return results
+
+
+def run_cli_item(item: dict, skill_name: str, description: str, client: str,
+                 timeout: int, model: str, runs_per_query: int, threshold: float,
+                 workspace: str | os.PathLike | None = None) -> dict:
+    """Run one eval query (possibly N times) and return its result record.
+
+    Module-level and side-effect-free over shared state so it is safe to call
+    from a ThreadPoolExecutor worker. RuntimeError (missing CLI / timeout /
+    non-zero exit) becomes an `error` record — a run_error, never a silent miss.
+    """
+    query = eval_query(item)
+    should = bool(item.get("should_trigger"))
+    try:
+        triggers = 0
+        for _ in range(max(1, runs_per_query)):
+            if run_cli(query, skill_name, description, client, timeout=timeout, model=model,
+                       workspace=workspace):
+                triggers += 1
+        rate = triggers / max(1, runs_per_query)
+    except RuntimeError as e:
+        return {
+            "query": query,
+            "should_trigger": should,
+            "trigger_rate": None,
+            "pass": None,
+            "error": str(e),
+        }
+    return {
+        "query": query,
+        "should_trigger": should,
+        "trigger_rate": rate,
+        "pass": (rate >= threshold) if should else (rate < threshold),
+    }
+
+
+def run_cli_batch(evals, skill_name: str, description: str, client: str, timeout: int,
+                  model: str, runs_per_query: int, threshold: float,
+                  concurrency: int = 1, skill_dir: str | os.PathLike | None = None,
+                  keep_workspace: bool = False) -> list[dict]:
+    """Run every eval query through the client CLI, in result order.
+
+    Each query is an independent client process and each may take tens of
+    seconds, so a full real-machine run is serial-bound by default. Bounded
+    concurrency cuts wall time without touching result shape or ordering
+    (ThreadPoolExecutor.map preserves input order).
+
+    When `skill_dir` is given, every query gets its OWN throwaway workspace (skill
+    installed at the client discovery path, used as cwd, deleted afterwards).
+    Per-query isolation — not one shared dir — is required because concurrent
+    queries would otherwise write to the same cwd. `keep_workspace` disables the
+    cleanup for debugging.
+    """
+    base_kwargs = dict(skill_name=skill_name, description=description, client=client,
+                       timeout=timeout, model=model, runs_per_query=runs_per_query,
+                       threshold=threshold)
+
+    def _one(item: dict) -> dict:
+        workspace = None
+        try:
+            if skill_dir is not None:
+                workspace = build_workspace(Path(skill_dir), client)
+            return run_cli_item(item, workspace=workspace, **base_kwargs)
+        finally:
+            if workspace is not None:
+                if keep_workspace:
+                    print(f"kept workspace: {workspace}", file=sys.stderr)
+                else:
+                    shutil.rmtree(workspace, ignore_errors=True)
+
+    workers = max(1, concurrency)
+    if workers == 1 or len(evals) <= 1:
+        return [_one(item) for item in evals]
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        return list(ex.map(_one, evals))
 
 
 def _is_triggered(r: dict, threshold: float) -> bool | None:
@@ -189,9 +353,14 @@ def main() -> int:
     parser.add_argument("--runs-per-query", type=int, default=1, help="Runs per query (cli mode)")
     parser.add_argument("--threshold", type=float, default=0.5, help="Trigger rate threshold (cli mode)")
     parser.add_argument("--timeout", type=int, default=60, help="Per-query CLI timeout in seconds (cli mode)")
+    parser.add_argument("--concurrency", type=int, default=1,
+                        help="Eval queries to run in parallel in cli mode (default 1 = serial). "
+                             "Each query is an independent client process; raise it to cut wall time.")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     parser.add_argument("--output-dir", default=None,
                         help="Write results JSON (eval-results-<skill>.json) into this directory")
+    parser.add_argument("--keep-workspace", action="store_true",
+                        help="Keep the throwaway cli workspace (for debugging); default deletes it")
     args = parser.parse_args()
 
     eval_set_path = Path(args.eval_set)
@@ -203,38 +372,29 @@ def main() -> int:
         print(f"Error: no SKILL.md at {skill_dir}", file=sys.stderr)
         return 1
 
-    evals = json.loads(eval_set_path.read_text(encoding="utf-8-sig"))
-    eval_list = evals.get("evals", evals) if isinstance(evals, dict) else evals
-    name, description, _ = parse_skill_md(skill_dir)
+    try:
+        eval_list = load_eval_set(eval_set_path)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    try:
+        name, description, _ = parse_skill_md(skill_dir)
+    except (ValueError, OSError) as e:
+        print(f"Error: cannot read SKILL.md at {skill_dir}: {e}", file=sys.stderr)
+        return 1
 
     results = []
     if args.mode == "heuristic":
         results = run_heuristic(eval_list, description)
     else:
-        for item in eval_list:
-            query = eval_query(item)
-            should = bool(item.get("should_trigger"))
-            try:
-                triggers = 0
-                for _ in range(max(1, args.runs_per_query)):
-                    if run_cli(query, name, description, args.client, timeout=args.timeout, model=args.model):
-                        triggers += 1
-                rate = triggers / max(1, args.runs_per_query)
-            except RuntimeError as e:
-                results.append({
-                    "query": query,
-                    "should_trigger": should,
-                    "trigger_rate": None,
-                    "pass": None,
-                    "error": str(e),
-                })
-                continue
-            results.append({
-                "query": query,
-                "should_trigger": should,
-                "trigger_rate": rate,
-                "pass": (rate >= args.threshold) if should else (rate < args.threshold),
-            })
+        # Each query runs in its own throwaway install: a real trigger executes the
+        # skill, which would otherwise create files in (and spawn processes from)
+        # the caller's repository, and concurrent queries would share a cwd.
+        results = run_cli_batch(
+            eval_list, name, description, args.client, args.timeout, args.model,
+            args.runs_per_query, args.threshold, args.concurrency,
+            skill_dir=skill_dir, keep_workspace=args.keep_workspace,
+        )
 
     output = {
         "skill_name": name,
@@ -245,9 +405,16 @@ def main() -> int:
     }
     if args.output_dir:
         out_dir = Path(args.output_dir)
-        out_dir.mkdir(parents=True, exist_ok=True)
-        out_path = out_dir / f"eval-results-{name}.json"
-        out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+        if out_dir.exists() and not out_dir.is_dir():
+            print(f"Error: --output-dir is not a directory: {out_dir}", file=sys.stderr)
+            return 1
+        try:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            out_path = out_dir / f"eval-results-{name}.json"
+            out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+        except OSError as e:
+            print(f"Error: cannot write results: {e}", file=sys.stderr)
+            return 1
         print(f"Results written to: {out_path}", file=sys.stderr)
     if args.json:
         print(json.dumps(output, ensure_ascii=False, indent=2))

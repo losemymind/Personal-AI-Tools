@@ -115,13 +115,14 @@ python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
 
 ## timing.json（可选，运行计时）
 
-`<run-dir>/timing.json`，在完成任务通知收到 `total_tokens`/`duration_ms` 时立即写入：
+`<run-dir>/timing.json`，由 `run_scenario.py` 产出。**必写**：`total_duration_seconds`（墙钟秒）与 `timed_out`（是否超时）；若客户端回报了 token 数与精确毫秒，再补 `total_tokens` / `duration_ms`（可选）：
 
 ```json
 {
+  "total_duration_seconds": 23.3,
+  "timed_out": false,
   "total_tokens": 84852,
-  "duration_ms": 23332,
-  "total_duration_seconds": 23.3
+  "duration_ms": 23332
 }
 ```
 
@@ -153,30 +154,35 @@ python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
     "executor_model": "<model>",
     "timestamp": "2026-09-03T00:00:00Z",
     "evals_run": [1, 2],
-    "runs_per_configuration": 3
+    "runs_per_configuration": 3,
+    "primary_configuration": "with_skill",
+    "baseline_configuration": "without_skill"
   },
   "runs": [{
     "eval_id": 1, "configuration": "with_skill", "run_number": 1,
     "result": { "pass_rate": 0.85, "passed": 6, "failed": 1, "total": 7,
-                 "time_seconds": 42.5, "tokens": 3800, "tool_calls": 18, "errors": 0 },
+                 "time_seconds": 42.5, "tokens": 3800, "tool_calls": 18 },
     "expectations": [], "notes": []
   }],
   "run_summary": {
     "with_skill": {
+      "runs": 3,
       "pass_rate": {"mean": 0.85, "stddev": 0.05, "min": 0.8, "max": 0.9},
       "time_seconds": {"mean": 45.0, "stddev": 12.0, "min": 32.0, "max": 58.0},
       "tokens": {"mean": 3800, "stddev": 400, "min": 3200, "max": 4100}
     },
     "without_skill": { "...": "同上结构" },
-    "delta": { "pass_rate": "+0.50", "time_seconds": "+13.0", "tokens": "+1700" }
+    "delta": { "primary": "with_skill", "baseline": "without_skill",
+               "pass_rate": "+0.50", "time_seconds": "+13.0", "tokens": "+1700" }
   },
   "notes": []
 }
 ```
 
-- `configuration` 取值约定：`with_skill` / `without_skill`（有技能 vs 无技能基线）——比较择优时直接读 delta
+- `configuration` 取值约定：`with_skill` / `without_skill`（有技能 vs 无技能基线）——比较择优时直接读 delta；可用 `--primary` / `--baseline` 显式指定角色（并识别 `skill`/`baseline` 等别名），避免依赖目录名字典序
+- 某配置无成功 run（`runs: 0`）时 `delta` 各值为 `null` 并附 `note`——不给「对空基线」的假增益
 - `run_summary` 给出 mean ± stddev，避免只看单次结果的下结论
-- `benchmark.md` 为同一数据的人类可读表格（pass rate / time / tokens + delta）
+- `benchmark.md` 为同一数据的人类可读表格（pass rate / time / tokens + delta；delta 与列同用百分比单位）
 
 ## 工作区布局（约定）
 

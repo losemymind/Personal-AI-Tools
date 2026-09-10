@@ -10,8 +10,8 @@ Scores are computed on the SKILL.md files themselves (no index required), using:
 
 Usage:
     python scripts/compare_skills.py <local-skill-dir> <upstream-skill-dir> [--json]
-    python scripts/compare_skills.py <local-skill-dir> --all-candidates
-    
+    python scripts/compare_skills.py <local-skill-dir> <upstream-dir> --all-candidates
+
 Exit code 0 = success (report printed; verdict included).
 """
 
@@ -27,6 +27,7 @@ from utils import (
     EXAMPLES_PATTERNS,
     LIMITATIONS_PATTERNS,
     WHEN_TO_USE_PATTERNS as WHEN_USE_PATTERNS,
+    find_dangerous_pipes,
     parse_frontmatter,
 )
 
@@ -55,8 +56,9 @@ def configure_utf8_output() -> None:
 
 def read_skill(skill_dir: Path) -> dict:
     """Extract a comparable representation of a skill directory."""
+    skill_dir = Path(skill_dir)
     skill_file = skill_dir / "SKILL.md"
-    if not skill_file.exists():
+    if not skill_dir.is_dir() or not skill_file.is_file():
         return {"error": f"SKILL.md not found in {skill_dir}"}
     content = skill_file.read_text(encoding="utf-8-sig", errors="replace")
     fm, _ = parse_frontmatter(content)
@@ -86,7 +88,8 @@ def score_quality(s: dict) -> dict:
     q["security_guardrails"] = 1.0
     if fm.get("risk") == "offensive":
         q["security_guardrails"] = 1.0 if re.search(r"AUTHORIZED USE ONLY|仅限授权使用", content, re.IGNORECASE) else 0.0
-    elif re.search(r"\b(curl|wget)\b[^\n]*\|\s*(?:sudo\s+)?(?:ba|z|k)?sh\b|\birm\b[^\n]*\|\s*iex\b", content, re.IGNORECASE):
+    elif find_dangerous_pipes(content):
+        # Fenced dangerous command examples only (prose mentions are documentation).
         q["security_guardrails"] = 0.0
     else:
         q["security_guardrails"] = 0.8  # no risk content detected -> default pass
@@ -146,32 +149,56 @@ def main() -> int:
     args = parser.parse_args()
 
     local = Path(args.local_dir)
-    ls = score_skill(read_skill(local))
+    local_data = read_skill(local)
+
+    def _err(msg: str) -> None:
+        # Keep stdout machine-parseable when --json is requested.
+        print(msg, file=sys.stderr if args.json else sys.stdout)
+
+    if "error" in local_data:
+        _err(f"❌ Local skill unreadable: {local_data['error']}")
+        return 1
+    ls = score_skill(local_data)
 
     candidates = []
     if args.all_candidates and args.upstream_dir:
         base = Path(args.upstream_dir)
         # Recurse so categorized trees (category/skill/SKILL.md) are not missed.
         candidates = sorted(p.parent for p in base.rglob("SKILL.md")) if base.is_dir() else []
+        if not candidates:
+            _err(f"❌ No candidate skills found under {base}")
+            return 1
     elif args.upstream_dir:
         candidates = [Path(args.upstream_dir)]
     if not candidates:
-        print("❌ No upstream candidate given. Pass <upstream_dir> or --all-candidates <dir>.")
+        _err("❌ No upstream candidate given. Pass <upstream_dir> or --all-candidates <upstream_dir>.")
         return 1
 
-    print("📊 Comparison Report\n")
-    print(f"LOCAL      {ls['name']}  total {fmt_score(ls['total_score'])}")
-    print_report(ls["name"], ls, indent="  ")
-    print()
+    # Human-readable report goes to stdout unless --json is requested, in which
+    # case stdout must be ONLY the machine-readable JSON (no mixed preamble).
+    if not args.json:
+        print("📊 Comparison Report\n")
+        print(f"LOCAL      {ls['name']}  total {fmt_score(ls['total_score'])}")
+        print_report(ls["name"], ls, indent="  ")
+        print()
 
     results = []
     for u in candidates:
-        sc = score_skill(read_skill(u))
+        data = read_skill(u)
+        if "error" in data:
+            # A path pointing at a category dir / typo must not crash the run.
+            print(f"⚠️  Skipping {u}: {data['error']}", file=sys.stderr if args.json else sys.stdout)
+            continue
+        sc = score_skill(data)
         results.append((u, sc))
-        print_report(f"UPSTREAM   {sc['name']} (from {u})", sc, indent="  ")
-        print()
+        if not args.json:
+            print_report(f"UPSTREAM   {sc['name']} (from {u})", sc, indent="  ")
+            print()
 
-    # verdict
+    if not results:
+        _err("❌ No valid upstream candidates to compare against.")
+        return 1
+
     if args.json:
         out = {
             "local": ls,

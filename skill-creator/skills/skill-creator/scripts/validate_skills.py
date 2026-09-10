@@ -22,6 +22,9 @@ import sys
 
 from _project_paths import find_skill_root
 from utils import (
+    fenced_ranges,
+    find_dangerous_pipes,
+    find_inline_secrets,
     has_examples_section,
     has_limitations_section,
     has_when_to_use_section,
@@ -90,17 +93,30 @@ BACKTICK_REF_RE = re.compile(
 # accepted legacy fallback (references/benchmark-schema.md).
 EVAL_QUERY_KEYS = ("query", "prompt")
 
-# Dangerous remote-execution pipes (quality bar item 6 / SKILL.md safety guardrails)
-DANGEROUS_PIPE_PATTERNS = [
-    re.compile(r"\b(curl|wget)\b[^\n]*\|\s*(?:sudo\s+)?(?:ba|z|k)?sh\b", re.IGNORECASE),
-    re.compile(r"\birm\b[^\n]*\|\s*iex\b", re.IGNORECASE),
-]
-SECRET_ALLOWLIST_RE = re.compile(r"<!--\s*security-allowlist", re.IGNORECASE)
-# Obvious inline credentials (kept deliberately narrow to avoid false positives)
-SECRET_PATTERNS = [
-    re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})"),
-    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
-]
+# Text/code files scanned for inline secrets across the whole skill dir (not just
+# SKILL.md). Backtick path-ref checking stays SKILL.md-scoped: references/agents
+# legitimately cite generic (`references/x.md`) and upstream paths, so a dir-wide
+# dangling-ref scan would false-positive.
+TEXT_SCAN_EXTS = {
+    ".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt", ".toml", ".cfg",
+    ".ini", ".conf", ".env", ".ps1", ".psm1", ".psd1", ".bat", ".cmd",
+}
+
+
+def _is_scannable_text(fn: str) -> bool:
+    """True for a text/code file that should be swept for secrets/pipes.
+
+    ``os.path.splitext`` mishandles dotfiles: bare ``.env`` yields ``('.env','')``
+    and ``.env.local`` yields ``('.env','.local')``, so the most common dotenv
+    names were never scanned. Treat any ``.env``/``.env.*`` name as scannable.
+    """
+    low = fn.lower()
+    if low == ".env" or low.startswith(".env."):
+        return True
+    return os.path.splitext(fn)[1].lower() in TEXT_SCAN_EXTS
+
+# Dangerous pipes / inline secrets / allowlist scanning live in utils.py (single
+# source of truth shared with compare_skills.py).
 
 # Offensive-skill disclaimer: accept either language, tolerant of whitespace/format,
 # but require BOTH the "authorized use only" banner and a permission/consent clause.
@@ -178,7 +194,7 @@ def check_references_cross_links(root: str, rel_path: str) -> list[str]:
                 text = f.read()
         except OSError:
             continue
-        fenced = [m.span() for m in re.finditer(r"```.*?```", text, re.DOTALL)]
+        fenced = fenced_ranges(text, closed_only=True)
 
         def _in_fence(pos: int) -> bool:
             return any(s <= pos < e for s, e in fenced)
@@ -192,6 +208,45 @@ def check_references_cross_links(root: str, rel_path: str) -> list[str]:
                     f"❌ {rel_path}: references/{name} cross-links sibling "
                     f"'{ref}' — references must not link each other; reach it via "
                     "SKILL.md's read-rule instead."
+                )
+    return errs
+
+
+def check_dir_secrets(root: str, rel_path: str) -> list[str]:
+    """Scan secrets AND dangerous pipes in every text/code file of a skill dir.
+
+    Release discipline says to sweep the whole skill directory and scripts before
+    publishing; a secret or `curl … | bash` pasted into references/ or a helper
+    script is just as harmful as one in SKILL.md. The security scan must not stop
+    at SKILL.md. Markdown files use the fenced-only (prose-aware) view; code files
+    are scanned in full because there is no Markdown fence to hide behind.
+    """
+    errs: list[str] = []
+    for dirpath, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and not is_exempt_dir(os.path.join(dirpath, d))]
+        for fn in files:
+            if fn == "SKILL.md":
+                continue
+            if not _is_scannable_text(fn):
+                continue
+            p = os.path.join(dirpath, fn)
+            try:
+                with open(p, "r", encoding="utf-8-sig", errors="replace") as f:
+                    text = f.read()
+            except OSError:
+                continue
+            is_markdown = fn.lower().endswith(".md")
+            for m in find_dangerous_pipes(text, fenced_only=is_markdown):
+                errs.append(
+                    f"🚨 {rel_path}: Dangerous remote-execution pipe detected in "
+                    f"{os.path.relpath(p, root)} ({m.group(0)[:60]!r}); remove it or annotate "
+                    f"its block/line with a `<!-- security-allowlist -->` note."
+                )
+            for m in find_inline_secrets(text):
+                errs.append(
+                    f"🚨 {rel_path}: Possible inline secret/credential detected in "
+                    f"{os.path.relpath(p, root)} ({m.group(0)[:6]}…); remove it or annotate "
+                    f"its line with a `<!-- security-allowlist -->` note."
                 )
     return errs
 
@@ -356,22 +411,22 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             msg = f"⚠️  {rel_path}: Missing '## Limitations' or '## 限制和注意事项' section (quality bar requires known limits)"
             (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
 
-        # 4b. Security scan: dangerous pipes + inline secrets (quality bar item 6).
-        # `<!-- security-allowlist -->` marks a reviewed exception.
-        if not SECRET_ALLOWLIST_RE.search(content):
-            for pattern in DANGEROUS_PIPE_PATTERNS:
-                if pattern.search(content):
-                    errors.append(
-                        f"🚨 {rel_path}: Dangerous remote-execution pipe detected "
-                        f"({pattern.pattern!r}); remove it or add a `<!-- security-allowlist -->` note."
-                    )
-            for pattern in SECRET_PATTERNS:
-                m = pattern.search(content)
-                if m:
-                    errors.append(
-                        f"🚨 {rel_path}: Possible inline secret/credential detected "
-                        f"({m.group(0)[:6]}…); remove it or add a `<!-- security-allowlist -->` note."
-                    )
+        # 4b. Security scan: dangerous pipes (fenced examples only) + inline secrets.
+        # An `<!-- security-allowlist -->` marker is a LOCAL exception: it excuses
+        # only its own line or the fenced block it annotates — never the whole file,
+        # so a prose mention cannot silently disable scanning (see utils helpers).
+        for m in find_dangerous_pipes(content):
+            errors.append(
+                f"🚨 {rel_path}: Dangerous remote-execution pipe detected "
+                f"({m.group(0)[:60]!r}); remove it or annotate that code block with a "
+                f"`<!-- security-allowlist -->` note."
+            )
+        for m in find_inline_secrets(content):
+            errors.append(
+                f"🚨 {rel_path}: Possible inline secret/credential detected "
+                f"({m.group(0)[:6]}…); remove it or annotate its line with a "
+                f"`<!-- security-allowlist -->` note."
+            )
 
         # 3b. Body length advisory (progressive disclosure) — NO failure, ever
         # Meta-skills (name == folder == "skill-creator" etc.) are exempt:
@@ -390,9 +445,18 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             if not any(p.search(content) for p in OFFENSIVE_CONFIRMATION_PATTERNS):
                 errors.append(f"🚨 {rel_path}: OFFENSIVE SKILL MISSING THE MANDATORY PER-ACTION CONFIRMATION GATE")
 
-# 5. Dangling links (markdown links)
-        links = re.findall(r"\[[^\]]*\]\(([^)]+)\)", content)
-        for link in links:
+        # 5. Dangling links (markdown links). Like the backtick refs below, links
+        # shown inside a fenced code block are illustrative (a tutorial teaching
+        # link syntax) and exempt from the on-disk check.
+        fenced_ranges_ = fenced_ranges(content, closed_only=True)
+
+        def _is_in_fence(pos: int) -> bool:
+            return any(s <= pos < e for s, e in fenced_ranges_)
+
+        for m in re.finditer(r"\[[^\]]*\]\(([^)]+)\)", content):
+            if _is_in_fence(m.start()):
+                continue
+            link = m.group(1)
             link_clean = link.split("#")[0].strip()
             if not link_clean or link_clean.startswith(("http://", "https://", "mailto:", "<", ">")):
                 continue
@@ -407,10 +471,6 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
         # on-disk resources with backticks, not markdown links). Keep them resolvable.
         # Exclude references that appear inside fenced code blocks (examples/demos show
         # illustrative paths that are not meant to resolve on disk).
-        fenced_ranges = [m.span() for m in re.finditer(r"```.*?```", content, re.DOTALL)]
-
-        def _is_in_fence(pos: int) -> bool:
-            return any(s <= pos < e for s, e in fenced_ranges)
 
         backtick_refs = set()
         for m in BACKTICK_REF_RE.finditer(content):
@@ -462,6 +522,19 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
 
         # 7. references cross-link discipline (one-level-deep from SKILL.md only).
         errors.extend(check_references_cross_links(root, rel_path))
+
+        # 8. Directory-wide secret + dangerous-pipe sweep (references/agents/scripts,
+        # not just SKILL.md).
+        errors.extend(check_dir_secrets(root, rel_path))
+
+    if skill_count == 0:
+        # A --dir that exists but holds no SKILL.md is almost always a wrong path
+        # (typo or too-deep/too-shallow level); fail loudly instead of printing
+        # "Checked 0 skills" and exiting 0 (fail-open release gate).
+        errors.append(
+            f"❌ No SKILL.md found under: {skills_dir} "
+            "(wrong --dir? point it at a skill folder or a directory containing skills)"
+        )
 
     return {
         "skill_count": skill_count,

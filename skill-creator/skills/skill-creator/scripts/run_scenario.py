@@ -41,6 +41,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from utils import run_client
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 # client -> (workspace subpath for a skill, argv builder).
@@ -81,8 +83,10 @@ def extract_text(raw: str) -> str:
                 ev = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            part = ev.get("part") or {}
-            if ev.get("type") == "text" and part.get("text"):
+            part = ev.get("part")
+            if not isinstance(part, dict):
+                continue
+            if ev.get("type") == "text" and isinstance(part.get("text"), str) and part["text"]:
                 texts.append(part["text"])
     return "\n".join(texts).strip() if texts else raw.strip()
 
@@ -114,9 +118,31 @@ def count_tool_calls(raw: str) -> int:
     return count
 
 
+def _split_override(override: str) -> list[str]:
+    """Split a --client-cmd template, preserving Windows paths.
+
+    POSIX shlex eats backslashes (`C:\\x` → `C:x`) and, in non-posix mode, keeps
+    the surrounding quotes as literal characters — either breaks the command. Use
+    platform-appropriate splitting and strip the quotes non-posix mode retains.
+    """
+    try:
+        if os.name == "nt":
+            parts = shlex.split(override, posix=False)
+            parts = [
+                p[1:-1] if len(p) >= 2 and p[0] == p[-1] and p[0] in "\"'" else p
+                for p in parts
+            ]
+            return parts
+        return shlex.split(override, posix=True)
+    except ValueError as e:
+        raise RuntimeError(f"--client-cmd is not parseable: {e}") from e
+
+
 def build_command(client: str, prompt: str, model: str, override: str | None) -> list[str]:
     if override:
-        parts = shlex.split(override)
+        parts = _split_override(override)
+        if not parts:
+            raise RuntimeError("--client-cmd is empty")
         return [p.replace("{prompt}", prompt).replace("{model}", model) for p in parts]
     if client not in CLIENTS:
         raise RuntimeError(f"unknown client '{client}'")
@@ -139,10 +165,20 @@ def main() -> int:
     args = parser.parse_args()
 
     run_dir = args.run_dir
-    run_dir.mkdir(parents=True, exist_ok=True)
+    if run_dir.exists() and not run_dir.is_dir():
+        print(f"Error: --run-dir is not a directory: {run_dir}", file=sys.stderr)
+        return 1
+    try:
+        run_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"Error: cannot create --run-dir: {e}", file=sys.stderr)
+        return 1
 
     skill_name = None
     tmp = Path(tempfile.mkdtemp(prefix="scenario-"))
+    timed_out = False
+    returncode = -1
+    raw = ""
     try:
         if args.skill_dir:
             if not (args.skill_dir / "SKILL.md").exists():
@@ -154,49 +190,75 @@ def main() -> int:
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copytree(args.skill_dir, dest)
 
-        cmd = build_command(args.client, args.prompt, args.model, args.client_cmd)
-        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
-        print(f"▶ [{args.client}] skill={skill_name or '(none)'} :: {args.prompt[:60]}", file=sys.stderr)
-        start = time.time()
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=str(tmp),
-                                  env=env, timeout=args.timeout)
-        except subprocess.TimeoutExpired:
-            print(f"Error: client timed out after {args.timeout}s", file=sys.stderr)
-            return 1
-        except FileNotFoundError:
-            print(f"Error: command not found: {cmd[0]}", file=sys.stderr)
-            return 1
-        duration = round(time.time() - start, 3)
-        raw = (proc.stdout or "") + (proc.stderr or "")
-        text = extract_text(raw)
+            cmd = build_command(args.client, args.prompt, args.model, args.client_cmd)
+        except RuntimeError as e:
+            # A bad/empty --client-cmd is still a run attempt: record it (the
+            # benchmark contract says every run dir carries artifacts) instead of
+            # returning with an empty directory.
+            print(f"Error: {e}", file=sys.stderr)
+            raw = f"[client command error: {e}]"
+            returncode = -1
+            duration = 0.0
+            text = raw
+        else:
+            env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+            print(f"▶ [{args.client}] skill={skill_name or '(none)'} :: {args.prompt[:60]}", file=sys.stderr)
+            start = time.time()
+            try:
+                returncode, out, err = run_client(cmd, timeout=args.timeout, cwd=str(tmp), env=env)
+                raw = (out or "") + (err or "")
+            except subprocess.TimeoutExpired as te:
+                # Record the partial output and mark the run — a timed-out scenario must
+                # still land in the benchmark layout, not vanish (aggregate_benchmark
+                # expects every run dir to carry artifacts).
+                timed_out = True
+                returncode = -1
+                partial = []
+                for chunk in (te.stdout, te.stderr):
+                    if chunk:
+                        partial.append(chunk.decode("utf-8", "replace") if isinstance(chunk, bytes) else chunk)
+                raw = "".join(partial)
+                print(f"Error: client timed out after {args.timeout}s — artifacts recorded", file=sys.stderr)
+            except FileNotFoundError:
+                # Same contract: a missing client binary is a recorded failed run.
+                print(f"Error: command not found: {cmd[0]} — artifacts recorded", file=sys.stderr)
+                returncode = -1
+                raw = f"[command not found: {cmd[0]}]"
+            duration = round(time.time() - start, 3)
+            text = extract_text(raw)
     finally:
-        if not args.keep:
+        if args.keep:
+            print(f"kept workspace: {tmp}", file=sys.stderr)
+        else:
             shutil.rmtree(tmp, ignore_errors=True)
 
     (run_dir / "outputs").mkdir(exist_ok=True)
     (run_dir / "outputs" / "response.txt").write_text(text, encoding="utf-8")
     (run_dir / "transcript.md").write_text(
         f"# Scenario run\n\n**Client**: {args.client}\n**Skill**: {skill_name or '(none)'}\n"
-        f"**Timestamp**: {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\n\n"
+        f"**Timestamp**: {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\n"
+        f"**Timed out**: {timed_out}\n\n"
         f"## Prompt\n\n{args.prompt}\n\n## Raw output\n\n```\n{raw}\n```\n",
         encoding="utf-8",
     )
     (run_dir / "timing.json").write_text(
-        json.dumps({"total_duration_seconds": duration}, indent=2), encoding="utf-8")
+        json.dumps({"total_duration_seconds": duration, "timed_out": timed_out}, indent=2),
+        encoding="utf-8")
     (run_dir / "metrics.json").write_text(
         json.dumps({
             "client": args.client,
             "model": args.model,
             "skill": skill_name,
-            "returncode": proc.returncode,
+            "returncode": returncode,
+            "timed_out": timed_out,
             "output_chars": len(raw),
             "total_tool_calls": count_tool_calls(raw),
         }, indent=2), encoding="utf-8")
 
-    print(f"✅ wrote run artifacts to {run_dir} ({duration}s, rc={proc.returncode})", file=sys.stderr)
-    if proc.returncode != 0:
-        print(f"Error: client exited {proc.returncode} — artifacts recorded, run marked as error", file=sys.stderr)
+    print(f"✅ wrote run artifacts to {run_dir} ({duration}s, rc={returncode})", file=sys.stderr)
+    if timed_out or returncode != 0:
+        print("Error: run marked as error — artifacts recorded", file=sys.stderr)
         return 1
     return 0
 

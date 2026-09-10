@@ -1,14 +1,16 @@
-# 会话交接（2026-09-10 · 第 6 版）
+# 会话交接（2026-09-10 · 第 9 版）
 
 本文件为最近会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**当前上下文与待办**。
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → **本会话续：清四项内部债（见下）**。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ **未提交：真机评测提速/保真/隔离（0.9.5-0.9.7）+ 全量审计九轮修复（0.9.8-0.9.16，见 §E/§F）+ 独立审计第三/四轮（0.9.17-0.9.18，见 §G）**。
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
-- 版本：**skill-creator 0.9.4**、**agent-creator 0.7.0**。
+- 版本：**skill-creator 0.9.18**、**agent-creator 0.7.0**。
 - `opencode.json`（仓库根）用 `instructions` 注册三份 `AGENTS.md`；`.opencode/`（安装测试副本）已 gitignore。
+- 本机可用模型串：`deepseek/deepseek-v4-flash`、`deepseek-responses/deepseek-v4-flash`（全局 `model` 指向不存在的 `siliconflow/...`，必须用 `--model`/`-m` 显式指定）。
+- ✅ 真机评测污染已修复（0.9.7，逐查询隔离工作区）；✅ 全量审计九轮（0.9.8-0.9.16）；✅ **独立审计第三/四轮（0.9.17-0.9.18）共发现并修复 19 项真实缺陷**——**第九轮子代理「成品无可复现缺陷」的结论被推翻**（那九轮只修崩溃/健壮性，漏了数据契约与文档-行为一致性）；**修复后又复核才暴露 2 项高/中（delta 角色解析、`.env` 漏扫）**。
 
 ## 本会话已完成改动
 
@@ -64,14 +66,77 @@
 - 记录：`evolutions/2026-09-10-realmachine-cli-unblock.md`。
 - 镜像同步 5 文件；docs（SKILL.md 阶段 5/7 用法）已更新。
 
+### E. skill-creator 成品演进 0.9.4 → 0.9.7（真机评测：提速 + 信号保真 + 隔离）
+
+**E1（0.9.5）run_eval 有界并行**：真机 `--mode cli` 原为**串行**，批次 1（7 查询 × 3 次 = 15 次 `opencode run`）耗时 **927.5s**，批次 2 超 10 分钟卡死（单条查询 30–120s）。新增 `--concurrency N`（默认 1=串行、向后兼容；`ThreadPoolExecutor.map` 保序），抽出 `run_cli_item`/`run_cli_batch`。真机提速 **~4.8×**（批次 1：928s → 194s）。+3 测试。
+
+**E2（0.9.6）超时保留已发生的触发信号**：`run_cli` 原在 `TimeoutExpired` 时直接抛错、丢弃部分 stdout，但技能派发（`tool_use`）常发生在耗时任务**之前** → 真实触发被误记 `run_error`、系统性低估 recall。改为超时先解析部分输出（`_partial_text`），已见本技能派发即记触发，无证据才报错。+3 测试。
+
+**E3（0.9.7）一次性隔离工作区**：`run_eval --mode cli` 原在仓库根**就地**运行，触发代理会真的执行技能并改动仓库（实证：追加测试、生成 `.eval-baseline/`/`.tmp-eval/`、派生孤儿进程）。新增 `build_workspace()`（`tempfile.mkdtemp` + 技能装入 `SKILL_SUBPATHS` 发现路径，与 `run_scenario` 一致）与 `run_cli(..., workspace=)`；`main()` 结束即 `rmtree`，`--keep-workspace` 可保留调试。+5 测试。
+
+**真机复跑（0.9.7 隔离版，14 查询 × 3 轮，`deepseek-v4-flash` + opencode，`--concurrency 7 --timeout 120`）**：
+- 批次 1：**4/7 过线、recall 0.571、0 run_error**；批次 2：**7/7 全过、recall 100%**（6 条负例全部正确不触发）。
+- 汇总：正例 **5/8 过线（recall ≈ 0.625）**、precision **100%**；**git status 零污染、无孤儿进程、临时工作区自动清理**。
+- 对比：隔离前就地运行时触发代理会卡在仓库里执行技能（超时/低触发）；隔离后既卫生又显著提升测量质量。
+
+- 测试：`tests/test_hardening.py` +6（0.9.5/0.9.6）再 +5（0.9.7）→ skill pytest **61 → 77**。
+- 记录：`evolutions/2026-09-10-realmachine-concurrency.md`、`-timeout-signal.md`、`-isolation.md`。
+- 镜像同步 run_eval.py / SKILL.md / README.md / 三份 evolutions。
+- 未改动：agent-creator、根能力库内容、两份 `CATALOG.md`（`--check` 仍 up to date）。
+
+### F. skill-creator 全量审计九轮修复 0.9.8 → 0.9.16（用户要求「全部修复 + 子代理续查至无问题」）
+
+对成品全部脚本做只读审计，实证复现并修复 12 项缺陷；随后由 code-reviewer 子代理连续复查 8 轮，逐轮修复其新发现，直至末轮判定**成品在合理用户路径上无可复现的正确性/安全/契约缺陷**。
+
+**第一轮（0.9.8）12 项**：安全 allowlist 全局绕过→局部豁免；compare 缺 SKILL.md 崩溃；aggregate delta 方向靠字典序；run_loop cli 未隔离/JSON 解析；run_eval 并发共享工作区；超时只杀直接子进程→杀进程树；run_scenario 超时不落盘；`assets/` vs `templates/`；compare docstring；脚手架不出 evals.json；cli 客户端范围说明；split 边界 + evals 扩到 20。
+
+**子代理八轮追加（0.9.9→0.9.16）**：
+- 围栏检测 CommonMark 化（`~~~`/未闭合/4 反引号不再绕过安全扫描）；
+- FTS5 特殊字符查询崩溃 → 逐词字面引用；
+- 大批 `aggregate_benchmark`/`run_eval`/`run_loop`/`run_scenario`/`create_skill` 的**畸形输入崩溃**（非字典 JSON/`part`、混合 `eval_id`、非有限值 `Infinity`/`NaN`、非数字字段、路径参数指向文件、父路径是文件等）全部转清晰报错；
+- 脚手架 YAML 转义（描述/作者/tools）、描述长度校验、版本校验、交互 EOF；
+- compare `--json` 纯 JSON；`--keep-workspace` 打印路径；`build_workspace` 失败清理；密钥扫描扩到全目录（引用扫描仍限 SKILL.md）；
+- 基准 delta 无基线时置 `null`+note（不再假增益）、markdown delta 百分比单位。
+
+- 测试：`tests/test_hardening.py` 从 72 → **130 例**（0.9.8 起 +58）；成品/能力库/agent strict 与 CATALOG 全绿。
+- 记录：`evolutions/2026-09-10-audit-round2-fixes.md`（含各轮明细）。
+- 镜像同步 utils/validate/compare/aggregate/run_eval/run_loop/run_scenario/create_skill/search_index + SKILL/README/references/evals。
+- 未改动：agent-creator、根能力库内容、两份 `CATALOG.md`（`--check` 仍 up to date）。
+
+### G. skill-creator 独立审计第三轮 0.9.16 → 0.9.17（14 项真实缺陷）
+
+前九轮只修「崩溃/健壮性」，本轮由主代理 + 两个 code-reviewer 子代理独立复查，逐条复现后修复**数据契约、安全扫描覆盖/绕过、文档-行为一致性**类缺陷：
+
+1. **索引写坏已提交数据（中）**：`build_index.frontmatter_of` 块标量描述存成 `'>'`/`'|-'` 字面量（`indexes/upstream.db` 中 3 条 anthropics 记录实证损坏）→ 改用共享 `utils.parse_frontmatter`（PyYAML/UTF-8-sig）+ 增强 min 解析回退；`--source anthropics --incremental` 重建，损坏清零、总数 2187 不变。
+2. **危险管道绕过/误报（中/高）**：续行 `\`+换行、`| sudo -u root bash`、`env bash`、`/bin/bash`、`busybox sh`、4 空格缩进、blockquote 围栏全部漏检；且**只扫 SKILL.md、捆绑脚本不扫** → 重写为「管道链 + 右侧 token 化判定」（不误报 `| grep bash`），覆盖续行/缩进/引号围栏，并把目录级危险管道扫描并入 `check_dir_secrets`。
+3. **claude 触发判定与文档矛盾（中）**：`detect_triggered` 走全文子串却声称「不做子串匹配」→ 接受 `type in ("tool_use","tool")`，SKILL.md 明写 claude 为 best-effort 子串。
+4. **契约/健壮性（低）**：markdown 链接加 fenced 豁免；`run_loop --holdout nan/inf` 校验；`run_loop` 补评最后一轮改进候选（不再丢轮）；`run_scenario` 命令缺失也落盘；`load_eval_set` 强制 `should_trigger`；`skill_count==0` 报错；`search_index` 拒负 limit；`ask()`/benchmark 文案/timing schema 小修；密钥扫描扩展名补 `.ps1/.bat/.cmd/.env`。
+5. **经复核不成立、未改**：扫描源 `category/risk` NULL（上游 frontmatter 确实只有 name/description）、4 反引号闭合 3 反引号围栏（符合 CommonMark）。
+- 测试：`tests/test_hardening.py` **130 → 148 例**；索引重建；`.opencode` 镜像全量同步（53 文件哈希一致）。
+- 记录：`evolutions/2026-09-10-audit-round3-data-and-coverage.md`。
+
+### H. skill-creator 第四轮复核 0.9.17 → 0.9.18（修复后再查，又 5 项）
+
+对第三轮**修复后**的成品再跑子代理复核，暴露 2 项高/中真实缺陷（证明「修了但没修对」）：
+
+1. **`aggregate_benchmark._ordered_configs` 混合命名下 delta 符号反转（高）**：primary 仅以别名出现、baseline 以精确名出现时，单次遍历把 baseline 放进 primary 位 → 报告 `primary=without_skill`、增益取反。先独立解析角色再排序。
+2. **`.env` 密钥漏扫（高，第三轮补的扩展名从未生效）**：`os.path.splitext(".env")==('.env','')`、`.env.local==('.env','.local')` → 裸 dotenv 文件跳过。新增 `_is_scannable_text`。
+3. **危险管道三类绕过（中）**：`|` 落行尾换行、tab 缩进代码块（1 tab=4 列）、PowerShell 别名错配（`irm`/`iwr`）与 `pwsh/powershell/cmd` 未覆盖。
+4. **`scan_skill_dir` 丢弃 `tags`/`tools`（中）**：透传（映射 `plugin.targets`）。
+5. **低**：`command -v bash` 误报；`--no-dl` 根目录差一级；`skill-anatomy.md` 的 `{{#include}}` 伪语法与 TOC 阈值 300/100 不一致。
+- 测试：`tests/test_hardening.py` **148 → 153 例**；`.opencode` 镜像同步（54 文件哈希一致）。
+- 记录：`evolutions/2026-09-10-audit-round4-recheck.md`。
+
 ## 已知待办 / 潜在风险
 
-1. **真机 CLI 已打通、但完整基准未跑完**：此前「嵌套 `opencode run` 报 server error」的根因是全局配置 `model` 指向不存在的 provider，用 `opencode run -m deepseek/deepseek-v4-flash`（或 `deepseek-responses/deepseek-v4-flash`）即可；工具侧 `--model`/`--timeout` 与真触发判定均已就绪（0.9.4）。**待办**：用 `run_eval --mode cli` + `run_scenario --model` 补跑完整真机触发/基准（单条查询耗时长，建议分批 + `--timeout 120`，别一次跑整份 evals 以免卡死）。
-2. **触发评测为词重叠启发式**：仅代表词面覆盖，不代表真实触发率；`ue5-performance-optimization` 对「Unity 性能优化」的假阳性属固有（性能/优化为核心词不可去），不宜继续为此改描述。
-3. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。（本次为技能新增 `evals.json`，未改变技能/代理集合，审计与 CATALOG 无需变动。）
-4. **已评估、用户明确「不需要修复」的项（勿再主动提出）**：skill-creator 成品 `examples/`（103 文件学习样本）、两份 `indexes/upstream.db`（随成品提交）、能力库 UE/academic 垂直内容——维持现状。
-5. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。
-6. **CI 已加但未在真机运行**：`.github/workflows/validate.yml` 仅本地校验了 YAML 语法与等价命令，首次 push 后才能确认 Actions 端全绿。
+1. **真机基准已跑通（0.9.7，隔离版）**：工具侧 `--model`/`--timeout`/`--concurrency`/超时保信号/隔离全部就绪；14 查询 × 3 轮复跑 <5 分钟、零污染。当前成绩：正例 recall ≈ 0.625、precision 100%、0 假阳性。触发仍有非确定性（同句可能一次派发、一次直接作答）。**待办**：如需进一步提升 recall，方向是优化 description 或增加 runs——不属工具缺陷，勿擅自改描述。
+2. **成品已修至 0.9.18（第三/四轮审计）**：九轮后子代理曾判定「无可复现缺陷」，但独立审计两轮又找出 19 项真实缺陷并已修复；**教训：①审计要覆盖「已提交产物的数据契约」与「文档承诺 ≠ 行为」，不能只盯异常输入 traceback；②修复后必须再复核「修是否真的生效」**（第三轮补的 `.env` 扩展名就因 `splitext` 对 dotfile 失效而形同虚设）。后续再改脚本仍按 SOP 补 pytest 并重跑发布门。已知残留（低，未改）：`examples/README.md` 称 `loki-mode/references/` 有 16 个子文件，实为 14——按用户「examples/ 不需修复」指示保留。
+3. **触发评测为词重叠启发式**：仅代表词面覆盖，不代表真实触发率；`ue5-performance-optimization` 对「Unity 性能优化」的假阳性属固有（性能/优化为核心词不可去），不宜继续为此改描述。
+4. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。（本会话只改创建器成品，未改技能/代理集合，审计与 CATALOG 无需变动。）
+5. **触发代理追加的 5 个测试已保留**：`tests/test_hardening.py` 中 `test_run_cli_item_threshold_semantics` 等 5 例——经审阅内容正确、全绿，用户决定保留。
+6. **已评估、用户明确「不需要修复」的项（勿再主动提出）**：skill-creator 成品 `examples/`（103 文件学习样本）、两份 `indexes/upstream.db`（随成品提交）、能力库 UE/academic 垂直内容——维持现状。
+7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（本会话改动尚未提交。）
+8. **CI 已加但未在真机运行**：`.github/workflows/validate.yml` 仅本地校验了 YAML 语法与等价命令，首次 push 后才能确认 Actions 端全绿。
 
 ## 验证命令备忘
 
@@ -80,7 +145,7 @@
 python -m pytest tests/ -q        # 回归 + 成品自包含自检（18 例）
 
 # skill-creator（在 skill-creator/ 根）
-python -m pytest tests/ -q                                                    # 61 例
+python -m pytest tests/ -q                                                    # 153 例
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
 python skills/skill-creator/scripts/search_index.py --stats                   # 4 源 2187 条
@@ -90,4 +155,7 @@ python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --
 python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir skills   # 5
 python tools/scripts/build_catalog.py
 python tools/scripts/build_catalog.py --check
+
+# 真机触发评测（仓库根；单条查询 30–120s，务必并行 + 超时兜底；cli 模式自动隔离、结束清理临时工作区）
+python skill-creator/skills/skill-creator/scripts/run_eval.py --eval-set skill-creator/skills/skill-creator/evals.json --skill-dir skill-creator/skills/skill-creator --mode cli --client opencode --model deepseek/deepseek-v4-flash --timeout 120 --runs-per-query 3 --concurrency 7 --output-dir <dir>
 ```

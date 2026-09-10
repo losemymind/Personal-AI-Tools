@@ -62,7 +62,7 @@ skills/
 
 **关键模式：**
 - 正文逼近 1000 行时，增加层级结构并把细节指向 `references/`
-- 大参考文件（>300 行）提供目录
+- 大参考文件（>100 行）在顶部提供目录
 - 多领域按变体组织：正文放工作流+选择逻辑，`references/` 每领域一个文件
 
 ## 可选组件详解
@@ -72,7 +72,7 @@ skills/
 **templates/**：可复用代码/输出模板
 **references/**：外部文档或 API 参考，按需注入
 
-在 SKILL.md 中引用：`bash scripts/setup.sh`，或 `{{#include templates/component.tsx}}`。
+在 SKILL.md 中引用：`bash scripts/setup.sh`，或用反引号路径指向成品内文件（如 `templates/component.tsx`）。不使用 `{{#include ...}}`——本技能链的任何客户端都不会展开该语法。
 
 ## 技能大小指南
 

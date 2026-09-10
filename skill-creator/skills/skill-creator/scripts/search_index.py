@@ -92,10 +92,15 @@ def build_query(args) -> tuple[str, list]:
                 params.extend([pattern] * len(TEXT_COLUMNS))
             clauses.append("(" + " AND ".join(like_parts) + ")")
         else:
+            # FTS5 treats many characters ( ) " + : * -, NEAR/ etc. as syntax, so a
+            # literal query like "c++" crashes the MATCH. Quote each whitespace token
+            # as an FTS5 string (doubling embedded quotes) to search them literally.
+            tokens = [t for t in args.query.split() if t] or [args.query]
+            quoted = " ".join('"' + t.replace('"', '""') + '"' for t in tokens)
             clauses.append(
                 "skills.id IN (SELECT rowid FROM skills_fts WHERE skills_fts MATCH ?)"
             )
-            params.append(args.query)
+            params.append(quoted)
 
     if args.category:
         clauses.append("LOWER(COALESCE(skills.category,'')) = ?")
@@ -154,6 +159,12 @@ def main() -> int:
     if args.source:
         alias = SOURCE_ALIASES.get(args.source.lower(), args.source)
         args.source = alias
+
+    # SQLite treats `LIMIT -1` as "no limit"; reject a negative --limit rather
+    # than silently returning the whole table.
+    if args.limit is not None and args.limit < 0:
+        print(f"Error: --limit must be >= 0 (got {args.limit})", file=sys.stderr)
+        return 1
 
     conn = connect()
     cur = conn.cursor()

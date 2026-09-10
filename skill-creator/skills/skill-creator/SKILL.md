@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.9.4"
+version: "0.9.18"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -23,17 +23,18 @@ tools: [claude, opencode, codex, deepseek]
 skill-creator/
 ├── SKILL.md                    ← 本方法论（唯一入口：何时使用/工作流/资源导览）
 ├── README.md                   ← 说明（上游来源/约定/结构）
+├── evals.json                  ← 本技能自身的触发测试用例（随技能回归）
 ├── scripts/
 │   ├── build_index.py          ← 构建上游技能索引（tarball→SQLite）
 │   ├── search_index.py         ← 检索上游索引（FTS5 全文/分类/风险）
 │   ├── compare_skills.py       ← 自建 vs 上游对比评分（质量6维+结构4维）
-│   ├── create_skill.py         ← 交互式脚手架生成器（含 version 字段）
-│   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接/密钥扫描）
-│   ├── run_eval.py             ← 触发评测（heuristic 默认 / cli 双模式；--output-dir 落盘）
-│   ├── run_loop.py             ← description 自动优化循环（train/test 60/40）
-│   ├── run_scenario.py         ← 场景执行器（跑单个任务、落盘 run 目录供评分/汇总）
-│   ├── aggregate_benchmark.py  ← 量化基准汇总（benchmark.json + benchmark.md；--notes 合并分析笔记）
-│   ├── utils.py                ← 共享：frontmatter 解析 + 章节模式 + 触发启发式（四端通用）
+│   ├── create_skill.py         ← 交互式脚手架生成器（含 version 字段 + evals/evals.json）
+│   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接/密钥扫描；allowlist 局部豁免）
+│   ├── run_eval.py             ← 触发评测（heuristic 默认 / cli 双模式；--concurrency 有界并行；逐查询隔离工作区；--output-dir 落盘）
+│   ├── run_loop.py             ← description 自动优化循环（train/test 60/40；cli 隔离运行）
+│   ├── run_scenario.py         ← 场景执行器（跑单个任务、落盘 run 目录供评分/汇总；超时也留档）
+│   ├── aggregate_benchmark.py  ← 量化基准汇总（benchmark.json + benchmark.md；--primary/--baseline 定 delta 方向；--notes 合并分析笔记）
+│   ├── utils.py                ← 共享：frontmatter 解析 + 章节模式 + 触发启发式 + 安全扫描 + 进程树终止客户端运行器（四端通用）
 │   └── _project_paths.py       ← 技能根定位辅助（自包含，不依赖宿主仓库）
 ├── agents/                     ← 子代理指令（SKILL.md 按需拉起，不自动加载）
 │   ├── grader.md               ← 评分子代理：断言判定 → grading.json
@@ -295,10 +296,10 @@ python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
 python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录>
 # 2) 真实客户端无头 CLI 触发（需对应客户端 CLI：claude / opencode）
 python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client claude --model <模型id>
-python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client opencode --model <模型id> --timeout 120
+python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client opencode --model <模型id> --timeout 120 --concurrency 4
 ```
 
-> cli 模式**判定真实触发**：只认客户端把技能工具派发出去（如 opencode 的 `tool_use` 事件里 `tool=="skill"` 且 `input.name` 等于本技能）；**不做全文子串匹配**——工作区列表里出现技能路径、或模型仅在正文提到技能名，都不算触发。客户端默认模型未配置/配错时，用 `--model` 显式指定（否则每次都是 run_error）；单条查询耗时不定，用 `--timeout` 兜底。
+> cli 模式**判定真实触发**：opencode 走**结构化判定**，只认客户端把技能工具派发出去（`type` 为 `tool_use`/`tool` 的事件里 `tool=="skill"` 且 `input.name` 等于本技能）——**不做全文子串匹配**，工作区列表里出现技能路径、或模型仅在正文提到技能名，都不算触发。claude 的纯 JSON 输出不含技能派发事件，只能退化为**全文子串匹配**（会因正文提到技能名/列出技能路径而假阳性），其触发数字仅供参考、勿与 opencode 直接可比。**自动评测仅支持 claude / opencode 两种 CLI**（`--client`；codex/deepseek 暂无可用无头调用——它们仍是可安装目标，只是触发评测需人工或改用 heuristic）。客户端默认模型未配置/配错时，用 `--model` 显式指定（否则每次都是 run_error）；单条查询耗时不定，用 `--timeout` 兜底（超时会**杀掉整个进程树**，不留孤儿）；查询彼此独立，`--concurrency N` 有界并行（默认 1 = 串行，保持结果顺序不变）可把整轮真机评测的墙钟时间缩短数倍。**超时保留已发生的触发**：技能工具常在客户端卡在技能启动的耗时任务**之前**就已派发，故超时时先解析已捕获的部分输出——已见本技能派发即记触发，无触发证据才记 run_error（否则会把真实触发误算成假阴性、系统性低估 recall）。**每查询一次性隔离工作区**：cli 模式为**每条查询**在临时目录里安装技能并以其为 cwd 运行，结束即删除——被触发的代理会真的执行技能（可能生成文件、派生进程），逐查询隔离既防污染调用方仓库、也避免并发查询互相写同一目录；调试时用 `--keep-workspace` 保留目录。
 
 输出每条查询的触发判定 + 汇总（passed/total、precision、recall）；`--json` 可机器读取；`--output-dir <目录>` 把结果 JSON 落盘为 `eval-results-<技能名>.json`（供后续评分/复盘引用）。**运行错误（CLI 缺失/超时/非零退出）汇总为 `errors` 单列**，不计入假阴性——改描述前先按阶段 7 的失败分类归因。
 
@@ -325,7 +326,7 @@ python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" --
 python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
 ```
 
-读取各 `grading.json`（+ `timing.json`）汇总为带 mean±stddev 与 delta 的 `benchmark.json`（+ `benchmark.md`）；直接读 delta 判断技能相对基线的真实增益。
+读取各 `grading.json`（+ `timing.json` / `metrics.json`）汇总为带 mean±stddev 与 delta 的 `benchmark.json`（+ `benchmark.md`）；直接读 delta 判断技能相对基线的真实增益。**delta 方向由配置角色决定，不靠目录名字典序**：默认 `--primary with_skill`、`--baseline without_skill`（并识别 `skill`/`baseline` 等别名，再回退输入顺序）——否则 `baseline`/`skill` 这类命名的符号可能静默反转。`benchmark.json` 的 `run_summary.delta` 同时记录实际使用的 `primary`/`baseline`。
 
 **第 5 步：模式分析（拉起分析子代理）**：**拉起分析（analyzer）子代理**，按 `agents/analyzer.md` 模式二分析 `benchmark.json`——逐断言模式（恒过/恒败/单侧过/高方差 flaky）、跨 eval 模式、耗时与 token 模式——产出**观察笔记**（JSON 字符串数组），再用脚本合并进基准：
 

@@ -11,6 +11,7 @@ Usage:
 
 import argparse
 import io
+import json
 import re
 import sys
 from datetime import date
@@ -18,6 +19,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = SCRIPT_DIR.parent / "templates" / "SKILL.template.md"
+EVALS_TEMPLATE_PATH = SCRIPT_DIR.parent / "templates" / "evals.json.template"
 
 CATEGORIES = [
     "development", "frontend", "backend", "mobile", "testing", "devops",
@@ -30,6 +32,12 @@ CATEGORIES = [
 RISKS = ["none", "safe", "critical", "offensive", "unknown"]
 TOOLS = ["claude", "opencode", "codex", "deepseek"]
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+VALID_VERSION = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def _yaml_str(value: str) -> str:
+    """Render a value as a JSON double-quoted scalar (valid YAML), safely escaped."""
+    return json.dumps(value, ensure_ascii=False)
 
 
 def configure_utf8_output() -> None:
@@ -48,9 +56,21 @@ def configure_utf8_output() -> None:
 
 
 def ask(prompt: str, default: str = "", choices: list | None = None) -> str:
-    suffix = f" ({choices and '/'.join(choices)} | 默认: {default})" if default or choices else ""
+    hint_parts = []
+    if choices:
+        hint_parts.append("/".join(choices))
+    if default:
+        hint_parts.append(f"默认: {default}")
+    suffix = f" ({' | '.join(hint_parts)})" if hint_parts else ""
     while True:
-        value = input(f"{prompt}{suffix}: ").strip()
+        try:
+            value = input(f"{prompt}{suffix}: ").strip()
+        except EOFError:
+            # Non-interactive/redirected stdin: fall back to the default or exit cleanly.
+            if default:
+                return default
+            print("\n❌ 无交互输入（stdin 已结束）；请用 --no-interactive 或补齐参数")
+            raise SystemExit(1)
         if not value and default:
             return default
         if choices and value not in choices:
@@ -91,7 +111,7 @@ def build_skill_md(name, description, category, risk, tools, author, version) ->
         )
         content = _re.sub(
             r'^description: ".*?"$',
-            f'description: "{description}"',
+            lambda m: f"description: {_yaml_str(description)}",
             content,
             count=1,
             flags=_re.MULTILINE,
@@ -105,14 +125,14 @@ def build_skill_md(name, description, category, risk, tools, author, version) ->
         )
         content = _re.sub(
             r'^author: your-name-or-handle$',
-            f"author: {author}",
+            lambda m: f"author: {_yaml_str(author)}",
             content,
             count=1,
             flags=_re.MULTILINE,
         )
         content = _re.sub(
             r'^tools: \[.*\]$',
-            f"tools: [{', '.join(tools)}]",
+            lambda m: f"tools: [{', '.join(_yaml_str(t) for t in tools)}]",
             content,
             count=1,
             flags=_re.MULTILINE,
@@ -126,16 +146,16 @@ def build_skill_md(name, description, category, risk, tools, author, version) ->
         )
         return content
     # fallback minimal skeleton
-    tools_str = ", ".join(tools)
+    tools_str = ", ".join(_yaml_str(t) for t in tools)
     return f"""---
 name: {name}
-description: "{description}"
+description: {_yaml_str(description)}
 category: {category}
 risk: {risk}
 source: self
 version: "{version}"
 date_added: "{date.today().isoformat()}"
-author: {author}
+author: {_yaml_str(author)}
 tags: []
 tools: [{tools_str}]
 ---
@@ -233,16 +253,52 @@ def main() -> int:
     tools = [t.strip() for t in args.tools.split(",") if t.strip()]
     author = args.author or (ask("作者标识", "losemymind") if interactive else "losemymind")
 
+    if not VALID_VERSION.match(args.version):
+        print(f"❌ 无效版本号: {args.version}（需 semver x.y.z）")
+        return 1
+    if len(description) > 1024:
+        print(f"❌ 描述超长: {len(description)} 字符（上限 1024）")
+        return 1
+
     out_dir = Path(args.out) if args.out else Path.cwd()
+    if out_dir.exists() and not out_dir.is_dir():
+        print(f"❌ --out 不是目录: {out_dir}")
+        return 1
     skill_dir = out_dir / name
     if skill_dir.exists():
         print(f"❌ 目录已存在: {skill_dir}")
         return 1
-    skill_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        skill_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"❌ 无法创建目录: {e}")
+        return 1
 
     body = build_skill_md(name, description, category, risk, tools, author, args.version)
     (skill_dir / "SKILL.md").write_text(body, encoding="utf-8")
+
+    # Ship trigger tests with the skill (quality-bar item 8 / release discipline):
+    # a scaffolded skill must not immediately trip the "No evals.json" advisory.
+    evals_dir = skill_dir / "evals"
+    evals_dir.mkdir(exist_ok=True)
+    if EVALS_TEMPLATE_PATH.exists():
+        evals_body = EVALS_TEMPLATE_PATH.read_text(encoding="utf-8").replace(
+            "your-skill-name", name
+        )
+    else:
+        evals_body = (
+            "{\n"
+            f'  "skill_name": "{name}",\n'
+            '  "evals": [\n'
+            '    {"id": 1, "query": "应当触发本技能的真实用户说法", "should_trigger": true, "expected_output": ""},\n'
+            '    {"id": 2, "query": "近似干扰项：不应触发", "should_trigger": false, "expected_output": ""}\n'
+            "  ]\n"
+            "}\n"
+        )
+    (evals_dir / "evals.json").write_text(evals_body, encoding="utf-8")
+
     print(f"✅ 创建骨架: {skill_dir}")
+    print(f"   含 evals/evals.json（触发用例，随技能回归）")
     print(f"   下一步: python scripts/validate_skills.py --dir {skill_dir}")
     print(f"   然后按本技能 SKILL.md 阶段 4-6 完善内容与测试")
     return 0
