@@ -15,6 +15,7 @@ Exit code 0 = all passed, 1 = errors found (or warnings in strict mode).
 
 import argparse
 import io
+import json
 import os
 import re
 import sys
@@ -72,9 +73,22 @@ SOURCE_REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 VALID_SOURCE_TYPES = {"official", "community", "self"}
 VALID_RISK_LEVELS = ["none", "safe", "critical", "offensive", "unknown"]
 VALID_TOOLS = {"claude", "opencode", "codex", "deepseek"}
+NAME_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # lowercase kebab-case
 NAME_MAX_LEN = 100
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")  # YYYY-MM-DD
 VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")  # semver x.y.z
+
+# Backtick resource references that must resolve on disk. Extension whitelist keeps
+# the check from flagging non-path tokens (prose, command fragments); it is broader
+# than the script types so data/text artifacts (`indexes/upstream.db`, `.txt`, …)
+# are covered too. Files inside fenced code blocks are exempt.
+BACKTICK_REF_RE = re.compile(
+    r"`([^`\s]+\.(?:md|py|sh|json|ya?ml|toml|txt|xml|db|sqlite|csv|ts|tsx|js|jsx|mjs|cjs|css|html|rs|go|java|rb|php))`"
+)
+
+# evals.json prompt key: `query` is canonical (utils.eval_query); `prompt` is the
+# accepted legacy fallback (references/benchmark-schema.md).
+EVAL_QUERY_KEYS = ("query", "prompt")
 
 # Dangerous remote-execution pipes (quality bar item 6 / SKILL.md safety guardrails)
 DANGEROUS_PIPE_PATTERNS = [
@@ -111,6 +125,34 @@ OFFENSIVE_CONFIRMATION_PATTERNS = [
     ),
     re.compile(r"请求用户确认", re.IGNORECASE),
 ]
+
+
+def check_evals_file(evals_path: str, rel_path: str) -> list[str]:
+    """Validate an evals.json's shape when the skill ships one.
+
+    Presence is only an advisory (quality bar item 8: trigger tests should ship
+    with the skill), but a *present* file is a contract: it must parse and carry
+    the canonical `query` + boolean `should_trigger` per item, so the historical
+    key drift (a `prompt`-only or malformed eval set) cannot recur silently.
+    """
+    errs: list[str] = []
+    try:
+        with open(evals_path, "r", encoding="utf-8-sig") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        return [f"❌ {rel_path}: evals file invalid JSON ({os.path.basename(evals_path)}): {e}"]
+    items = data.get("evals", data) if isinstance(data, dict) else data
+    if not isinstance(items, list):
+        return [f"❌ {rel_path}: evals file must be an object with an 'evals' array (or a bare array)."]
+    for i, item in enumerate(items):
+        if not isinstance(item, dict):
+            errs.append(f"❌ {rel_path}: evals[{i}] must be an object.")
+            continue
+        if not any(isinstance(item.get(k), str) and item.get(k).strip() for k in EVAL_QUERY_KEYS):
+            errs.append(f"❌ {rel_path}: evals[{i}] missing a non-empty 'query' (canonical prompt key).")
+        if not isinstance(item.get("should_trigger"), bool):
+            errs.append(f"❌ {rel_path}: evals[{i}].should_trigger must be a boolean.")
+    return errs
 
 
 def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> dict:
@@ -168,6 +210,11 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             name_val = metadata["name"]
             if name_val != os.path.basename(root):
                 errors.append(f"❌ {rel_path}: Name '{name_val}' does not match folder name '{os.path.basename(root)}'")
+            if isinstance(name_val, str) and not NAME_PATTERN.fullmatch(name_val):
+                errors.append(
+                    f"❌ {rel_path}: Name must be lowercase kebab-case "
+                    f"(a-z, 0-9, single hyphens), got '{name_val}'"
+                )
             if isinstance(name_val, str) and len(name_val) > NAME_MAX_LEN:
                 errors.append(f"❌ {rel_path}: Name is too long ({len(name_val)} chars). Max {NAME_MAX_LEN}.")
 
@@ -199,6 +246,10 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
         elif metadata["risk"] not in VALID_RISK_LEVELS:
             errors.append(f"❌ {rel_path}: Invalid risk level '{metadata['risk']}'. Must be one of {VALID_RISK_LEVELS}")
+        elif metadata["risk"] == "unknown":
+            advisories.append(
+                f"ℹ️  {rel_path}: risk 'unknown' is discouraged for new skills (see quality bar item 3)."
+            )
 
         if "source" not in metadata:
             msg = f"⚠️  {rel_path}: Missing 'source' attribution"
@@ -321,7 +372,7 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             return any(s <= pos < e for s, e in fenced_ranges)
 
         backtick_refs = set()
-        for m in re.finditer(r"`([^`\s]+\.(?:md|py|sh|json|yaml|yml|ts|js))`", content):
+        for m in BACKTICK_REF_RE.finditer(content):
             ref = m.group(1)
             if ref.startswith("http") or "/" not in ref:
                 continue
@@ -354,6 +405,19 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
                 targets.append(os.path.normpath(os.path.join(root, *parts[1:])))
             if not any(os.path.exists(t) for t in targets):
                 errors.append(f"❌ {rel_path}: Backtick reference '{ref_clean}' does not exist locally.")
+
+        # 6. evals.json (quality bar item 8): present -> enforce shape; absent -> advise.
+        evals_file = None
+        for cand in (os.path.join(root, "evals", "evals.json"), os.path.join(root, "evals.json")):
+            if os.path.exists(cand):
+                evals_file = cand
+                break
+        if evals_file is not None:
+            errors.extend(check_evals_file(evals_file, rel_path))
+        else:
+            advisories.append(
+                f"ℹ️  {rel_path}: No evals.json found (recommended: ship trigger tests with the skill)."
+            )
 
     return {
         "skill_count": skill_count,

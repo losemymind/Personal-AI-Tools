@@ -1,16 +1,18 @@
-# 会话交接（2026-09-10 · 第 3 版）
+# 会话交接（2026-09-10 · 第 4 版）
 
 本文件为最近会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**当前上下文与待办**。
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → **本会话：修复 metrics.json 契约（见下）**。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → **本会话续：验证器缺口补齐（见下）**。
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
-- 版本：**skill-creator 0.9.1**、**agent-creator 0.7.0**。
+- 版本：**skill-creator 0.9.2**、**agent-creator 0.7.0**。
 - `opencode.json`（仓库根）用 `instructions` 注册三份 `AGENTS.md`；`.opencode/`（安装测试副本）已 gitignore。
 
-## 本会话已完成改动（skill-creator 成品演进，0.9.0 → 0.9.1）
+## 本会话已完成改动
+
+### A. skill-creator 成品演进 0.9.0 → 0.9.1（修复基准评测链 5 处缺陷）
 
 只读审阅 skill-creator 成品后，修复基准评测链的 5 处缺陷（C1 为真实产物契约断裂）：
 
@@ -22,7 +24,19 @@
 - 测试：`tests/test_hardening.py` +5 例（tool 计数 / aggregate 回退 / grader 路径契约 / run_eval 口径 / run_loop 排序）→ skill pytest **41 → 46**。
 - 记录：`evolutions/2026-09-10-fix-metrics-contract.md`（新增）。
 - `.opencode/skills/skill-creator/` 安装副本已同步 7 个改动文件（逐字节一致）。
-- 未改动：agent-creator、根能力库 `skills/`/`agents/`、两份 `CATALOG.md`（`--check` 仍 up to date）。
+
+### B. skill-creator 成品演进 0.9.1 → 0.9.2（补齐 `validate_skills.py` 三个机械缺口）
+
+- **E1 name 字符集（twin parity）**：验证器补 `NAME_PATTERN`，强制小写 kebab-case（孪生 `validate_agents.py` 早已强制，skill-creator 漏掉）。
+- **E2 evals.json 形状**：技能存在 `evals/evals.json` 或根 `evals.json` 时强制形状（可解析、含 `evals` 数组、每项有非空 `query`（legacy `prompt` 可）与布尔 `should_trigger`）；**缺失仅 advisory**（不阻断，能力库 3 个技能尚未随附 evals）。
+- **E3 反引号引用白名单**：由 `md|py|sh|json|yaml|yml|ts|js` 扩为含 `db`/`txt`/`xml`/`toml`/`css`/`html`/`rs`/`go` 等，使 `indexes/upstream.db` 类引用纳入校验。
+- **minor**：`risk: unknown` 新增 advisory。
+- 测试：`tests/test_hardening.py` +6 例 → skill pytest **46 → 52**。
+- 记录：`evolutions/2026-09-10-close-validator-gaps.md`（新增）。
+- `.opencode/skills/skill-creator/` 镜像已同步 4 个改动文件。
+- 未改动：agent-creator、根能力库 `skills/`/`agents/` 内容、两份 `CATALOG.md`（`--check` 仍 up to date）。
+
+> 备注：新校验在成品自身与 3 个库技能上以 advisory 形式提示「未随附 evals.json」（strict 仅对 warnings 失败，故不阻断）。若要清零，需为 skill-creator 自身及 code-review-skill/pr-summarizer/prd-generator 补 evals——属内容新增，未在本次范围内。
 
 ## 已知待办 / 潜在风险
 
@@ -39,7 +53,7 @@
 python -m pytest tests/ -q        # 回归 + 成品自包含自检（18 例）
 
 # skill-creator（在 skill-creator/ 根）
-python -m pytest tests/ -q                                                    # 46 例
+python -m pytest tests/ -q                                                    # 52 例
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
 python skills/skill-creator/scripts/search_index.py --stats                   # 4 源 2187 条

@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.9.1"
+version: "0.9.2"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -284,7 +284,7 @@ python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
 
 说明：不带 `--dir` 时默认扫描**技能根自身目录**（`scripts/` 的上一级，即自检，不依赖任何宿主仓库布局）；校验其他技能目录或技能库时用 `--dir <目录>`。
 
-验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致且 ≤100 字符、`description` ≤1024 字符、`risk` 合法、`version` 语义化格式、`tags`/`tools` 形状）、`source`/`source_repo`/`source_type`、`date_added` 格式、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、危险管道与明文密钥扫描、以及本地链接/反引号引用是否悬空。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
+验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致、小写 kebab-case 且 ≤100 字符、`description` ≤1024 字符、`risk` 合法、`version` 语义化格式、`tags`/`tools` 形状）、`source`/`source_repo`/`source_type`、`date_added` 格式、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、危险管道与明文密钥扫描、本地链接/反引号引用是否悬空（含 `indexes/*.db` 等数据/文本资源），以及 `evals.json` 存在时的形状合法性（缺 `query`/`should_trigger` 即失败）。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
 
 技能正文稳定后开始量化评估。采用「**确定性脚本打底 + SKILL.md 拉起子代理判断 + 脚本聚合收尾**」的混合编排（子代理指令在 `agents/`，移植自 Anthropic 官方；子代理负责语义判断，脚本负责可复现的确定性工作）：
 

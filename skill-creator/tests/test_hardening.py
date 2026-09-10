@@ -277,3 +277,81 @@ def test_run_loop_ranks_by_test_rate():
     assert _test_rank({"test_passed": 3, "test_total": 3}) > _test_rank({"test_passed": 4, "test_total": 5})
     # tie on rate -> higher passed count wins
     assert _test_rank({"test_passed": 3, "test_total": 6}) > _test_rank({"test_passed": 2, "test_total": 4})
+
+
+# --- 2026-09-10 validator gap closure (E1/E2/E3) ---
+#
+# Closes the twin-parity and quality-bar gaps found in the read-only audit:
+# name charset (validate_agents.py already enforced kebab-case), evals.json shape,
+# and the too-narrow backtick extension whitelist.
+
+def _write_skill(dirname, name, body_extra="", desc="x"):
+    d = Path(dirname)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "SKILL.md").write_text(
+        SKILL_FIXTURE.format(name=name, desc=desc) + body_extra, encoding="utf-8")
+    return d
+
+
+# E1 — name must be lowercase kebab-case (twin parity with validate_agents.py)
+def test_non_kebab_name_fails(tmp_path):
+    name = "Bad_Name"
+    d = tmp_path / name
+    d.mkdir()
+    (d / "SKILL.md").write_text(SKILL_FIXTURE.format(name=name, desc="x"), encoding="utf-8")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "kebab-case" in r.stdout
+
+
+def test_kebab_name_passes(tmp_path):
+    d = _write_skill(tmp_path / "good-name", "good-name")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+# E3 — backtick refs cover data/text resources, not just script types
+def test_backtick_db_reference_is_checked(tmp_path):
+    d = _write_skill(tmp_path / "db-ref-skill", "db-ref-skill",
+                     body_extra="\n索引见 `indexes/upstream.db`。\n")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "indexes/upstream.db" in r.stdout
+
+    (d / "indexes").mkdir()
+    (d / "indexes" / "upstream.db").write_text("x", encoding="utf-8")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+# E2 — evals.json: present -> shape enforced; absent -> advisory only (not fatal)
+def test_malformed_evals_json_fails(tmp_path):
+    d = _write_skill(tmp_path / "eval-bad-skill", "eval-bad-skill")
+    (d / "evals.json").write_text(
+        json.dumps({"evals": [{"id": 1, "prompt": "legacy-no-should-trigger"}]}),
+        encoding="utf-8",
+    )
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "should_trigger" in r.stdout
+
+
+def test_valid_evals_json_passes(tmp_path):
+    d = _write_skill(tmp_path / "eval-ok-skill", "eval-ok-skill")
+    (d / "evals").mkdir(parents=True)
+    (d / "evals" / "evals.json").write_text(
+        json.dumps({"skill_name": "eval-ok-skill", "evals": [
+            {"id": 1, "query": "触发它", "should_trigger": True},
+            {"id": 2, "query": "不该触发", "should_trigger": False},
+        ]}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_missing_evals_json_is_advisory_not_fatal(tmp_path):
+    d = _write_skill(tmp_path / "no-evals-skill", "no-evals-skill")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "No evals.json" in r.stdout

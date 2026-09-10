@@ -78,7 +78,7 @@ python scripts/validate_skills.py --strict
 ## 验证器检查项一览
 
 - [x] frontmatter 有效 YAML 且为映射
-- [x] `name` 存在、与文件夹名一致且 ≤100 字符
+- [x] `name` 存在、与文件夹名一致、为小写 kebab-case（`a-z0-9` 单连字符）且 ≤100 字符
 - [x] `description` 存在、为字符串、未超长
 - [x] `risk` 存在（标准模式缺失仅警告）且取值为合法级别
 - [x] `source` 存在（标准模式缺失仅警告）
@@ -93,7 +93,8 @@ python scripts/validate_skills.py --strict
 - [x] offensive 技能的强制用户确认门
 - [x] 危险远程执行管道（`curl|sh`、`wget|bash`、`irm|iex`）与常见明文密钥扫描（`<!-- security-allowlist -->` 可豁免）
 - [x] markdown 链接无悬空
-- [x] 反引号路径引用（`references/x.md`、`scripts/x.py` 等）存在且可解析（代码块内的示例路径豁免；引用只在技能自身目录内解析，不借道 skill-creator）
+- [x] 反引号路径引用（`references/x.md`、`scripts/x.py`、`indexes/upstream.db` 等）存在且可解析（代码块内的示例路径豁免；引用只在技能自身目录内解析，不借道 skill-creator）
+- [x] `evals.json`（`evals/evals.json` 或技能根）存在时形状合法：可解析、含 `evals` 数组、每项有非空 `query` 与布尔 `should_trigger`；缺失仅提示（建议随技能发布，质量门槛第 8 项）
 - [x] 跳过隐藏目录、符号链接与 `examples/`（上游学习样本豁免）
 
 ## 支持级别
