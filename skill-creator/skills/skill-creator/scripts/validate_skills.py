@@ -18,12 +18,14 @@ import io
 import os
 import re
 import sys
-from collections.abc import Mapping
-from datetime import date, datetime
-
-import yaml
 
 from _project_paths import find_skill_root
+from utils import (
+    has_examples_section,
+    has_limitations_section,
+    has_when_to_use_section,
+    parse_frontmatter,
+)
 
 # Skill root = the directory containing scripts/ (self-contained; the module
 # never depends on a host repository). Used as the fallback base for backtick
@@ -63,45 +65,40 @@ def is_exempt_dir(path: str) -> bool:
     return any(p in EXEMPT_DIRS for p in parts)
 
 
-# English + Chinese "when to use" section headers (both accepted)
-WHEN_TO_USE_PATTERNS = [
-    re.compile(r"^##\s+When\s+to\s+Use", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+Use\s+this\s+skill\s+when", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+When\s+to\s+Use\s+This\s+Skill", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+When\s+to\s+activate\s+this\s+skill", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+何时使用(?:此|这|本)*技能", re.MULTILINE),
-]
-
-# English + Chinese "examples" and "limitations" section headers (both accepted)
-EXAMPLES_PATTERNS = [
-    re.compile(r"^##\s+Examples?", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+示例", re.MULTILINE),
-]
-LIMITATIONS_PATTERNS = [
-    re.compile(r"^##\s+Limitations?", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+限制", re.MULTILINE),
-]
+# Section-header patterns live in utils.py (single source of truth shared with
+# compare_skills.py, so the validator and the scorer never disagree).
 
 SOURCE_REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 VALID_SOURCE_TYPES = {"official", "community", "self"}
 VALID_RISK_LEVELS = ["none", "safe", "critical", "offensive", "unknown"]
+VALID_TOOLS = {"claude", "opencode", "codex", "deepseek"}
+NAME_MAX_LEN = 100
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")  # YYYY-MM-DD
 VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")  # semver x.y.z
 
+# Dangerous remote-execution pipes (quality bar item 6 / SKILL.md safety guardrails)
+DANGEROUS_PIPE_PATTERNS = [
+    re.compile(r"\b(curl|wget)\b[^\n]*\|\s*(?:sudo\s+)?(?:ba|z|k)?sh\b", re.IGNORECASE),
+    re.compile(r"\birm\b[^\n]*\|\s*iex\b", re.IGNORECASE),
+]
+SECRET_ALLOWLIST_RE = re.compile(r"<!--\s*security-allowlist", re.IGNORECASE)
+# Obvious inline credentials (kept deliberately narrow to avoid false positives)
+SECRET_PATTERNS = [
+    re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})"),
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+]
+
+# Offensive-skill disclaimer: accept either language, tolerant of whitespace/format,
+# but require BOTH the "authorized use only" banner and a permission/consent clause.
 SECURITY_DISCLAIMER_PATTERNS = [
-    # English (exact, from agentic-awesome-skills)
+    # English
     re.compile(
-        r"> \*\*⚠️ AUTHORIZED USE ONLY\*\*\s*\n"
-        r"> This skill is for educational purposes or authorized security assessments only\.\s*\n"
-        r"> You must have explicit, written permission from the system owner before using this tool\.\s*\n"
-        r"> Misuse of this tool is illegal and strictly prohibited\.",
+        r"AUTHORIZED\s+USE\s+ONLY[\s\S]{0,400}?permission",
+        re.IGNORECASE,
     ),
     # Chinese equivalent (our convention)
     re.compile(
-        r"> \*\*⚠️ 仅限授权使用\*\*\s*\n"
-        r"> 此技能仅用于教育目的或授权的安全评估。\s*\n"
-        r"> 在使用此工具之前，您必须获得系统所有者的明确书面许可。\s*\n"
-        r"> 滥用此工具是非法的，严格禁止。",
+        r"仅限授权使用[\s\S]{0,400}?(?:许可|授权|同意)",
     ),
 ]
 
@@ -114,46 +111,6 @@ OFFENSIVE_CONFIRMATION_PATTERNS = [
     ),
     re.compile(r"请求用户确认", re.IGNORECASE),
 ]
-
-
-def has_when_to_use_section(content: str) -> bool:
-    return any(pattern.search(content) for pattern in WHEN_TO_USE_PATTERNS)
-
-
-def normalize_yaml_value(value):
-    if isinstance(value, Mapping):
-        return {key: normalize_yaml_value(val) for key, val in value.items()}
-    if isinstance(value, list):
-        return [normalize_yaml_value(item) for item in value]
-    if isinstance(value, (date, datetime)):
-        return value.isoformat()
-    return value
-
-
-def parse_frontmatter(content: str):
-    """Parse frontmatter using PyYAML. Returns (metadata, error_messages)."""
-    fm_match = re.search(r"^---\s*\n(.*?)\n?---(?:\s*\n|$)", content, re.DOTALL)
-    if not fm_match:
-        return None, ["Missing or malformed YAML frontmatter"]
-
-    fm_text = fm_match.group(1)
-    fm_errors = []
-    try:
-        metadata = yaml.safe_load(fm_text) or {}
-        metadata = normalize_yaml_value(metadata)
-        if not isinstance(metadata, Mapping):
-            return None, ["Frontmatter must be a YAML mapping/object."]
-
-        if "description" in metadata:
-            desc = metadata["description"]
-            if not desc or (isinstance(desc, str) and not desc.strip()):
-                fm_errors.append("description field is empty or whitespace only.")
-            elif desc == "|":
-                fm_errors.append("description contains only the YAML block indicator '|', likely due to a parsing regression.")
-
-        return dict(metadata), fm_errors
-    except yaml.YAMLError as e:
-        return None, [f"YAML Syntax Error: {e}"]
 
 
 def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> dict:
@@ -190,7 +147,7 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
         rel_path = os.path.relpath(skill_path, skills_dir)
 
         try:
-            with open(skill_path, "r", encoding="utf-8") as f:
+            with open(skill_path, "r", encoding="utf-8-sig") as f:
                 content = f.read()
         except Exception as e:
             errors.append(f"❌ {rel_path}: Unreadable file - {str(e)}")
@@ -207,8 +164,12 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
         # 2. Metadata schema
         if "name" not in metadata:
             errors.append(f"❌ {rel_path}: Missing 'name' in frontmatter")
-        elif metadata["name"] != os.path.basename(root):
-            errors.append(f"❌ {rel_path}: Name '{metadata['name']}' does not match folder name '{os.path.basename(root)}'")
+        else:
+            name_val = metadata["name"]
+            if name_val != os.path.basename(root):
+                errors.append(f"❌ {rel_path}: Name '{name_val}' does not match folder name '{os.path.basename(root)}'")
+            if isinstance(name_val, str) and len(name_val) > NAME_MAX_LEN:
+                errors.append(f"❌ {rel_path}: Name is too long ({len(name_val)} chars). Max {NAME_MAX_LEN}.")
 
         if "description" not in metadata or metadata["description"] is None:
             errors.append(f"❌ {rel_path}: Missing 'description' in frontmatter")
@@ -270,18 +231,55 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
         elif metadata.get("name") != "skill-creator":
             advisories.append(f"ℹ️  {rel_path}: Missing 'version' field (recommended for lifecycle tracking)")
 
+        # 2b. Optional advisory metadata (tags/tools/category shape)
+        tags = metadata.get("tags")
+        if tags is not None:
+            if not isinstance(tags, list):
+                errors.append(f"❌ {rel_path}: 'tags' must be a YAML list, got {type(tags).__name__}")
+            elif len(tags) > 5:
+                advisories.append(f"ℹ️  {rel_path}: {len(tags)} tags declared (>5); keep tags focused (≤5).")
+
+        tools = metadata.get("tools")
+        if tools is not None:
+            if not isinstance(tools, list):
+                errors.append(f"❌ {rel_path}: 'tools' must be a YAML list, got {type(tools).__name__}")
+            else:
+                unknown = [t for t in tools if isinstance(t, str) and t.lower() not in VALID_TOOLS]
+                if unknown:
+                    advisories.append(
+                        f"ℹ️  {rel_path}: Unknown client tool(s) {unknown}; "
+                        f"known values: {sorted(VALID_TOOLS)}."
+                    )
+
         # 3. Content checks (triggers)
         if not has_when_to_use_section(content):
             msg = f"⚠️  {rel_path}: Missing '## When to Use' or '## 何时使用此技能' section"
             (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
 
         # 4. Content quality (examples + limitations per quality bar)
-        if not any(p.search(content) for p in EXAMPLES_PATTERNS):
+        if not has_examples_section(content):
             msg = f"⚠️  {rel_path}: Missing '## Examples' or '## 示例' section (quality bar requires at least one copy-pasteable example)"
             (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
-        if not any(p.search(content) for p in LIMITATIONS_PATTERNS):
+        if not has_limitations_section(content):
             msg = f"⚠️  {rel_path}: Missing '## Limitations' or '## 限制和注意事项' section (quality bar requires known limits)"
             (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
+
+        # 4b. Security scan: dangerous pipes + inline secrets (quality bar item 6).
+        # `<!-- security-allowlist -->` marks a reviewed exception.
+        if not SECRET_ALLOWLIST_RE.search(content):
+            for pattern in DANGEROUS_PIPE_PATTERNS:
+                if pattern.search(content):
+                    errors.append(
+                        f"🚨 {rel_path}: Dangerous remote-execution pipe detected "
+                        f"({pattern.pattern!r}); remove it or add a `<!-- security-allowlist -->` note."
+                    )
+            for pattern in SECRET_PATTERNS:
+                m = pattern.search(content)
+                if m:
+                    errors.append(
+                        f"🚨 {rel_path}: Possible inline secret/credential detected "
+                        f"({m.group(0)[:6]}…); remove it or add a `<!-- security-allowlist -->` note."
+                    )
 
         # 3b. Body length advisory (progressive disclosure) — NO failure, ever
         # Meta-skills (name == folder == "skill-creator" etc.) are exempt:
@@ -343,12 +341,11 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
                 continue
             if os.path.isabs(ref_clean):
                 continue
-            # Resolve relative to the skill dir first, then fall back to the repo root
-            # (covers both `references/x.md` and `<skill-dir>/references/x.md` forms).
-            targets = [
-                os.path.normpath(os.path.join(root, ref_clean)),
-                os.path.normpath(os.path.join(SKILL_ROOT, ref_clean)),
-            ]
+            # Resolve relative to the skill's own directory only. Falling back to
+            # this validator's own SKILL_ROOT would let an external skill "borrow"
+            # a path that only exists inside skill-creator — a false pass that
+            # hides dangling references in other skill libraries.
+            targets = [os.path.normpath(os.path.join(root, ref_clean))]
             # Module-style self-references (`<own-folder>/...`) must also resolve once
             # the skill is installed outside the repo (e.g. ~/.config/opencode/skills/):
             # strip the leading segment that matches the skill's own folder name.

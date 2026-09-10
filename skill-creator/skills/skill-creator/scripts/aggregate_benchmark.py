@@ -106,8 +106,11 @@ def load_run_results(benchmark_dir: Path) -> dict[str, list[dict]]:
                 }
                 timing = grading.get("timing", {})
                 result["time_seconds"] = timing.get("total_duration_seconds", 0.0)
-                result["tokens"] = grading.get("execution_metrics", {}).get("output_chars", 0)
-                result["tool_calls"] = grading.get("execution_metrics", {}).get("total_tool_calls", 0)
+                # Tokens must come from a token field — never from output_chars
+                # (characters are not tokens). timing.json may supply them below.
+                metrics = grading.get("execution_metrics", {})
+                result["tokens"] = metrics.get("total_tokens", metrics.get("tokens", 0))
+                result["tool_calls"] = metrics.get("total_tool_calls", 0)
                 timing_file = run_dir / "timing.json"
                 if timing_file.exists():
                     try:
@@ -165,6 +168,8 @@ def aggregate_results(results: dict[str, list[dict]]) -> dict:
 def generate_benchmark(benchmark_dir: Path, skill_name: str = "", skill_path: str = "") -> dict:
     results = load_run_results(benchmark_dir)
     run_summary = aggregate_results(results)
+    # Report the actual observed runs per configuration (never a hard-coded 3).
+    runs_per_configuration = max((len(runs) for runs in results.values()), default=0)
     runs = []
     for config in results:
         for r in results[config]:
@@ -192,7 +197,7 @@ def generate_benchmark(benchmark_dir: Path, skill_name: str = "", skill_path: st
             "executor_model": "<model-name>",
             "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "evals_run": eval_ids,
-            "runs_per_configuration": 3,
+            "runs_per_configuration": runs_per_configuration,
         },
         "runs": runs,
         "run_summary": run_summary,

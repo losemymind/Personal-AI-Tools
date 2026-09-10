@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.7.0"
+version: "0.8.0"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -28,12 +28,12 @@ skill-creator/
 │   ├── search_index.py         ← 检索上游索引（FTS5 全文/分类/风险）
 │   ├── compare_skills.py       ← 自建 vs 上游对比评分（质量6维+结构4维）
 │   ├── create_skill.py         ← 交互式脚手架生成器（含 version 字段）
-│   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接）
-│   ├── run_trigger_tests.py    ← 触发启发式工具（classify/关键词；供 run_eval 复用）
+│   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接/密钥扫描）
 │   ├── run_eval.py             ← 触发评测（heuristic 默认 / cli 双模式；--output-dir 落盘）
 │   ├── run_loop.py             ← description 自动优化循环（train/test 60/40）
+│   ├── run_scenario.py         ← 场景执行器（跑单个任务、落盘 run 目录供评分/汇总）
 │   ├── aggregate_benchmark.py  ← 量化基准汇总（benchmark.json + benchmark.md；--notes 合并分析笔记）
-│   ├── utils.py                ← 共享：解析 SKILL.md frontmatter（四端通用）
+│   ├── utils.py                ← 共享：frontmatter 解析 + 章节模式 + 触发启发式（四端通用）
 │   └── _project_paths.py       ← 技能根定位辅助（自包含，不依赖宿主仓库）
 ├── agents/                     ← 子代理指令（SKILL.md 按需拉起，不自动加载）
 │   ├── grader.md               ← 评分子代理：断言判定 → grading.json
@@ -284,26 +284,40 @@ python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
 
 说明：不带 `--dir` 时默认扫描**技能根自身目录**（`scripts/` 的上一级，即自检，不依赖任何宿主仓库布局）；校验其他技能目录或技能库时用 `--dir <目录>`。
 
-验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致、`description` ≤1024 字符、`risk` 合法、`version` 语义化格式）、`source`/`source_repo`/`source_type`、`date_added` 格式、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、以及本地链接是否悬空。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
+验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致且 ≤100 字符、`description` ≤1024 字符、`risk` 合法、`version` 语义化格式、`tags`/`tools` 形状）、`source`/`source_repo`/`source_type`、`date_added` 格式、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、危险管道与明文密钥扫描、以及本地链接/反引号引用是否悬空。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
 
 技能正文稳定后开始量化评估。采用「**确定性脚本打底 + SKILL.md 拉起子代理判断 + 脚本聚合收尾**」的混合编排（子代理指令在 `agents/`，移植自 Anthropic 官方；子代理负责语义判断，脚本负责可复现的确定性工作）：
 
 **第 1 步：触发评测（确定性脚本，先跑）**——`templates/evals.json.template` 为 evals 模板：
 
 ```bash
-# 1) 确定性触发启发式（无外部 CLI，默认）
+# 1) 确定性触发启发式（无外部 CLI，默认；CJK 感知）
 python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录>
-# 2) 真实客户端无头 CLI 触发（有 claude CLI 时可用；opencode/codex 后续可接入）
+# 2) 真实客户端无头 CLI 触发（需对应客户端 CLI：claude / opencode）
 python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client claude
+python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client opencode
 ```
 
-输出每条查询的触发判定 + 汇总（passed/total、precision、recall）；`--json` 可机器读取；`--output-dir <目录>` 把结果 JSON 落盘为 `eval-results-<技能名>.json`（供后续评分/复盘引用）。
+输出每条查询的触发判定 + 汇总（passed/total、precision、recall）；`--json` 可机器读取；`--output-dir <目录>` 把结果 JSON 落盘为 `eval-results-<技能名>.json`（供后续评分/复盘引用）。**运行错误（CLI 缺失/超时/非零退出）汇总为 `errors` 单列**，不计入假阴性——改描述前先按阶段 7 的失败分类归因。
 
-> **职责边界**：`run_eval.py` 只产出触发判定信号（stdout / 落盘文件），不铺设目录结构——评分所需的工作区布局（`<workspace>/iteration-N/eval-<名>/<配置>/run-N/`）由编排层（主持会话或拉起方）按下节工作区布局搭建。
+> **职责边界**：`run_eval.py` 只产出触发判定信号（stdout / 落盘文件），不铺设目录结构——评分所需的工作区布局由下节的场景执行器或编排层搭建。
 
-**第 2 步：输出打分（拉起评分子代理）**：对每个 eval 跑完「有技能」与「无技能（基线）」两组运行、产物按「工作区布局」落到 `<workspace>/iteration-N/eval-<名>/<with_skill|without_skill>/run-N/` 后，**拉起评分（grader）子代理**：提示词中给出 `expectations` / `transcript_path` / `outputs_dir`，令其读入 `agents/grader.md` 执行——逐条断言判定、核验隐含声明、审视断言质量，把 `grading.json` 写进每个 run 目录（字段契约见 `references/benchmark-schema.md`）。
+**第 2 步：产出运行目录（确定性脚本）**：对每个 eval 用 `run_scenario.py` 跑「有技能」与「无技能（基线）」两组，直接落盘到基准布局（`transcript.md` / `outputs/` / `metrics.json` / `timing.json`）：
 
-**第 3 步：聚合（确定性脚本）**：
+```bash
+# with_skill：把技能装进一次性工作区后运行
+python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" \
+  --skill-dir <技能目录> --run-dir <workspace>/iteration-N/eval-<名>/with_skill/run-1
+# without_skill：同一提示词、不装技能
+python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" \
+  --run-dir <workspace>/iteration-N/eval-<名>/without_skill/run-1
+```
+
+> 需要与客户端 CLI 不同的调用方式或做测试时用 `--client-cmd "<命令模板>"`（支持 `{prompt}` 占位）。技能会被复制进一次性工作区，`without_skill` 组看不到它。
+
+**第 3 步：断言打分（拉起评分子代理）**：跑完两组、产物落到 `<workspace>/iteration-N/eval-<名>/<with_skill|without_skill>/run-N/` 后，**拉起评分（grader）子代理**：提示词中给出 `expectations` / `transcript_path` / `outputs_dir`，令其读入 `agents/grader.md` 执行——逐条断言判定、核验隐含声明、审视断言质量，把 `grading.json` 写进每个 run 目录（字段契约见 `references/benchmark-schema.md`）。
+
+**第 4 步：聚合（确定性脚本）**：
 
 ```bash
 python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
@@ -311,13 +325,13 @@ python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
 
 读取各 `grading.json`（+ `timing.json`）汇总为带 mean±stddev 与 delta 的 `benchmark.json`（+ `benchmark.md`）；直接读 delta 判断技能相对基线的真实增益。
 
-**第 4 步：模式分析（拉起分析子代理）**：**拉起分析（analyzer）子代理**，按 `agents/analyzer.md` 模式二分析 `benchmark.json`——逐断言模式（恒过/恒败/单侧过/高方差 flaky）、跨 eval 模式、耗时与 token 模式——产出**观察笔记**（JSON 字符串数组），再用脚本合并进基准：
+**第 5 步：模式分析（拉起分析子代理）**：**拉起分析（analyzer）子代理**，按 `agents/analyzer.md` 模式二分析 `benchmark.json`——逐断言模式（恒过/恒败/单侧过/高方差 flaky）、跨 eval 模式、耗时与 token 模式——产出**观察笔记**（JSON 字符串数组），再用脚本合并进基准：
 
 ```bash
 python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名> --notes <notes文件>
 ```
 
-**可选第 5 步：盲测对比（拉起对比子代理）**：需要定性比较两份输出（如 with_skill vs without_skill、新旧版本技能）时，**拉起盲测对比（comparator）子代理**：A/B 标签随机分配且保密来源，令其读入 `agents/comparator.md` 出 `comparison.json`；随后可再拉起 analyzer 模式一复盘「胜者为何胜出」。盲测是定性补充——`compare_skills.py` 的结构评分与 `aggregate_benchmark.py` 的 delta 仍是主决策依据。
+**可选第 6 步：盲测对比（拉起对比子代理）**：需要定性比较两份输出（如 with_skill vs without_skill、新旧版本技能）时，**拉起盲测对比（comparator）子代理**：A/B 标签随机分配且保密来源，令其读入 `agents/comparator.md` 出 `comparison.json`；随后可再拉起 analyzer 模式一复盘「胜者为何胜出」。盲测是定性补充——`compare_skills.py` 的结构评分与 `aggregate_benchmark.py` 的 delta 仍是主决策依据。
 
 > 客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/*.md` 内联完成评分/对比/分析，产物格式不变。高方差 eval 视为 flaky 需更多 run。Schema 与布局见 `references/benchmark-schema.md`。
 
@@ -376,7 +390,7 @@ python scripts/compare_skills.py <自建目录> <上游目录> --all-candidates
 
 **触发失败分类（改前先归因）**：把每次 eval 失败归入三类再决定怎么改——**假阴性**（应触发未触发 → 触发面漏词/说法没覆盖）、**假阳性**（不应触发却触发 → 描述过度泛化/兜底词过多）、**run_error**（运行失败 → 工具/依赖/路径问题，与描述无关别乱改 description）。三类混改会把「改错病」当成「改好病」。
 
-**gold-standard 先例（从好里选更好）**：每轮改进提示里，附上上一轮 test 分最高的 description（连同其 run_eval 得分）当 few-shot 先例——描述优化是「从已验证的好措辞里选更好的」，不是每轮从零发明措辞（`run_loop.py` 已实现：改进提示注入 `history` 中 test 分最高的描述）。历史高通过率描述按分数优先复用。
+**gold-standard 先例（从好里选更好）**：每轮改进提示里，附上本次运行 `history` 中 test 分最高的 description（连同其 run_eval 得分）当 few-shot 先例——描述优化是「从已验证的好措辞里选更好的」，不是每轮从零发明措辞（`run_loop.py` 已实现）。先例仅取自本次运行的迭代历史。
 
 **自动档（借鉴 Anthropic 官方 run_loop，train/test 60/40 分层分集，防过拟合）**：
 
@@ -387,7 +401,7 @@ python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技
 
 - 评测按 `should_trigger` 分层的 60/40 切分为 train/test；每轮用当前 description 评 train+test，再按失败模式请求改写。
 - `--improve-mode manual`（默认）：打印改进提示词，粘贴返回的 description，以独立 `EOF` 行结束。
-- `--improve-mode cli`：调用客户端无头 CLI（如 `claude -p`）生成新 description。
+- `--improve-mode cli`：调用客户端无头 CLI（`--client claude|opencode`）生成新 description。
 - **最终选取以 test 集得分最高者为准**（不选 train 满分者），避免过拟合到测试用例。
 
 注意：复杂、多步、专精的查询才适合评估触发（简单单步查询无论描述多好都常不触发）。触发评测结果 `--json` 输出写入 `evals/` 或技能目录，作为阶段 8 验证记录的一部分。
@@ -406,7 +420,7 @@ python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技
 
 **入库/发布纪律（提交前逐项）**：
 - **evals 随技能发布**：触发用例（`evals.json` 或场景清单）与技能同目录沉淀——入库后任何人改动技能都能回归触发，不用重新发明测试。
-- **secret 扫描**：入库/提交前扫一遍技能目录与脚本，确认无明文密钥/token/凭据示例（危险管道 `curl|bash` 等按「安全护栏」处理，必要时 `<!-- security-allowlist -->` 声明）。
+- **secret 扫描**：入库/提交前扫一遍技能目录与脚本，确认无明文密钥/token/凭据示例（危险管道 `curl|bash` 等按「安全护栏」处理）。`validate_skills.py` 已自动扫描危险管道与常见明文凭据；确为操作必需的用 `<!-- security-allowlist: ... -->` 显式豁免并附警告上下文。
 - **隔离验证再交付**：非直推——经 PR 评审、tag 版本后，在**隔离环境**（独立 HOME/临时目录）安装一次实测跑通，再宣告入库；禁止未经隔离验证直推默认分支。
 - 高风险（`critical`/`offensive`）技能的发布升级给负责人确认，不自行放行。
 

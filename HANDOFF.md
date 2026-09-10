@@ -8,7 +8,7 @@
 - 根 `opencode.json`（已提交）：项目级 opencode 配置，`instructions` 显式注册三份 `AGENTS.md`（根 / skill-creator / agent-creator）——保证任意 cwd 下会话都加载全部角色守则（不依赖 opencode 按 cwd 就近自动发现）。不入 `.gitignore`，随仓库分发。
 - 两工作区已**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 均在各自工作区根、成品 `SKILL.md` 为唯一入口）。发布检查差异只在**成品自校验能力**：skill-creator 用成品 `validate_skills.py --strict` 自检；agent-creator 的 `validate_agents.py` 校验 AGENT.md 代理库（非自身成品），故自包含扫描落在 dev-only pytest。两工作区根均已有 dev-only `AGENTS.md` **角色守则**（成品演进维护者；agent-creator 版为本会话补齐，见改动 13）。
 - 能力库：根 `skills/` = 3 技能（development/code-review-skill、git/pr-summarizer、product-design/prd-generator），根 `agents/` = 3 顶层分类（academic/code-quality/ue-game-studio）。`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 自动生成（见改动 18）。
-- **本会话（2026-09-10）新增未提交改动**：把「人审 UI 环」改为 **agent 评审闭环（无人工）** 并落地（见改动 22）——两侧新增 `agents/reviewer.md`、阶段 6 改为 agent1↔agent2 自动迭代、gold-standard 先例注入落地、`VERIFICATION.md` 降为可选；版本 **skill-creator 0.7.0 / agent-creator 0.7.0**。`.opencode/skills/skill-creator/` 测试副本已同步。
+- **本会话（2026-09-10）未提交改动**：对 skill-creator 成品做了一轮只读缺陷审计后的**全量加固 + 脚本裁剪**（见改动 23）——修复验证器假通过、CJK 触发启发式、run_eval 运行错误吞没、基准量纲/元数据、BOM 解析、章节模式漂移等 16 项；移除冗余脚本 `run_trigger_tests.py`、新增 `run_scenario.py` 场景执行器；版本 **skill-creator 0.8.0**（agent-creator 0.7.0 不变）。`.opencode/skills/skill-creator/` 测试副本已同步。
 
 ## 本会话已完成的改动
 
@@ -27,11 +27,11 @@
 **4. 上游调研与成品升级（0.5.0 → 0.6.0）**
 - 调研了 11 个 skill-creator 实现（anthropics/skills、anthropics/claude-plugins-official、openai/codex 内置、openai/skills .system、vercel-labs/json-render、tripleyak/SkillForge、joeseesun/qiaomu-meta-skill、AGI-comming/functional-skill-creator、antongulin/opencode-skill-creator、AgriciDaniel/skill-forge、spences10/claude-skills-cli），结论与对比记录在工作区 `skill-creator/README.md`。
 - 升级落点（成品 `skills/skill-creator/`）：
-  - `SKILL.md`：references 一层深引用纪律 + grep 模式；description 唯一无条件加载触发面的硬约束（单行/无 `<>`/自足）；阶段 6 增 RED→GREEN 行为差门 + 人审闭环；阶段 7 增触发失败分类（假阴/假阳/run_error）+ gold-standard 先例；阶段 9 增发布纪律（evals 随技能、secret 扫描、隔离验证）；质量清单加「渐进披露/引用纪律」组。
+  - `SKILL.md`：references 一层深引用纪律 + grep 模式；description 唯一无条件加载触发面的硬约束（单行/无 `<>`/自足）；阶段 6 增 RED→GREEN 行为差门；阶段 7 增触发失败分类（假阴/假阳/run_error）+ gold-standard 先例；阶段 9 增发布纪律（evals 随技能、secret 扫描、隔离验证）；质量清单加「渐进披露/引用纪律」组。
   - `references/quality-bar.md`：7 项 → 8 项（新增第 8 项渐进披露与引用纪律）。
   - `references/skill-writing-guide.md` §6：description 硬约束 + 失败归因。
   - `scripts/validate_skills.py`：新增 description 尖括号/跨行 advisory（不升级为 error，未破坏库门禁）。
-  - `evolutions/` 新增 4 条 2026-09-09 记录（human-review-ui-loop / description-and-ref-discipline / red-green-gate-and-release-discipline / gold-standards-description-memory）。
+  - `evolutions/` 新增 3 条 2026-09-09 记录（description-and-ref-discipline / red-green-gate-and-release-discipline / gold-standards-description-precedent）。
 - 发布门全绿：pytest 15 例、成品 strict 自检、能力库 strict（3 技能）均通过。
 
 **5. 来源收敛与归因统一（用户最后指令：只保留两个源）**
@@ -164,31 +164,42 @@
 - 端到端复验：模板原样产出的 evals.json 现可被 `run_eval.py` 与 `run_trigger_tests.py` 正常消费（改前崩溃）。
 - 门禁全绿：skill pytest 20、成品 strict 自检、能力库 skills strict（3）。
 
-**22. agent 评审闭环取代人审 UI 环（本会话，用户指令「不要人工介入，评审用其它 agent：agent1 改、agent2 评审反馈、直到通过」）**
-- 背景：审计未实现纪律时，用户否决此前「人审 UI 环」方案（不采纳官方 `eval-viewer`/`eval_review.html`），改为**无人工的 agent 评审闭环**，并把该原则推广到所有「需要评分和审核」的事务。
+**22. agent 评审闭环（无人工）（本会话，用户指令「不要人工介入，评审用其它 agent：agent1 改、agent2 评审反馈、直到通过」）**
+- 背景：评审此前依赖人工逐条确认，不符合「评审全程无人工介入」；改为**无人工的 agent 评审闭环**，并把该原则推广到所有「需要评分和审核」的事务。
 - 落地（两侧同构）：
   - 新增成品 `agents/reviewer.md`（通用评分/审核子代理）：只评审不改稿，产出 `review.json`（`verdict: pass|revise` + 可执行 `issues[]` + `previous_review_path` 核验上轮修复）；与 grader（客观断言）/comparator（盲测）/analyzer（复盘）分工不重叠。
-  - skill `SKILL.md` 阶段 6：「人审闭环」→「**AI 评审闭环（agent1↔agent2，无人工）**」（`pass` 或达 `max-iterations`（默认 5）即停；无子代理能力时内联降级）；阶段 7：查询集审阅由「用户签名」→ 评审子代理 `pass`/`revise`；阶段 8：`VERIFICATION.md` 降为**可选留痕**。
+  - skill `SKILL.md` 阶段 6：「人工评审闭环」→「**AI 评审闭环（agent1↔agent2，无人工）**」（`pass` 或达 `max-iterations`（默认 5）即停；无子代理能力时内联降级）；阶段 7：查询集审阅由「用户签名」→ 评审子代理 `pass`/`revise`；阶段 8：`VERIFICATION.md` 降为**可选留痕**。
   - `references/quality-bar.md`、`references/skill-comparison.md`：评审标注由「人工」改为「评审子代理」。
   - agent `SKILL.md` 阶段 6 新增「AI 评审闭环」；资源路径基准/读取规则补 `agents/`；`references/agent-quality-bar.md` 评审标注改「评审子代理」；`README.md` 结构树补 `agents/`。
 - 甲类假账修复（审计结论一并落地）：**甲1** `run_loop.py` 的 `build_improve_prompt` 增 `best_so_far` 参数，注入 `history` 中 test 分最高描述作 gold-standard 先例（兑现 SKILL.md 阶段 7 承诺）；**甲3** 阶段 8 `VERIFICATION.md` 改可选（验证器从不生成/校验，不再声称必须）。
-- evolutions：删 `2026-09-09-adopt-human-review-ui-loop.md`，新增 `2026-09-10-adopt-agent-review-loop.md`（两侧各一份）；`evolutions/README.md` adopt- 示例改指新记录；`skill-creator/README.md` 升级清单/沿革同步。
+- evolutions：新增 `2026-09-10-adopt-agent-review-loop.md`（两侧各一份）；`evolutions/README.md` adopt- 示例改指新记录；`skill-creator/README.md` 升级清单/沿革同步。
 - 版本 bump：skill-creator 0.6.2 → **0.7.0**、agent-creator 0.6.0 → **0.7.0**（minor）。测试：两侧各新增 `tests/test_agent_review.py`（skill 3 例→23、agent 2 例→18）；agent 自包含扫描 `KNOWN_TOP` 补 `agents`（覆盖新目录）。
 - 同步：`.opencode/skills/skill-creator/`（SKILL.md/README.md/agents/reviewer.md/references×2/scripts/run_loop.py/evolutions×2）；根 `AGENTS.md` 布局与「更完整」表述补两侧 `agents/`；根 `README.md`、两工作区 `AGENTS.md` 用例数更新。
 - 门禁全绿：skill pytest **23**、agent pytest **18**、skill 成品 strict、能力库 strict（skills 3 / agents 32）、CATALOG `--check`。
 
+**23. skill-creator 成品全量加固 + 脚本裁剪（本会话）**
+- 背景：对成品做一轮只读缺陷审计（验证器/评测链/一致性），逐条修复并依工作流裁剪脚本。
+- 修复（详见 `skill-creator/skills/skill-creator/evolutions/2026-09-10-harden-validation-and-eval-chain.md`）：
+  - A1 验证器假通过：反引号引用解析不再回退到 skill-creator 自身根目录（外部技能引用仅存在于 skill-creator 的路径曾误判通过）。
+  - A2 CJK 触发启发式：`utils.keyword_tokens` 改中文单字+双字切分，`classify` 对中文查询不再恒不触发。
+  - A3 run_eval 运行错误：`--mode cli` 的超时/缺命令/非零退出改抛错并单列 `errors`，与假阴性区分。
+  - A4 安全正则笔误 `|/isx` 修正；A5 基准 `runs_per_configuration` 取实际值；A6 `tokens` 不再取 `output_chars`；A7 验证器读取改 `utf-8-sig`。
+  - B1 名称上限统一 ≤100 并强制；B2 章节模式收敛到 `utils.py`（validate/compare 共用）；B3 脚手架回退骨架去 `@` 语法；B4 `metadata_complete` 扩为 7 字段。
+  - C2 run_eval/run_loop 的 cli 增加 opencode；C3 危险管道与明文密钥纳入验证器自动扫描（`<!-- security-allowlist -->` 豁免）；C4 `compare --all-candidates` 改递归；C5 移除无消费者的 `files` 字段。
+  - D1 验证器增 tags/tools 检查；D2 offensive 免责声明改容错匹配；E1/E2 解析器与章节模式收敛 `utils.py`。
+- 脚本裁剪（依工作流）：移除 `scripts/run_trigger_tests.py`（CLI 与 `run_eval --mode heuristic` 重复、非阶段工具；classify/keyword_tokens 迁入 `utils.py`）；新增 `scripts/run_scenario.py`（补基准布局的场景执行器，使 `aggregate_benchmark.py` 可端到端消费）。
+- 版本：skill-creator 0.7.0 → **0.8.0**（minor）；evolutions 新增 `2026-09-10-harden-validation-and-eval-chain.md`。
+- 测试：skill pytest 23 → **33**（新增 `tests/test_hardening.py` 11 例；`test_eval_schema` 去掉已删脚本的用例、改查 `files` 字段）。
+- 同步：`.opencode/skills/skill-creator/` 镜像（scripts/templates/references/evolutions/SKILL/README）；根 `README.md` 与 `skill-creator/AGENTS.md` 用例数。
+- 门禁全绿：skill pytest 33、agent pytest 18、skill 成品 strict、能力库 strict（skills 3 / agents 32）、CATALOG `--check`。
+
 ## 已知待办 / 潜在风险（给下一会话）
 
-1. **升级中「记为纪律、未实现为工具」的项**（对应 evolutions 记录的「待真实场景验证后再升级为脚本」）：
-   - 人审 UI 环 —— **已否决并消化**：改为 **agent 评审闭环（无人工）**，官方 `eval-viewer`/`eval_review.html` 明确不采纳（见改动 22）。
-   - gold-standards —— 已落地为 `run_loop.py` 的 best-so-far 先例注入（改动 22）；**独立记忆库 `gold_store` CLI 仍未做**（待真实收益验证）。
-   - `.skill` 打包（package_skill.py）——未做（本仓库安装=复制，暂无消费方）。
-   - skill-forge 的 Tier 分级模板 / 加权健康分——评估过、用户未确认采纳。
-2. **能力库校验的「相对路径漏扫」已修复（本会话，见改动 15）**：`--dir` 指向不存在目录时两脚本现会打 ❌ 并 exit 1，不再静默 `Checked 0` 假绿。从 skill-creator 根校验能力库用 `../skills`（`../../skills` 会解析到 `E:\GitHub\skills` 不存在 → 现报错退出）。
-3. **能力库 / 审计一致性**：根 AGENTS.md 称 agents/ = 32 代理（academic×5/code-quality×2/ue-game-studio×25），与审计文件登记一致；若后续增删代理/技能，须按 AGENTS.md §能力库规则同步 `agents/AGENTS-AUDIT.md`/`skills/SKILLS-AUDIT.md` 与两份 `CATALOG.md`。
-4. **agent-creator 成品已升 0.7.0**（删 AGENTS.md、INSTALL.md 移出、SKILL.md 唯一入口；0.5.0 对齐孪生引用/description/发布纪律、0.6.0 新增 adapt_agent.py 安装适配器、0.7.0 新增 `agents/reviewer.md` 评审闭环，见改动 17/19/22）；宿主/客户端若在旧版上按 AGENTS.md 或成品内 INSTALL.md 引用，需按新形态更新路径。**skill-creator 同步升 0.7.0**（agents/reviewer.md + 阶段 6 评审闭环）。
-5. **已评估、用户明确「B 不需要修复」的项（勿再主动提出/改动）**：核心需求体检（改动 20）中判为「多余/负载」的 3 项维持现状——(a) skill-creator 成品 `examples/` 103 文件（含 react-best-practices 55 rules + loki-mode 40 文件整树拷贝，验证豁免、作学习样本）；(b) 两份 `indexes/upstream.db`（skill 1.7MB + agent 0.5MB）随成品提交；(c) 能力库 30 个 UE/academic 迁移垂直内容 + 逐条审计开销。后续会话别再据此提瘦身。
-6. **提交纪律**：本仓库所有 git 提交/推送前，必先跑发布门全绿 + 更新 `HANDOFF.md` + 输出可点击复制的新会话交接提示（根 AGENTS.md §三条铁律 3）。
+1. **能力库校验的「相对路径漏扫」已修复（本会话，见改动 15）**：`--dir` 指向不存在目录时两脚本现会打 ❌ 并 exit 1，不再静默 `Checked 0` 假绿。从 skill-creator 根校验能力库用 `../skills`（`../../skills` 会解析到 `E:\GitHub\skills` 不存在 → 现报错退出）。
+2. **能力库 / 审计一致性**：根 AGENTS.md 称 agents/ = 32 代理（academic×5/code-quality×2/ue-game-studio×25），与审计文件登记一致；若后续增删代理/技能，须按 AGENTS.md §能力库规则同步 `agents/AGENTS-AUDIT.md`/`skills/SKILLS-AUDIT.md` 与两份 `CATALOG.md`。
+3. **agent-creator 成品已升 0.7.0**（删 AGENTS.md、INSTALL.md 移出、SKILL.md 唯一入口；0.5.0 对齐孪生引用/description/发布纪律、0.6.0 新增 adapt_agent.py 安装适配器、0.7.0 新增 `agents/reviewer.md` 评审闭环，见改动 17/19/22）；宿主/客户端若在旧版上按 AGENTS.md 或成品内 INSTALL.md 引用，需按新形态更新路径。**skill-creator 已至 0.8.0**（agent 评审闭环 + 本轮加固，见改动 22/23）。
+4. **已评估、用户明确「B 不需要修复」的项（勿再主动提出/改动）**：核心需求体检（改动 20）中判为「多余/负载」的 3 项维持现状——(a) skill-creator 成品 `examples/` 103 文件（含 react-best-practices 55 rules + loki-mode 40 文件整树拷贝，验证豁免、作学习样本）；(b) 两份 `indexes/upstream.db`（skill 1.7MB + agent 0.5MB）随成品提交；(c) 能力库 30 个 UE/academic 迁移垂直内容 + 逐条审计开销。后续会话别再据此提瘦身。
+5. **提交纪律**：本仓库所有 git 提交/推送前，必先跑发布门全绿 + 更新 `HANDOFF.md` + 输出可点击复制的新会话交接提示（根 AGENTS.md §三条铁律 3）。
 
 ## 验证命令备忘
 

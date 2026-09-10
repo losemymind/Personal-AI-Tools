@@ -33,11 +33,11 @@ skill-creator/
     search_index.py         # 检索上游索引（FTS5 全文/分类/风险过滤）
     compare_skills.py       # 自建 vs 上游对比评分（质量6维+结构4维）
     create_skill.py         # 交互式脚手架生成器（含 version 字段）
-    run_trigger_tests.py    # 触发测试运行器（启发式准确率/精确率/召回率）
-    validate_skills.py      # 自动验证器（frontmatter/章节/安全/链接）
-    utils.py                # 共享：SKILL.md frontmatter 解析（四端通用）
+    validate_skills.py      # 自动验证器（frontmatter/章节/安全/链接/密钥扫描）
+    utils.py                # 共享：frontmatter 解析 + 章节模式 + 触发启发式（四端通用）
     run_eval.py             # 触发评测（heuristic 默认 / cli 双模式；--output-dir 落盘）
     run_loop.py             # description 自动优化循环（train/test 60/40）
+    run_scenario.py         # 场景执行器（跑单个任务、落盘 run 目录供评分/汇总）
     aggregate_benchmark.py  # 量化基准汇总（benchmark.json + benchmark.md，纯 stdlib；--notes 合并分析笔记）
     _project_paths.py       # 仓库根定位辅助
   agents/                   # 子代理指令（SKILL.md 按需拉起，不自动加载）

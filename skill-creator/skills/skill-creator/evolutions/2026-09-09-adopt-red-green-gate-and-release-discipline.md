@@ -21,4 +21,4 @@
 - 发布 = 可逆且可验证：secret 扫描在推前、隔离安装实测在 tag 后，都是低成本高杠杆的防呆。
 
 ## 改进建议
-- 本日期随「上游对比与升级（2026-09-09）」落地为 SKILL.md 阶段 6/7/9 纪律与 quality-bar 检查项；「gold-standards 描述记忆库」见同日 antongulin 记录。
+- 本日期随「上游对比与升级（2026-09-09）」落地为 SKILL.md 阶段 6/7/9 纪律与 quality-bar 检查项；「gold-standard 先例注入」见同日 antongulin 记录。

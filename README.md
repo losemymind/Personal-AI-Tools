@@ -28,7 +28,7 @@ Personal-AI-Tools/
 ## 常用命令（在各 creator 工作区根执行）
 
 ```bash
-python -m pytest tests/ -q              # skill-creator 23 例 / agent-creator 18 例 + 成品自包含自检
+python -m pytest tests/ -q              # skill-creator 33 例 / agent-creator 18 例 + 成品自包含自检
 # skill-creator 发布检查：pytest 之外，成品 strict 自检（引用不悬空等）
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 ```

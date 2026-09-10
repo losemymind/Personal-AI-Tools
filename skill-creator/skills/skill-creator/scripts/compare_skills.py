@@ -23,23 +23,15 @@ import re
 import sys
 from pathlib import Path
 
+from utils import (
+    EXAMPLES_PATTERNS,
+    LIMITATIONS_PATTERNS,
+    WHEN_TO_USE_PATTERNS as WHEN_USE_PATTERNS,
+    parse_frontmatter,
+)
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 REFS_DIR = SCRIPT_DIR.parent / "references"
-
-WHEN_USE_PATTERNS = [
-    re.compile(r"^##\s+When\s+to\s+Use", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+Use\s+this\s+skill\s+when", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+何时使用(?:此|这|本)*技能", re.MULTILINE),
-    re.compile(r"^##\s+When\s+to\s+activate\s+this\s+skill", re.MULTILINE | re.IGNORECASE),
-]
-EXAMPLES_PATTERNS = [
-    re.compile(r"^##\s+Examples?", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+示例", re.MULTILINE),
-]
-LIMITATIONS_PATTERNS = [
-    re.compile(r"^##\s+Limitations?", re.MULTILINE | re.IGNORECASE),
-    re.compile(r"^##\s+限制", re.MULTILINE),
-]
 
 
 def configure_utf8_output() -> None:
@@ -66,16 +58,9 @@ def read_skill(skill_dir: Path) -> dict:
     skill_file = skill_dir / "SKILL.md"
     if not skill_file.exists():
         return {"error": f"SKILL.md not found in {skill_dir}"}
-    content = skill_file.read_text(encoding="utf-8", errors="replace")
-    fm = {}
-    m = re.match(r"^---\s*\n(.*?)\n?---(?:\s*\n|$)", content, re.DOTALL)
-    if m:
-        try:
-            import yaml
-
-            fm = yaml.safe_load(m.group(1)) or {}
-        except Exception:
-            fm = {}
+    content = skill_file.read_text(encoding="utf-8-sig", errors="replace")
+    fm, _ = parse_frontmatter(content)
+    fm = fm or {}
     subdirs = [d for d in os.listdir(skill_dir) if (skill_dir / d).is_dir() and not d.startswith(".")]
     code_blocks = len(re.findall(r"```", content)) // 2
     return {
@@ -101,11 +86,12 @@ def score_quality(s: dict) -> dict:
     q["security_guardrails"] = 1.0
     if fm.get("risk") == "offensive":
         q["security_guardrails"] = 1.0 if re.search(r"AUTHORIZED USE ONLY|仅限授权使用", content, re.IGNORECASE) else 0.0
-    elif re.search(r"curl\s*\||wget\s*\||irm\s*\||/isx", content):
+    elif re.search(r"\b(curl|wget)\b[^\n]*\|\s*(?:sudo\s+)?(?:ba|z|k)?sh\b|\birm\b[^\n]*\|\s*iex\b", content, re.IGNORECASE):
         q["security_guardrails"] = 0.0
     else:
         q["security_guardrails"] = 0.8  # no risk content detected -> default pass
-    meta_fields = ["name", "description"]
+    # Metadata completeness mirrors quality-bar item 1 (required + recommended fields).
+    meta_fields = ["name", "description", "risk", "source", "version", "category", "date_added"]
     q["metadata_complete"] = sum(1 for f in meta_fields if fm.get(f)) / len(meta_fields)
     return q
 
@@ -165,7 +151,8 @@ def main() -> int:
     candidates = []
     if args.all_candidates and args.upstream_dir:
         base = Path(args.upstream_dir)
-        candidates = [d for d in (base.iterdir() if base.is_dir() else []) if (d / "SKILL.md").exists()]
+        # Recurse so categorized trees (category/skill/SKILL.md) are not missed.
+        candidates = sorted(p.parent for p in base.rglob("SKILL.md")) if base.is_dir() else []
     elif args.upstream_dir:
         candidates = [Path(args.upstream_dir)]
     if not candidates:

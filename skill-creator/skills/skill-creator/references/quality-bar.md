@@ -8,7 +8,7 @@
 
 `SKILL.md` 前置元数据必须是有效 YAML，并包含：
 
-- `name`：kebab-case，与文件夹名完全一致（长度 <64）
+- `name`：kebab-case，与文件夹名完全一致（长度 ≤100）
 - `description`：≤1024 字符（验证器上限 1024），**单行、无 `<`/`>` 占位符、触发场景优先 + 一句能力定位**，不写执行步骤/流程阶段摘要；`description` 是唯一无条件加载的触发面，须**自足**覆盖触发场景（触发面规律见 `skill-writing-guide.md` §6）
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一
 - `source`：来源归属（原创用 `self`）
@@ -42,7 +42,7 @@
 
 已知边缘情况或技能**无法**做的事情列表，例如「在无 WSL 的 Windows 上不工作」。
 
-### 6. 指令安全审查（命令/安装类内容）
+### 6. 指令安全审查（命令/安装类内容；危险管道与明文密钥自动扫描）
 
 技能包含命令示例、远程获取步骤、密钥或变更指导时，内容必须通过安全审查：
 
@@ -78,20 +78,22 @@ python scripts/validate_skills.py --strict
 ## 验证器检查项一览
 
 - [x] frontmatter 有效 YAML 且为映射
-- [x] `name` 存在且与文件夹名一致
+- [x] `name` 存在、与文件夹名一致且 ≤100 字符
 - [x] `description` 存在、为字符串、未超长
 - [x] `risk` 存在（标准模式缺失仅警告）且取值为合法级别
 - [x] `source` 存在（标准模式缺失仅警告）
 - [x] `source_repo` / `source_type` 格式正确（若提供）
 - [x] `date_added` 格式为 YYYY-MM-DD（缺失仅提示）
 - [x] `version` 格式为 x.y.z（缺失仅提示）
+- [x] `tags` 为列表且 ≤5 个（超出仅提示）；`tools` 为列表、未知客户端仅提示
 - [x] 中英文「何时使用」章节存在
 - [x] 中英文「示例」章节存在
 - [x] 中英文「限制」章节存在
 - [x] offensive 技能的安全免责声明（中英均可）
 - [x] offensive 技能的强制用户确认门
+- [x] 危险远程执行管道（`curl|sh`、`wget|bash`、`irm|iex`）与常见明文密钥扫描（`<!-- security-allowlist -->` 可豁免）
 - [x] markdown 链接无悬空
-- [x] 反引号路径引用（`references/x.md`、`scripts/x.py` 等）存在且可解析（代码块内的示例路径豁免）
+- [x] 反引号路径引用（`references/x.md`、`scripts/x.py` 等）存在且可解析（代码块内的示例路径豁免；引用只在技能自身目录内解析，不借道 skill-creator）
 - [x] 跳过隐藏目录、符号链接与 `examples/`（上游学习样本豁免）
 
 ## 支持级别

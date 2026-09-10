@@ -129,12 +129,17 @@ Respond with ONLY the new description text inside <new_description> tags.
 
 def call_improver_cli(prompt: str, client: str, timeout: int = 300) -> str:
     """Shell out to a client's headless CLI to improve the description."""
-    cmd_map = {"claude": ["claude", "-p", "--output-format", "text"]}
-    if client not in cmd_map:
-        raise RuntimeError(f"--improve-mode cli not available for client '{client}'")
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
     try:
-        proc = subprocess.run(cmd_map[client], input=prompt, capture_output=True, text=True, env=env, timeout=timeout)
+        if client == "claude":
+            # claude -p reads the prompt from stdin when no positional arg is given.
+            proc = subprocess.run(["claude", "-p"], input=prompt, capture_output=True,
+                                  text=True, env=env, timeout=timeout)
+        elif client == "opencode":
+            proc = subprocess.run(["opencode", "run", "--format", "json", prompt],
+                                  capture_output=True, text=True, env=env, timeout=timeout)
+        else:
+            raise RuntimeError(f"--improve-mode cli not available for client '{client}'")
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         raise RuntimeError(f"improver CLI failed: {e}") from e
     if proc.returncode != 0:
@@ -168,7 +173,8 @@ def main() -> int:
     parser.add_argument("--max-iterations", type=int, default=5, help="Max improvement iterations")
     parser.add_argument("--improve-mode", choices=["manual", "cli"], default="manual",
                         help="manual=print prompt & read pasted reply (default), cli=headless client CLI")
-    parser.add_argument("--client", default="claude", help="CLI client for --improve-mode cli")
+    parser.add_argument("--client", default="claude", choices=["claude", "opencode"],
+                        help="CLI client for --improve-mode cli")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for train/test split")
     parser.add_argument("--report", type=Path, help="Write final JSON iteration log here")
     args = parser.parse_args()

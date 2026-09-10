@@ -14,8 +14,7 @@
       "id": 1,
       "query": "用户会真实说的话（应触发该技能）",
       "should_trigger": true,
-      "expected_output": "预期结果描述",
-      "files": []
+      "expected_output": "预期结果描述"
     },
     {
       "id": 2,
@@ -33,7 +32,6 @@
 - `evals[].query`：真实用户提示词（不是抽象请求）
 - `evals[].should_trigger`：是否应触发本技能
 - `evals[].expected_output`：成功时的人类可读描述（可选）
-- `evals[].files`：可选输入文件列表
 
 ## evaluation 结果（run_eval 输出）
 

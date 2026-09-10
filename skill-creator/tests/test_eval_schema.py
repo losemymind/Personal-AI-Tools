@@ -26,14 +26,16 @@ def _skill_with_evals(root, evals):
     return skill
 
 
-def test_template_uses_canonical_query_key():
-    """The shipped template must use `query`, never legacy `prompt`."""
+def test_template_uses_canonical_query_key_and_no_dead_files_field():
+    """The shipped template must use `query` and must not advertise an
+    unconsumed `files` field (no script reads it)."""
     template = json.loads(
         (ARTIFACT / "templates" / "evals.json.template").read_text(encoding="utf-8")
     )
     for item in template["evals"]:
         assert "query" in item, "evals.json.template must key the prompt as 'query'"
         assert "prompt" not in item, "evals.json.template must not use the legacy 'prompt' key"
+        assert "files" not in item, "evals.json.template must not ship an unconsumed 'files' field"
 
 
 def test_eval_query_helper_prefers_query_and_falls_back():
@@ -69,21 +71,3 @@ def test_run_eval_accepts_legacy_prompt_key(tmp_path):
     out = json.loads(r.stdout)
     assert out["summary"]["total"] == 2
     assert out["results"][0]["query"] == "帮我总结今天的改动写 PR"
-
-
-def test_run_trigger_tests_reads_query_and_emits_query(tmp_path):
-    from conftest import run_script
-
-    skill = _skill_with_evals(tmp_path, [
-        {"id": 1, "query": "总结 git 改动写 PR", "should_trigger": True},
-        {"id": 2, "query": "今天天气怎么样", "should_trigger": False},
-    ])
-    r = run_script(
-        "scripts/run_trigger_tests.py", str(skill),
-        "--evals", str(skill / "evals" / "evals.json"),
-        "--json",
-    )
-    assert r.returncode == 0, r.stdout + r.stderr
-    out = json.loads(r.stdout)
-    assert out["results"][0]["query"] == "总结 git 改动写 PR"
-    assert "prompt" not in out["results"][0]
