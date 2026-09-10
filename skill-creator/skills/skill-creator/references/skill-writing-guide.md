@@ -1,7 +1,7 @@
 # 技能写作规律（TDD 化 + 表述匹配失败类型）
 
 > 反哺来源：上游 obra/superpowers 仓库的「writing-skills」技能（社区成熟方法论，含措辞对照实证）+ Anthropic 官方技能写作最佳实践。2026-09-03 对比本地 skill-creator 后吸收（记录见 `evolutions/2026-09-03-adopt-superpowers-writing-skills.md`）。
-> 本文件补充 SKILL.md 阶段 4/6/7 与 `quality-bar.md` 的**写作规律**细节；触发量化工具见 `scripts/run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`，此处不再重复。
+> 本文件补充 SKILL.md 阶段 4/6/7 与质量标准的**写作规律**细节；触发量化工具见 `scripts/run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`，此处不再重复。
 
 ## 1. 铁律：无「失败先例」不写技能（RED-GREEN-REFACTOR）
 

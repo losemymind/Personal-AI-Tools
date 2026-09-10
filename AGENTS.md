@@ -70,6 +70,8 @@ python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --
 python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir <skills目录>   # 校验技能库/目录
 ```
 
+**CI**：`.github/workflows/validate.yml` 在 push/PR 时复刻上述发布门（两工作区 pytest、成品/库 strict、`build_catalog.py --check`）——是本仓库唯一的自动门禁，改门禁时同步该文件。
+
 ## 结构要点
 
 - 两工作区是同构孪生（agent↔skill），dev 布局已统一精简（无 `build/`）。发布检查差异只源于**成品自校验能力不同**：skill-creator 成品是 SKILL.md 技能形态，`validate_skills.py` 能自校验自身；agent-creator 成品的 `validate_agents.py` 校验对象是 AGENT.md 代理库（非技能形态成品），故自包含扫描以 pytest 形式落在 dev-only tests。tests 脚本仍同模板各写一份（仅命名差异，哈希不同）。改一处共享模式时，先想另一侧是否需要同步或删除。

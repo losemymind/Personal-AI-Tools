@@ -1,0 +1,71 @@
+{
+  "skill_name": "prd-generator",
+  "evals": [
+    {
+      "id": 1,
+      "query": "帮我创建 PRD",
+      "should_trigger": true,
+      "expected_output": "生成结构化 PRD"
+    },
+    {
+      "id": 2,
+      "query": "写一份需求文档，把这个功能描述清楚",
+      "should_trigger": true,
+      "expected_output": "需求文档"
+    },
+    {
+      "id": 3,
+      "query": "plan this feature for me",
+      "should_trigger": true,
+      "expected_output": "功能规划文档"
+    },
+    {
+      "id": 4,
+      "query": "help me spec out the requirements for this feature",
+      "should_trigger": true,
+      "expected_output": "需求规格"
+    },
+    {
+      "id": 5,
+      "query": "把这段功能描述转成结构化 PRD",
+      "should_trigger": true,
+      "expected_output": "完整章节 PRD"
+    },
+    {
+      "id": 6,
+      "query": "我想做个新功能，先帮我把需求文档写出来",
+      "should_trigger": true,
+      "expected_output": "PRD 初稿"
+    },
+    {
+      "id": 7,
+      "query": "总结我的代码改动写 PR 描述",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 8,
+      "query": "帮我审查这个 PR 的代码",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 9,
+      "query": "把这个工作流做成一个技能",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 10,
+      "query": "帮我写单元测试",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 11,
+      "query": "今天天气怎么样",
+      "should_trigger": false,
+      "expected_output": ""
+    }
+  ]
+}

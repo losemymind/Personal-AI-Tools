@@ -1,0 +1,71 @@
+{
+  "skill_name": "pr-summarizer",
+  "evals": [
+    {
+      "id": 1,
+      "query": "总结我今天的 git 改动",
+      "should_trigger": true,
+      "expected_output": "结构化 PR 总结"
+    },
+    {
+      "id": 2,
+      "query": "帮我写这个 PR 的描述",
+      "should_trigger": true,
+      "expected_output": "PR 描述文本"
+    },
+    {
+      "id": 3,
+      "query": "review 前帮我把 diff 梳理一下",
+      "should_trigger": true,
+      "expected_output": "变更分类与审查清单"
+    },
+    {
+      "id": 4,
+      "query": "给出这次改动的语义化标题建议",
+      "should_trigger": true,
+      "expected_output": "语义化标题"
+    },
+    {
+      "id": 5,
+      "query": "把这次变更整理成变更分类表并标注风险",
+      "should_trigger": true,
+      "expected_output": "变更分类表 + 风险标注"
+    },
+    {
+      "id": 6,
+      "query": "写一份 PR 摘要",
+      "should_trigger": true,
+      "expected_output": "PR 摘要"
+    },
+    {
+      "id": 7,
+      "query": "帮我做代码审查，找找安全隐患",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 8,
+      "query": "帮我创建一份 PRD 需求文档",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 9,
+      "query": "把这个工作流做成一个技能",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 10,
+      "query": "帮我写单元测试",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 11,
+      "query": "今天天气怎么样",
+      "should_trigger": false,
+      "expected_output": ""
+    }
+  ]
+}

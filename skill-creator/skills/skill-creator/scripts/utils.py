@@ -212,16 +212,15 @@ def keyword_tokens(text: str) -> list[str]:
 
 
 def classify(prompt: str, description: str) -> bool:
-    """Deterministic heuristic: does the prompt share >=2 meaningful tokens?
+    """Deterministic heuristic: does the prompt share >=2 distinct meaningful tokens?
 
     Meaningful tokens are latin words (len >= 2) and CJK bigrams (len == 2);
     CJK unigrams are intentionally excluded to avoid single-common-character
-    false positives.
+    false positives. Tokens are compared as *sets*: a term repeated in the
+    description (e.g. 创建 appearing three times) is one shared token, not three —
+    counting occurrences would let any single-word overlap cross the threshold.
     """
     tokens = keyword_tokens(description)
-    meaningful = [
-        t for t in tokens if t not in _TRIGGER_STOP and len(t) >= 2
-    ]
+    meaningful = {t for t in tokens if t not in _TRIGGER_STOP and len(t) >= 2}
     prompt_tokens = set(keyword_tokens(prompt))
-    overlap = sum(1 for t in meaningful if t in prompt_tokens)
-    return overlap >= 2
+    return len(meaningful & prompt_tokens) >= 2

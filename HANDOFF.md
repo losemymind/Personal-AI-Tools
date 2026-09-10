@@ -1,13 +1,13 @@
-# 会话交接（2026-09-10 · 第 4 版）
+# 会话交接（2026-09-10 · 第 5 版）
 
 本文件为最近会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**当前上下文与待办**。
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → **本会话续：验证器缺口补齐（见下）**。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → **本会话续：清四项内部债（见下）**。
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
-- 版本：**skill-creator 0.9.2**、**agent-creator 0.7.0**。
+- 版本：**skill-creator 0.9.3**、**agent-creator 0.7.0**。
 - `opencode.json`（仓库根）用 `instructions` 注册三份 `AGENTS.md`；`.opencode/`（安装测试副本）已 gitignore。
 
 ## 本会话已完成改动
@@ -36,15 +36,28 @@
 - `.opencode/skills/skill-creator/` 镜像已同步 4 个改动文件。
 - 未改动：agent-creator、根能力库 `skills/`/`agents/` 内容、两份 `CATALOG.md`（`--check` 仍 up to date）。
 
-> 备注：新校验在成品自身与 3 个库技能上以 advisory 形式提示「未随附 evals.json」（strict 仅对 warnings 失败，故不阻断）。若要清零，需为 skill-creator 自身及 code-review-skill/pr-summarizer/prd-generator 补 evals——属内容新增，未在本次范围内。
+### C. skill-creator 成品演进 0.9.2 → 0.9.3（清四项内部债）
+
+1. **references 互链（内容 + 护栏）**：修 `skill-writing-guide.md`/`skill-template.md`/`quality-bar.md` 三处裸兄弟文件名互链；`validate_skills.py` 新增 `check_references_cross_links()`，把「references 不互链」变成机械 error。
+2. **连带发现并修复 `utils.classify` 缺陷**：原按 description 中**重复 token 计数**，导致「创建」出现 3 次时任何含「创建」的查询假阳性。改为按去重 token 集合求交。
+3. **dogfooding evals**：为 skill-creator 主体现增 `evals.json`（14 条），并为 `code-review-skill`/`pr-summarizer`/`prd-generator` 各补 `evals.json`（各 11 条）→ 成品与 5 个库技能 strict 的「No evals.json」advisory 全部清零。
+4. **CI**：新增 `.github/workflows/validate.yml`（3 job：skill-creator pytest+strict、agent-creator pytest+strict、CATALOG `--check`），复刻本地发布门。
+5. **债 4（对比评分粒度）暂不修**：维持文档化（改动会破坏 `evolutions/` 历史分值可比性，投入产出比低）。
+- 测试：`tests/test_hardening.py` +3（references 互链失败/放行、classify 去重）→ skill pytest **52 → 55**；另新增 4 份 evals.json（非 pytest）。
+- 记录：`evolutions/2026-09-10-close-audit-debts.md`（新增）。
+- 文档：根 `AGENTS.md` 补 CI 说明；`.opencode/skills/skill-creator/` 镜像同步 8 个文件。
+- 未改动：agent-creator 及两名库内容、两份 `CATALOG.md`（`--check` 仍 up to date）。
+
+> 备注：`code-review-skill` 触发评测 10/11，唯一假阳性「总结…PR 改动」源于与 pr-summarizer 共享通用词 `pr`/`改动`，属词重叠启发式固有（同 ue5 先例），已保留记录。
 
 ## 已知待办 / 潜在风险
 
 1. **真实客户端 CLI 场景未跑通**：本环境嵌套 `opencode run` 返回 server error，skill-creator 量化基准只能以合成 stub 客户端验证**链路**（非真实模型行为）。有可用无头客户端时应补跑 `run_scenario.py` 真机基准。
 2. **触发评测为词重叠启发式**：仅代表词面覆盖，不代表真实触发率；`ue5-performance-optimization` 对「Unity 性能优化」的假阳性属固有（性能/优化为核心词不可去），不宜继续为此改描述。
-3. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。
+3. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。（本次为技能新增 `evals.json`，未改变技能/代理集合，审计与 CATALOG 无需变动。）
 4. **已评估、用户明确「不需要修复」的项（勿再主动提出）**：skill-creator 成品 `examples/`（103 文件学习样本）、两份 `indexes/upstream.db`（随成品提交）、能力库 UE/academic 垂直内容——维持现状。
 5. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。
+6. **CI 已加但未在真机运行**：`.github/workflows/validate.yml` 仅本地校验了 YAML 语法与等价命令，首次 push 后才能确认 Actions 端全绿。
 
 ## 验证命令备忘
 
@@ -53,7 +66,7 @@
 python -m pytest tests/ -q        # 回归 + 成品自包含自检（18 例）
 
 # skill-creator（在 skill-creator/ 根）
-python -m pytest tests/ -q                                                    # 52 例
+python -m pytest tests/ -q                                                    # 55 例
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
 python skills/skill-creator/scripts/search_index.py --stats                   # 4 源 2187 条

@@ -9,7 +9,7 @@
 `SKILL.md` 前置元数据必须是有效 YAML，并包含：
 
 - `name`：kebab-case，与文件夹名完全一致（长度 ≤100）
-- `description`：≤1024 字符（验证器上限 1024），**单行、无 `<`/`>` 占位符、触发场景优先 + 一句能力定位**，不写执行步骤/流程阶段摘要；`description` 是唯一无条件加载的触发面，须**自足**覆盖触发场景（触发面规律见 `skill-writing-guide.md` §6）
+- `description`：≤1024 字符（验证器上限 1024），**单行、无 `<`/`>` 占位符、触发场景优先 + 一句能力定位**，不写执行步骤/流程阶段摘要；`description` 是唯一无条件加载的触发面，须**自足**覆盖触发场景（触发面规律见 SKILL.md「读取规则」中的写作规律文档 §6）
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一
 - `source`：来源归属（原创用 `self`）
 - `version`：`x.y.z` 语义化格式（推荐，生命周期记账；缺失仅提示）
@@ -95,6 +95,7 @@ python scripts/validate_skills.py --strict
 - [x] markdown 链接无悬空
 - [x] 反引号路径引用（`references/x.md`、`scripts/x.py`、`indexes/upstream.db` 等）存在且可解析（代码块内的示例路径豁免；引用只在技能自身目录内解析，不借道 skill-creator）
 - [x] `evals.json`（`evals/evals.json` 或技能根）存在时形状合法：可解析、含 `evals` 数组、每项有非空 `query` 与布尔 `should_trigger`；缺失仅提示（建议随技能发布，质量门槛第 8 项）
+- [x] `references/*.md` 不互链成图：references 文件不得在反引号里指向**同目录兄弟 references 文件**（自引用与带 `references/` 前缀的普通引用不受影响；跨目录引用请经 SKILL.md「读取规则」导读）
 - [x] 跳过隐藏目录、符号链接与 `examples/`（上游学习样本豁免）
 
 ## 支持级别

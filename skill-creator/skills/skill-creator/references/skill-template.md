@@ -22,7 +22,7 @@ tools: [claude, opencode, codex]  # 可选：支持的客户端
 
 **必需字段：**
 - `name`：kebab-case（小写-连字符），与目录名完全一致，≤100 字符，单行
-- `description`：≤1024 字符（验证器上限 1024），**触发场景优先**（「何时用/Use when」开头 + 触发关键词前置）+ 一句能力定位；**不写执行步骤/流程摘要**（写法的实证原因见 `skill-writing-guide.md` §6）；单行
+- `description`：≤1024 字符（验证器上限 1024），**触发场景优先**（「何时用/Use when」开头 + 触发关键词前置）+ 一句能力定位；**不写执行步骤/流程摘要**（写法的实证原因见 SKILL.md「读取规则」中的写作规律文档 §6）；单行
 - `category`：见下方分类列表
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一（新技能避免 `unknown`）
 - `source`：`self`（原创）/ 社区 / 官方 / URL。`self` 表示你是原始作者

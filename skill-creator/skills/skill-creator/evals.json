@@ -1,0 +1,89 @@
+{
+  "skill_name": "skill-creator",
+  "evals": [
+    {
+      "id": 1,
+      "query": "把反复出现的工作流做成一个可复用技能",
+      "should_trigger": true,
+      "expected_output": "进入技能创建流程，产出 SKILL.md 骨架"
+    },
+    {
+      "id": 2,
+      "query": "帮我创建并验证一个新的技能",
+      "should_trigger": true,
+      "expected_output": "脚手架 + 自动验证"
+    },
+    {
+      "id": 3,
+      "query": "改进现有技能的描述，让触发质量更高",
+      "should_trigger": true,
+      "expected_output": "进入 description 优化闭环"
+    },
+    {
+      "id": 4,
+      "query": "评估一下这个技能的触发准确性",
+      "should_trigger": true,
+      "expected_output": "运行触发评测并给出分数"
+    },
+    {
+      "id": 5,
+      "query": "把这个重复出现的工作流沉淀下来做成技能",
+      "should_trigger": true,
+      "expected_output": "沉淀为技能目录"
+    },
+    {
+      "id": 6,
+      "query": "我经常手动重复一整套工作流，想做成技能",
+      "should_trigger": true,
+      "expected_output": "进入阶段 1 捕捉工作与证据"
+    },
+    {
+      "id": 7,
+      "query": "这个技能怎么安装到 opencode 客户端",
+      "should_trigger": true,
+      "expected_output": "给出多客户端安装指引"
+    },
+    {
+      "id": 8,
+      "query": "skills 的 description 怎么写才容易被触发",
+      "should_trigger": true,
+      "expected_output": "写作规范与触发面纪律"
+    },
+    {
+      "id": 9,
+      "query": "帮我写一个 React 组件",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 10,
+      "query": "帮我写单元测试",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 11,
+      "query": "创建一个专门的代码审查 agent",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 12,
+      "query": "帮我优化这个函数的性能",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 13,
+      "query": "把这个 PR 的改动总结成一张表",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 14,
+      "query": "今天天气怎么样",
+      "should_trigger": false,
+      "expected_output": ""
+    }
+  ]
+}

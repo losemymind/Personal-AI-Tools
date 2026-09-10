@@ -1,0 +1,71 @@
+{
+  "skill_name": "code-review-skill",
+  "evals": [
+    {
+      "id": 1,
+      "query": "帮我 review 这个 PR 的代码改动",
+      "should_trigger": true,
+      "expected_output": "按审查维度给出问题清单"
+    },
+    {
+      "id": 2,
+      "query": "审查一下这段 TypeScript 代码的质量",
+      "should_trigger": true,
+      "expected_output": "代码质量审查反馈"
+    },
+    {
+      "id": 3,
+      "query": "做一次安全审计，看看有没有漏洞",
+      "should_trigger": true,
+      "expected_output": "安全审计结果"
+    },
+    {
+      "id": 4,
+      "query": "review 我的 Python 改动，帮我找找 bug",
+      "should_trigger": true,
+      "expected_output": "正确性与 bug 清单"
+    },
+    {
+      "id": 5,
+      "query": "检查这个 React 组件有没有性能问题",
+      "should_trigger": true,
+      "expected_output": "性能审查建议"
+    },
+    {
+      "id": 6,
+      "query": "帮我给这个函数写点代码审查反馈",
+      "should_trigger": true,
+      "expected_output": "可执行的审查反馈"
+    },
+    {
+      "id": 7,
+      "query": "把这个工作流做成一个技能",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 8,
+      "query": "帮我写一份 PRD 需求文档",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 9,
+      "query": "总结我今天的 git 改动写 PR 描述",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 10,
+      "query": "帮我配置一下 CI 流水线",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 11,
+      "query": "今天天气怎么样",
+      "should_trigger": false,
+      "expected_output": ""
+    }
+  ]
+}

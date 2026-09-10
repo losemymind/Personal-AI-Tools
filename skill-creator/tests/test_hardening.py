@@ -355,3 +355,39 @@ def test_missing_evals_json_is_advisory_not_fatal(tmp_path):
     r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
     assert r.returncode == 0, r.stdout + r.stderr
     assert "No evals.json" in r.stdout
+
+
+# E4 — references must not cross-link sibling references files (one-level-deep discipline)
+def test_references_sibling_cross_link_fails(tmp_path):
+    d = _write_skill(tmp_path / "xlink-skill", "xlink-skill")
+    (d / "references").mkdir()
+    (d / "references" / "a.md").write_text(
+        "> 细节见 `b.md`。\n", encoding="utf-8")
+    (d / "references" / "b.md").write_text("内容\n", encoding="utf-8")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "cross-links sibling" in r.stdout
+
+
+def test_references_self_and_path_refs_are_allowed(tmp_path):
+    d = _write_skill(tmp_path / "ok-refs-skill", "ok-refs-skill")
+    (d / "references").mkdir()
+    # self-name mention and a `references/…` (with slash) pointer are not sibling edges
+    (d / "references" / "a.md").write_text(
+        "本文件是 `a.md`；外部见 `references/b.md`。\n", encoding="utf-8")
+    (d / "references" / "b.md").write_text("内容\n", encoding="utf-8")
+    r = run_script("scripts/validate_skills.py", "--strict", "--dir", str(d))
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+# E5 — classify compares distinct token sets; a term repeated in the description is one token
+def test_classify_does_not_inflate_on_repeated_description_tokens():
+    _scripts_on_path()
+    try:
+        from utils import classify
+    finally:
+        _pop_path()
+
+    desc = "创建技能。创建技能。创建技能。"  # 创建 appears 3x but is a single distinct token
+    assert not classify("创建", desc), "one distinct shared token must not trigger"
+    assert classify("创建技能并验证", desc), "two distinct shared tokens must trigger"

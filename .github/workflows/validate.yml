@@ -1,0 +1,54 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  skill-creator:
+    name: skill-creator (pytest + strict self-check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: python -m pip install --upgrade pip pyyaml pytest
+      - name: Regression tests
+        working-directory: skill-creator
+        run: python -m pytest tests/ -q
+      - name: Artifact strict self-check
+        working-directory: skill-creator
+        run: python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
+      - name: Capability library strict check
+        run: python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir skills
+
+  agent-creator:
+    name: agent-creator (pytest + library strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: python -m pip install --upgrade pip pyyaml pytest
+      - name: Regression tests
+        working-directory: agent-creator
+        run: python -m pytest tests/ -q
+      - name: Capability library strict check
+        run: python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --dir agents
+
+  catalog:
+    name: CATALOG up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Catalog freshness check
+        run: python tools/scripts/build_catalog.py --check

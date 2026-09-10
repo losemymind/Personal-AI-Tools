@@ -155,6 +155,47 @@ def check_evals_file(evals_path: str, rel_path: str) -> list[str]:
     return errs
 
 
+def check_references_cross_links(root: str, rel_path: str) -> list[str]:
+    """Enforce the one-level-deep discipline: references must not link each other.
+
+    The trigger surface is SKILL.md -> references; a references/*.md file naming a
+    *sibling references file* (bare filename in backticks) creates a graph edge the
+    progressive-disclosure path cannot predict. Only files that actually exist in
+    the same references/ dir are flagged, so prose or artifact names never trip it.
+    Fenced code blocks are exempt.
+    """
+    refs_dir = os.path.join(root, "references")
+    if not os.path.isdir(refs_dir):
+        return []
+    siblings = {
+        f for f in os.listdir(refs_dir)
+        if f.endswith(".md") and os.path.isfile(os.path.join(refs_dir, f))
+    }
+    errs: list[str] = []
+    for name in sorted(siblings):
+        try:
+            with open(os.path.join(refs_dir, name), "r", encoding="utf-8-sig") as f:
+                text = f.read()
+        except OSError:
+            continue
+        fenced = [m.span() for m in re.finditer(r"```.*?```", text, re.DOTALL)]
+
+        def _in_fence(pos: int) -> bool:
+            return any(s <= pos < e for s, e in fenced)
+
+        for m in re.finditer(r"`([^`\s]+\.md)`", text):
+            ref = m.group(1)
+            if "/" in ref or ref.startswith("http") or _in_fence(m.start()):
+                continue
+            if ref in siblings and ref != name:
+                errs.append(
+                    f"❌ {rel_path}: references/{name} cross-links sibling "
+                    f"'{ref}' — references must not link each other; reach it via "
+                    "SKILL.md's read-rule instead."
+                )
+    return errs
+
+
 def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> dict:
     # Normalize so `--dir .` (running inside an installed skill dir) resolves the
     # real folder name for the name-vs-folder check and stable relative paths.
@@ -418,6 +459,9 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             advisories.append(
                 f"ℹ️  {rel_path}: No evals.json found (recommended: ship trigger tests with the skill)."
             )
+
+        # 7. references cross-link discipline (one-level-deep from SKILL.md only).
+        errors.extend(check_references_cross_links(root, rel_path))
 
     return {
         "skill_count": skill_count,
