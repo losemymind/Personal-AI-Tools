@@ -4,7 +4,7 @@
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ **未提交：真机评测提速/保真/隔离（0.9.5-0.9.7）+ 全量审计九轮修复（0.9.8-0.9.16，见 §E/§F）+ 独立审计第三/四轮（0.9.17-0.9.18，见 §G）**。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ **已提交 `e819536`（未推送）：真机评测提速/保真/隔离（0.9.5-0.9.7）+ 全量审计九轮修复（0.9.8-0.9.16，见 §E/§F）+ 独立审计第三/四轮（0.9.17-0.9.18，见 §G）**。
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
 - 版本：**skill-creator 0.9.18**、**agent-creator 0.7.0**。
@@ -135,7 +135,7 @@
 4. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。（本会话只改创建器成品，未改技能/代理集合，审计与 CATALOG 无需变动。）
 5. **触发代理追加的 5 个测试已保留**：`tests/test_hardening.py` 中 `test_run_cli_item_threshold_semantics` 等 5 例——经审阅内容正确、全绿，用户决定保留。
 6. **已评估、用户明确「不需要修复」的项（勿再主动提出）**：skill-creator 成品 `examples/`（103 文件学习样本）、两份 `indexes/upstream.db`（随成品提交）、能力库 UE/academic 垂直内容——维持现状。
-7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（本会话改动尚未提交。）
+7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（改动已提交为 `e819536`；本次会话确认发布门全绿后推送，CI 首次运行。）
 8. **CI 已加但未在真机运行**：`.github/workflows/validate.yml` 仅本地校验了 YAML 语法与等价命令，首次 push 后才能确认 Actions 端全绿。
 
 ## 验证命令备忘
