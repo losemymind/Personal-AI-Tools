@@ -59,7 +59,7 @@ cd <安装目录>     # 例如 ~/.claude/skills/skill-creator
 # 1) 自校验：安装副本在自身位置可通过严格验证（--dir .）
 python scripts/validate_skills.py --strict --dir .
 
-# 2) 索引完整性：应显示 2 个来源共 2132 条（离线可用，无需联网）
+# 2) 索引完整性：应显示 4 个来源共 2187 条（离线可用，无需联网）
 python scripts/search_index.py --stats
 
 # 3) 关键资源就位

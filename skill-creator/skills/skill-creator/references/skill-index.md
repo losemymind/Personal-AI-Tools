@@ -7,16 +7,20 @@
 | 项 | 值 |
 |---|---|
 | 索引文件 | `indexes/upstream.db` |
-| 技能总数 | ~2130（随上游更新变化） |
+| 技能总数 | ~2190（随上游更新变化） |
 | 数据源 | 多源：见下表 |
-| 许可 | 各上游仓库 MIT License |
+| 许可 | 各上游仓库 LICENSE 为准 |
 
 ### 上游源
 
-| 别名 | 仓库 | 技能数 | 索引方式 |
-|---|---|---|---|
-| `aas` | [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills) | ~2100 | 官方 `skills_index.json`（权威元数据）+ 目录扫描补充结构 |
-| `addy` | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 25 | 扫描 `skills/*/SKILL.md`（无官方索引文件） |
+| 别名 | 仓库 | 技能数 | 索引方式 | 许可 |
+|---|---|---|---|---|
+| `aas` | [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills) | ~2115 | 官方 `skills_index.json`（权威元数据）+ 目录扫描补充结构 | MIT |
+| `addy` | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 25 | 扫描 `skills/*/SKILL.md`（无官方索引文件） | MIT |
+| `anthropics` | [anthropics/skills](https://github.com/anthropics/skills) | ~19 | 扫描 `skills/*/SKILL.md`（官方示例技能目录，无索引文件） | 混合：多数 Apache-2.0，`docx`/`pdf`/`pptx`/`xlsx` 为 source-available |
+| `composiohq` | [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) | ~28 | 扫描**仓库根** `*/SKILL.md`（技能即顶层目录，无索引文件） | 未声明（收录前以各技能来源为准） |
+
+> 同名技能可能出现在多个源（如 `skill-creator`、`brand-guidelines`）：索引按 `source_repo` 区分，检索结果会标注来源。
 
 ## 索引说明
 
@@ -35,8 +39,9 @@ FTS5 的 `unicode61` 分词器不切分中文，因此**含中文（CJK）的查
 python scripts/search_index.py "debugging"
 python scripts/search_index.py "git push" --category devops --risk safe
 
-# 按源检索（aas 或 addy）
+# 按源检索（aas / addy / anthropics / composiohq）
 python scripts/search_index.py "accessibility" --source addy
+python scripts/search_index.py "skill creator" --source anthropics
 
 # 查看索引状态（含按源分布）/ 分类分布
 python scripts/search_index.py --stats
@@ -55,6 +60,8 @@ python scripts/build_index.py
 # 只重建某个源
 python scripts/build_index.py --source aas
 python scripts/build_index.py --source addy
+python scripts/build_index.py --source anthropics
+python scripts/build_index.py --source composiohq
 
 # 增量同步（推荐日常使用：复用现有 upstream.db，只更新增/改/删项，速度快）
 python scripts/build_index.py --incremental
@@ -63,4 +70,4 @@ python scripts/build_index.py --incremental
 python scripts/build_index.py --source addy --from-extracted <本地仓库目录>
 ```
 
-**同步策略：** 手动触发（推荐）。索引文件已提交入仓库，用户克隆即得索引；日常更新上游用 `--incremental`（快），索引结构变更时用完整重建。注意多源全量构建会下载全部源（约 110MB+），建议用 `--source <单源>` + `--incremental` 按需同步。
+**同步策略：** 手动触发（推荐）。索引文件已提交入仓库，用户克隆即得索引；日常更新上游用 `--incremental`（快），索引结构变更时用完整重建。注意多源全量构建会下载全部源（约 117MB+，`aas` 单源即约 110MB），建议用 `--source <单源>` + `--incremental` 按需同步。

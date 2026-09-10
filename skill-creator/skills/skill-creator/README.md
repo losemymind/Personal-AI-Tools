@@ -8,14 +8,16 @@
 
 | 源 | 仓库 | 技能数 | 索引方式 | 检索 `--source` |
 |---|---|---|---|---|
-| **aas** | [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills) | ~2100 | 官方 `skills_index.json` + 目录扫描 | `aas` |
+| **aas** | [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills) | ~2115 | 官方 `skills_index.json` + 目录扫描 | `aas` |
 | **addy** | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 25 | 扫描 `skills/*/SKILL.md`（无官方索引） | `addy` |
+| **anthropics** | [anthropics/skills](https://github.com/anthropics/skills) | ~19 | 扫描 `skills/*/SKILL.md`（无官方索引） | `anthropics` |
+| **composiohq** | [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) | ~28 | 扫描仓库根 `*/SKILL.md`（无官方索引） | `composiohq` |
 
 - 检索全库：`python scripts/search_index.py "<关键词>"`（默认查所有源）
-- 按源检索：加 `--source addy`（或 `aas`）
-- 重建/增量：`python scripts/build_index.py [--source all|aas|addy] [--incremental]`
-- 双源均在 MIT 许可下使用，入库技能需保留来源归属
-- 索引细节见 `references/skill-index.md`；新建技能时先在两库中「先查后建」
+- 按源检索：加 `--source anthropics`（或 `aas` / `addy` / `composiohq`）
+- 重建/增量：`python scripts/build_index.py [--source all|aas|addy|anthropics|composiohq] [--incremental]`
+- 许可以各上游仓库 LICENSE 为准（aas/addy 为 MIT；anthropics 多数 Apache-2.0、文档类技能为 source-available；composiohq 未声明），入库技能需保留来源归属
+- 索引细节见 `references/skill-index.md`；新建技能时先在多源中「先查后建」
 
 ## 约定
 

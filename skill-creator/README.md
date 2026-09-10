@@ -37,22 +37,23 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 
 ## 来源与沿革
 
-本技能（成品 `skills/skill-creator/`）融合了以下两个被采纳的 skill-creator 实现：
+本技能（成品 `skills/skill-creator/`）参考并融合了以下三个 skill-creator 实现：
 
-- **[anthropics/skills](https://github.com/anthropics/skills)**（`skills/skill-creator/`，Apache-2.0；与 `anthropics/claude-plugins-official` 的插件版同 blob sha，以其为官方源）：方法论主体与量化评测工具链移植来源（基线双跑/子代理编排、`aggregate_benchmark.py` / `run_eval.py` / `run_loop.py` / `utils.py` 头部与 `references/benchmark-schema.md` 标注移植自其 `scripts/` / `agents/` / `references/`）。
+- **[anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/skill-creator)**（`skills/skill-creator/`，Anthropic 官方；与 `anthropics/claude-plugins-official` 的插件版同 blob sha，以其为官方源）：方法论主体与量化评测工具链移植来源（基线双跑/子代理编排、`aggregate_benchmark.py` / `run_eval.py` / `run_loop.py` / `utils.py` 头部与 `references/benchmark-schema.md` 标注移植自其 `scripts/` / `agents/` / `references/`）。
+- **[ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills/tree/master/skill-creator)**（`skill-creator/`，Apache-2.0）：官方 Anthropic skill-creator 在流行 awesome-list 中的公开分发副本（内容同官方主线：`SKILL.md` + `scripts/`），作为参考入口，与方法论源同源。
 - **[antongulin/opencode-skill-creator](https://github.com/antongulin/opencode-skill-creator)**（Apache-2.0；Anthropic 官方版的开源 opencode 移植）：贡献描述优化闭环增量（高分描述作 few-shot 先例 + 触发失败分类）。
 
 调研过的其余 skill-creator 实现（OpenAI Codex 官方内置、openai/skills `.system`、vercel-labs/json-render、SkillForge、qiaomu-meta-skill、fskill-creator、skill-forge、claude-skills-cli 等）经评估后**未作为采纳来源**（或与上述同源、或与其方法论重叠、或非方法论实现），不在融合名单内。
 
 另有两类非「skill-creator 方法论」依赖保留其真实来源标注（不在收敛范围）：
-- 成品「先查后建」的**上游技能库索引**来自 [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills)（`aas`）与 [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（`addy`）。
+- 成品「先查后建」的**上游技能库索引**来自 [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills)（`aas`）、[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（`addy`），以及 [anthropics/skills](https://github.com/anthropics/skills)（`anthropics`）、[ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)（`composiohq`）。
 - 成品 `references/` 若干文档头部与 `validate_skills.py` 标注「基于 agentic-awesome-skills 适配」——代码级真实出处，保留。
 
 具体吸收点与对比择优记录见成品 `references/` 文档头与 `evolutions/`。
 
 ## 上游对比与升级（2026-09-09）
 
-以两个采纳源为准做了系统对比调研（仓库、目录、SKILL.md 全文实抓）：[anthropics/skills](https://github.com/anthropics/skills)（`skills/skill-creator/`，Anthropic 官方）与 [antongulin/opencode-skill-creator](https://github.com/antongulin/opencode-skill-creator)（其官方版的开源 opencode 移植）。两者的方法论、脚本与我们的核心高度重叠，我们已属严格超集（量化评测/盲测/evolutions 是独有）。
+以两个方法论源为准做了系统对比调研（仓库、目录、SKILL.md 全文实抓）：[anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/skill-creator)（`skills/skill-creator/`，Anthropic 官方）与 [antongulin/opencode-skill-creator](https://github.com/antongulin/opencode-skill-creator)（其官方版的开源 opencode 移植）；ComposioHQ/awesome-claude-skills 的 `skill-creator/` 为官方方法论的分发副本，不作独立对比源。两者的方法论、脚本与我们的核心高度重叠，我们已属严格超集（量化评测/盲测/evolutions 是独有）。
 
 **可吸收优点（已并入成品，见下方升级清单）**：
 1. **结构化评审回流 → agent 评审闭环（无人工）**：把「需要评分和审核」的事务交给评审子代理（`agents/reviewer.md`）产出结构化 `review.json`（`pass`/`revise` + 可执行修复项），驱动 agent1↔agent2 自动迭代直到通过。

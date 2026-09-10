@@ -68,3 +68,11 @@ def test_cjk_query_escapes_like_wildcards():
     assert params.count("%100\\%%") == 4
     assert params.count("%纯\\_净%") == 4
     assert "ESCAPE" in sql
+
+
+def test_source_aliases_cover_all_index_sources():
+    mod = _load_module()
+    assert mod.SOURCE_ALIASES["aas"] == "sickn33/agentic-awesome-skills"
+    assert mod.SOURCE_ALIASES["addy"] == "addyosmani/agent-skills"
+    assert mod.SOURCE_ALIASES["anthropics"] == "anthropics/skills"
+    assert mod.SOURCE_ALIASES["composiohq"] == "ComposioHQ/awesome-claude-skills"

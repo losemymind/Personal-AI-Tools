@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.8.0"
+version: "0.9.0"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -215,7 +215,7 @@ tools: [claude, opencode, codex]   # 可选：支持的客户端
 
 ### 阶段 0：检索上游技能库（先查后建）
 
-动手创建前，**先在本地索引中检索上游技能库是否已有可用技能**（索引为双源：`aas` = agentic-awesome-skills、`addy` = agent-skills，默认全库检索，`--source` 过滤单源；避免重复造轮子，是本技能的第一个决策门）：
+动手创建前，**先在本地索引中检索上游技能库是否已有可用技能**（索引为多源：`aas` = agentic-awesome-skills、`addy` = agent-skills、`anthropics` = anthropics/skills、`composiohq` = awesome-claude-skills，默认全库检索，`--source` 过滤单源；避免重复造轮子，是本技能的第一个决策门）：
 
 ```bash
 python scripts/search_index.py "<用户需求关键词>" [--category <分类>] [--risk <级别>] [--limit 10]

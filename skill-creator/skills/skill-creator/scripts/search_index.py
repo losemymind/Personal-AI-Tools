@@ -35,6 +35,11 @@ SOURCE_ALIASES = {
     "addy": "addyosmani/agent-skills",
     "agent-skills": "addyosmani/agent-skills",
     "addyosmani": "addyosmani/agent-skills",
+    "anthropics": "anthropics/skills",
+    "anthropic": "anthropics/skills",
+    "composiohq": "ComposioHQ/awesome-claude-skills",
+    "composio": "ComposioHQ/awesome-claude-skills",
+    "awesome-claude-skills": "ComposioHQ/awesome-claude-skills",
 }
 
 
@@ -133,7 +138,7 @@ def main() -> int:
     configure_utf8_output()
     parser = argparse.ArgumentParser(description="Search upstream skills index")
     parser.add_argument("query", nargs="?", default="", help="Full-text keywords (name/description/category/tags)")
-    parser.add_argument("--source", default=None, help="Filter by upstream source repo (aas / addy / full repo substring; default: all)")
+    parser.add_argument("--source", default=None, help="Filter by upstream source repo (aas / addy / anthropics / composiohq / full repo substring; default: all)")
     parser.add_argument("--category", default=None, help="Filter by category (exact)")
     parser.add_argument("--risk", default=None, help="Filter by risk level (none/safe/critical/offensive/unknown)")
     parser.add_argument("--tool", default=None, help="Filter by tool (claude/opencode/codex/deepseek...)")
@@ -174,7 +179,7 @@ def main() -> int:
         return 0
 
     if not args.query and not args.category and not args.risk and not args.tool and not args.source and not args.only_scripts and not args.only_references:
-        print("ℹ️  Usage: search_index.py <keywords> [--category X] [--risk Y] [--source aas|addy] ...")
+        print("ℹ️  Usage: search_index.py <keywords> [--category X] [--risk Y] [--source aas|addy|anthropics|composiohq] ...")
         print("   Try:  search_index.py \"git push\"  or  --list-categories / --stats")
         return 0
 

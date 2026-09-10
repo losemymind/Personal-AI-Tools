@@ -3,8 +3,10 @@
 Part of the skill-creator skill. See references/skill-index.md.
 
 Sources:
-  - aas   : sickn33/agentic-awesome-skills  (official skills_index.json + dir scan; ~2100 skills)
-  - addy  : addyosmani/agent-skills        (scanned skills/*/SKILL.md; 25 skills, no index file)
+  - aas        : sickn33/agentic-awesome-skills      (official skills_index.json + dir scan; ~2100 skills)
+  - addy       : addyosmani/agent-skills             (scanned skills/*/SKILL.md; 25 skills, no index file)
+  - anthropics : anthropics/skills                   (scanned skills/*/SKILL.md; small official catalog)
+  - composiohq : ComposioHQ/awesome-claude-skills    (scanned */SKILL.md at repo root; no index file)
 
 Every row carries a `source_repo` column; `path` is unique per source so the
 incremental sync scopes by (source_repo, path).
@@ -13,6 +15,8 @@ Usage:
     python scripts/build_index.py                          # all sources, full rebuild
     python scripts/build_index.py --source aas             # only sickn33 (tarball)
     python scripts/build_index.py --source addy            # only addyosmani (scan)
+    python scripts/build_index.py --source anthropics      # only anthropics/skills
+    python scripts/build_index.py --source composiohq      # only awesome-claude-skills
     python scripts/build_index.py --incremental            # reuse upstream.db
     python scripts/build_index.py --from-extracted <dir>   # use an already-checked-out repo
     python scripts/build_index.py --no-dl                  # scan <repo>/skills locally
@@ -58,6 +62,22 @@ SOURCES = {
         "index_file": None,
         "skills_root": "skills",
         "note": "scanned skills/*/SKILL.md (no index file)",
+    },
+    "anthropics": {
+        "name": "anthropics",
+        "repo": "anthropics/skills",
+        "tarball": "https://github.com/anthropics/skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "note": "scanned skills/*/SKILL.md (no index file)",
+    },
+    "composiohq": {
+        "name": "composiohq",
+        "repo": "ComposioHQ/awesome-claude-skills",
+        "tarball": "https://github.com/ComposioHQ/awesome-claude-skills/archive/refs/heads/master.tar.gz",
+        "index_file": None,
+        "skills_root": "",
+        "note": "scanned */SKILL.md at repo root (no index file)",
     },
 }
 
@@ -152,8 +172,14 @@ def load_official_index(repo_root: Path, source: dict) -> list[dict]:
 
 
 def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
-    """Scan skills/<name>/SKILL.md (used when a source has no official index file)."""
-    skills_root = repo_root / source["skills_root"]
+    """Scan <skills_root>/<name>/SKILL.md (used when a source has no official index file).
+
+    ``skills_root`` may be empty for sources that keep skills at the repo root
+    (e.g. ComposioHQ/awesome-claude-skills); in that case ``path`` is just the
+    directory name (no leading slash).
+    """
+    root_rel = source["skills_root"].strip("/")
+    skills_root = repo_root / root_rel if root_rel else repo_root
     entries = []
     if not skills_root.is_dir():
         return entries
@@ -167,7 +193,7 @@ def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
         entries.append(
             {
                 "id": d.name,
-                "path": f"{source['skills_root']}/{d.name}",
+                "path": f"{root_rel}/{d.name}" if root_rel else d.name,
                 "name": fm.get("name") or d.name,
                 "description": fm.get("description"),
                 "category": fm.get("category"),
@@ -175,7 +201,7 @@ def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
                 "source": "community",
             }
         )
-    print(f"🗂️  {source['repo']}: scanned skills/*/SKILL.md ({len(entries)} entries)")
+    print(f"🗂️  {source['repo']}: scanned {root_rel or '.'}/*/SKILL.md ({len(entries)} entries)")
     return entries
 
 
@@ -307,6 +333,20 @@ def build_placeholder() -> str:
     return ",".join(["?"] * 19)
 
 
+def source_summary(source: dict) -> str:
+    """Short 'official+scan' / 'scan' tag used in the meta data_source note."""
+    return "official+scan" if source.get("index_file") else "scan"
+
+
+def data_source_note() -> str:
+    parts = [f"{s['name']}({source_summary(s)})" for s in SOURCES.values()]
+    return "multi-source: " + " + ".join(parts)
+
+
+def sources_meta() -> str:
+    return json.dumps([s["repo"] for s in SOURCES.values()], ensure_ascii=False)
+
+
 def build_db(entries: list[dict], repo_root: Path, db_path: Path) -> int:
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
@@ -327,10 +367,10 @@ def build_db(entries: list[dict], repo_root: Path, db_path: Path) -> int:
         )
         count += 1
     cur.execute("INSERT INTO meta VALUES ('version', ?)", (str(INDEX_VERSION),))
-    cur.execute("INSERT INTO meta VALUES ('sources', ?)", (json.dumps([s["repo"] for s in SOURCES.values()], ensure_ascii=False),))
+    cur.execute("INSERT INTO meta VALUES ('sources', ?)", (sources_meta(),))
     cur.execute("INSERT INTO meta VALUES ('built_at', ?)", (datetime.now().isoformat(timespec="seconds"),))
     cur.execute("INSERT INTO meta VALUES ('skill_count', ?)", (str(count),))
-    cur.execute("INSERT INTO meta VALUES ('data_source', 'multi-source: aas(official+scan) + addy(scan)')")
+    cur.execute("INSERT INTO meta VALUES ('data_source', ?)", (data_source_note(),))
     conn.commit()
     conn.close()
     return count
@@ -415,7 +455,11 @@ def update_db_incremental(entries: list[dict], repo_root: Path, db_path: Path, s
             cur.execute("DELETE FROM skills WHERE path=?", (path,))
 
     cur.execute("INSERT OR REPLACE INTO meta VALUES ('built_at', ?)", (datetime.now().isoformat(timespec="seconds"),))
-    cur.execute("INSERT OR REPLACE INTO meta VALUES ('skill_count', ?)", (str(len(set(incoming))),))
+    # Total across all sources (not just the synced one); refresh source provenance too.
+    total = cur.execute("SELECT COUNT(*) FROM skills").fetchone()[0]
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('skill_count', ?)", (str(total),))
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('sources', ?)", (sources_meta(),))
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('data_source', ?)", (data_source_note(),))
     conn.commit()
     conn.close()
     return {"added": added, "updated": updated, "removed": removed}
@@ -490,26 +534,44 @@ def main() -> int:
 
 
 def cleanup_tmp(tmp: Path, keep: bool) -> None:
+    """Best-effort removal of the download/unpack scratch dir.
+
+    Never raises: a tarball may contain read-only files, reparse points, or
+    dirs Windows refuses to stat/remove mid-walk. Cleanup is housekeeping, so a
+    stuck path is skipped rather than failing an otherwise successful build.
+    """
     if keep:
         return
-    for p in tmp.rglob("*"):
-        if p.is_file():
+
+    def _safe(p: Path, predicate) -> bool:
+        try:
+            return predicate()
+        except OSError:
+            return False
+
+    try:
+        entries = list(tmp.rglob("*"))
+    except OSError:
+        return
+    for p in entries:
+        if _safe(p, p.is_file):
             try:
                 p.unlink()
             except OSError:
                 pass
-    for p in sorted(tmp.rglob("*"), key=lambda x: -len(x.parts)):
-        if p.is_dir():
-            try:
-                for child in p.rglob("*"):
-                    if child.is_file():
-                        try:
-                            child.chmod(0o644)
-                        except OSError:
-                            pass
-                p.rmdir()
-            except OSError:
-                pass
+    for p in sorted(entries, key=lambda x: -len(x.parts)):
+        if not _safe(p, p.is_dir):
+            continue
+        try:
+            for child in p.rglob("*"):
+                if _safe(child, child.is_file):
+                    try:
+                        child.chmod(0o644)
+                    except OSError:
+                        pass
+            p.rmdir()
+        except OSError:
+            pass
 
 
 if __name__ == "__main__":
