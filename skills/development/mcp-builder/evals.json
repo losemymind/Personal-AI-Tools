@@ -1,0 +1,77 @@
+{
+  "skill_name": "mcp-builder",
+  "evals": [
+    {
+      "id": 1,
+      "query": "帮我用 Python FastMCP 写一个连 GitHub API 的 MCP server",
+      "should_trigger": true,
+      "expected_output": "按四阶段流程指导实现，指出参考 reference/python_mcp_server.md"
+    },
+    {
+      "id": 2,
+      "query": "怎么设计 MCP 工具才好用？我有 30 个 API 端点",
+      "should_trigger": true,
+      "expected_output": "讨论 API 覆盖 vs 工作流工具、命名、schema、分页"
+    },
+    {
+      "id": 3,
+      "query": "用 TypeScript MCP SDK 搭一个 MCP 服务器接入我们的 CRM",
+      "should_trigger": true,
+      "expected_output": "指向 reference/node_mcp_server.md，给 Zod/registerTool 模式"
+    },
+    {
+      "id": 4,
+      "query": "我的 MCP 工具 LLM 老是不调用，怎么改",
+      "should_trigger": true,
+      "expected_output": "从工具命名、描述、schema、错误信息等可发现性角度排查"
+    },
+    {
+      "id": 5,
+      "query": "给这个 MCP server 建一套评测集",
+      "should_trigger": true,
+      "expected_output": "按阶段 4 建 10 题，独立/只读/复杂/可验证/稳定"
+    },
+    {
+      "id": 6,
+      "query": "帮我 review 一下这个 MCP 的 tool schema 和注解",
+      "should_trigger": true,
+      "expected_output": "检查输入/输出 schema、描述、readOnlyHint 等注解"
+    },
+    {
+      "id": 7,
+      "query": "MCP server 怎么做分页返回比较大的数据集",
+      "should_trigger": true,
+      "expected_output": "分页设计 + 上下文管理，避免灌入整页数据"
+    },
+    {
+      "id": 8,
+      "query": "帮我配置一下 Slack 的 MCP server 连接",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 9,
+      "query": "怎么调用 OpenAI 的 Chat Completions API",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 10,
+      "query": "帮我写一个 REST API 服务给前端用",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 11,
+      "query": "MCP 协议是什么？给我讲讲它的历史",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 12,
+      "query": "帮我把这个 Node 服务部署到生产服务器",
+      "should_trigger": false,
+      "expected_output": ""
+    }
+  ]
+}

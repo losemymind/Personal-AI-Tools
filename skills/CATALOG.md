@@ -21,6 +21,34 @@
 
 **触发器**：Reviewing pull requests and code changes
 
+## mcp-builder
+
+| category | development |
+| risk | safe |
+| version | 0.1.0 |
+| source | community |
+| date_added | 2026-09-10 |
+| tags | [mcp, fastmcp, typescript-sdk, tool-design, llm-integration] |
+| install | 复制 `skills/development/mcp-builder` → 客户端 skills/ 目录 |
+
+**用途**：指导构建高质量的 MCP（Model Context Protocol）应用：让 LLM 通过精心设计的工具与外部服务交互，覆盖端点覆盖 vs 工作流工具取舍、工具命名与 schema 设计、上下文与分页、可执行错误信息、评测集构建，并提供 Python（FastMCP）与 TypeScript 官方 SDK 两套实现路径。当用户要创建或设计这类工具、编写工具 schema、提升可发现性、建评测集，或提到 FastMCP、tool schema、分页返回时使用。
+
+**触发器**：用户要**构建 MCP 服务器**以集成某个外部 API 或服务（Python/FastMCP 或 TypeScript/MCP SDK）。
+
+## ue5-performance-optimization
+
+| category | game-development |
+| risk | safe |
+| version | 0.1.0 |
+| source | self |
+| date_added | 2026-09-10 |
+| tags | [unreal-engine, ue5, performance, profiling, optimization] |
+| install | 复制 `skills/game-development/ue5-performance-optimization` → 客户端 skills/ 目录 |
+
+**用途**：指导 Unreal Engine 5.6 游戏的性能剖析与优化：先用 Unreal Insights、stat 命令与 CSV Profiler 在可复现场景中定位 Game Thread、Render Thread、GPU、内存、加载与卡顿瓶颈，再落到实现层优化（Tick 与蓝图、GC 与内存分配、Draw Call 与实例化、Nanite/Lumen/VSM/TSR 可扩展性、Niagara、异步并行）。当用户要求 UE5 性能优化、卡顿/掉帧排查、Insights 分析、stat 命令解读、降低 Draw Call、GC 卡顿、内存/显存超标、打包后帧率低时使用。
+
+**触发器**：用户报告 UE5 项目**掉帧、卡顿（hitch）、加载慢、内存/显存超标**，要求排查原因。
+
 ## pr-summarizer
 
 | category | git |

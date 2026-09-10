@@ -1,0 +1,77 @@
+{
+  "skill_name": "ue5-performance-optimization",
+  "evals": [
+    {
+      "id": 1,
+      "query": "我的 UE5.6 项目打包后只有 40 帧，帮我排查性能问题",
+      "should_trigger": true,
+      "expected_output": "先建立性能坐标并用 stat unit 分流 CPU/GPU，再定位到责任域"
+    },
+    {
+      "id": 2,
+      "query": "用 Unreal Insights 分析一下这个 .utrace，看哪里超预算",
+      "should_trigger": true,
+      "expected_output": "指导在 Insights 中逐帧→线程→Scope 下钻定位"
+    },
+    {
+      "id": 3,
+      "query": "stat unit 显示 Game 18ms、GPU 8ms，该怎么优化",
+      "should_trigger": true,
+      "expected_output": "判定 Game Thread 限制，指引 stat game 与实现层优化"
+    },
+    {
+      "id": 4,
+      "query": "游戏每隔几秒卡一下，怀疑是 GC，怎么查",
+      "should_trigger": true,
+      "expected_output": "用 stat dumphitches / Memory Insights 定位 GC，给分配优化建议"
+    },
+    {
+      "id": 5,
+      "query": "场景 draw call 太高了，怎么降低",
+      "should_trigger": true,
+      "expected_output": "ISM/HISM 实例化、合并、LOD/剔除、材质变体控制"
+    },
+    {
+      "id": 6,
+      "query": "Nanite 和 Lumen 太吃性能，UE5.6 里怎么调可扩展性",
+      "should_trigger": true,
+      "expected_output": "先 stat gpu 定位，再调 Lumen/Nanite/VSM/后处理与可扩展性档位"
+    },
+    {
+      "id": 7,
+      "query": "蓝图里 Tick 太多导致掉帧，怎么优化",
+      "should_trigger": true,
+      "expected_output": "事件驱动替代、TickInterval、不可见关闭 Tick、热路径下沉 C++"
+    },
+    {
+      "id": 8,
+      "query": "帮我写一个 UE5 的角色移动组件",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 9,
+      "query": "Unity 项目性能优化该怎么做",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 10,
+      "query": "帮我设计一个 UE 的存档系统",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 11,
+      "query": "解释一下 UE 的 GAS 技能系统怎么用",
+      "should_trigger": false,
+      "expected_output": ""
+    },
+    {
+      "id": 12,
+      "query": "给这个角色画一套贴图材质",
+      "should_trigger": false,
+      "expected_output": ""
+    }
+  ]
+}

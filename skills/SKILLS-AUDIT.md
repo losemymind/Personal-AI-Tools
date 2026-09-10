@@ -3,24 +3,26 @@
 > 用途：审计 `skills/` 库中每个技能的**数据来源** 与 **入库流程合规性**。事实源 = 各 `SKILL.md` frontmatter + 本仓库 git 历史 + 技能创建器（本仓库 `skill-creator/skills/skill-creator/`）`evolutions/` 对比记录。
 > 范围：只审计能力库条目（`skills/` 下入库技能）。skill-creator 工作区及其成品是**创建工具**，排除在审计之外（其迭代记录走自身 `evolutions/`）。
 > 依据：本仓库根 `AGENTS.md`「能力库准入与审计」（规则 2：技能入库**无论参考本地文件还是远程仓库，必须经过 skill-creator**；规则 3：**参考外部仓库的技能必须在审计文件中标注数据来源**；规则 4：**技能按功能放入分类目录 `skills/<分类>/<name>/`，分类不存在则创建**）。
-> 本次审计日期：2026-09-03（2026-09-09 更新：prd-generator 转合规）
+> 本次审计日期：2026-09-03（2026-09-09 更新：prd-generator 转合规；2026-09-10 更新：新增 mcp-builder、ue5-performance-optimization）
 
 ## 1. 审计结论摘要
 
 | 指标 | 数值 |
 |---|---|
-| 技能总数 | 3（pr-summarizer / code-review-skill / prd-generator） |
-| 经 skill-creator 生成流程 | 3 ✅（1 自建 + 2 上游导入均合规，含 evolutions 记录） |
-| 远程仓库来源（参考上游 / 直接导入） | 3（sickn33/agentic-awesome-skills 的 comprehensive-review-pr-enhance；awesome-skills/code-review-skill；snarktank/ralph 的 prd skill） |
+| 技能总数 | 5（pr-summarizer / code-review-skill / prd-generator / mcp-builder / ue5-performance-optimization） |
+| 经 skill-creator 生成流程 | 5 ✅（2 自建 + 3 上游导入均合规，含 evolutions 记录） |
+| 远程仓库来源（参考上游 / 直接导入） | 4（sickn33/agentic-awesome-skills；awesome-skills/code-review-skill；snarktank/ralph；anthropics/skills 的 mcp-builder） |
 | 本地文件来源 | 0 |
-| `source: self`（自建） | 1 |
-| `source: community`（上游导入） | 2 |
+| `source: self`（自建） | 2（pr-summarizer、ue5-performance-optimization） |
+| `source: community`（上游导入） | 3（code-review-skill、prd-generator、mcp-builder） |
 
 **审计结论**：
 - ✅ **pr-summarizer 合规（规则 2）**：本仓库自建，完整经过 skill-creator 流程（创建 → 检索上游 → 对比择优 → `evolutions/` 记录 → 验证）。
 - ✅ **code-review-skill 合规（规则 2、3、4）**：2026-09-03 按用户指定从上游 `awesome-skills/code-review-skill`（MIT）直接导入并适配——整目录（reference/assets/scripts + LICENSE）入库 `skills/development/code-review-skill/`；frontmatter 补齐本地 schema（category/risk/source/version/date_added/tags/tools），补 `Examples`/`Limitations` 章节，`validate_skills.py --strict` 通过。
 - ✅ **prd-generator 合规（规则 2、3、4）**：2026-09-07 从 `snarktank/ralph` 的 prd skill（MIT）直接导入并适配——方法论吸收 + 中文产品化（frontmatter 补齐本地 schema category: product / risk: safe / source: community / author 归属；补 何时使用/示例/限制/安全 章节；PRD 模板章节名保留上游英文），`validate_skills.py --strict` 通过；2026-09-09 复核上游索引 0 命中（A 空）、补写 full evolutions 记录 → 转合规。
-- ✅ **规则 3 达标**：本文件已标注全部外部数据来源（上游 comprehensive-review-pr-enhance、code-review-skill、snarktank/ralph）。
+- ✅ **mcp-builder 合规（规则 2、3、4）**：2026-09-10 自 `anthropics/skills` 的 `skills/mcp-builder`（Apache-2.0）导入并中文本地化——保留官方 `reference/` + `scripts/` + `LICENSE.txt`，入口 SKILL.md 重写为中文并补本地 schema 与必需章节；`compare_skills.py` 对比本地适配版（0.93）> 官方原版（0.51）> aas `mcp-tool-developer`（0.75）→ 采纳适配版；`validate_skills.py --strict` 通过；触发评测 12/12。
+- ✅ **ue5-performance-optimization 合规（规则 2、4；规则 3 不适用）**：2026-09-10 本仓库**自建**（`source: self`），完整经过 skill-creator 流程；上游索引无专门 UE 性能优化技能（`unreal engine performance optimization` 0 命中），与相邻候选 `unreal-engine-cpp-pro`（aas）对比 0.81 vs 0.68 采纳自建；`validate_skills.py --strict` 通过；触发评测 11/12（「Unity 性能优化」为启发式固有近义假阳性）。
+- ✅ **规则 3 达标**：本文件已标注全部外部数据来源（上游 comprehensive-review-pr-enhance、code-review-skill、snarktank/ralph、anthropics/skills 的 mcp-builder）。
 
 ## 2. 数据来源
 
@@ -30,8 +32,10 @@
 | 远程仓库（上游参考） | `sickn33/agentic-awesome-skills` 的 `comprehensive-review-pr-enhance`（83 行，2 文件，risk: critical） | pr-summarizer（吸收其变更分类表/类别驱动清单/大 diff 分拆/风险标注精华） |
 | 远程仓库（整目录导入，MIT） | `awesome-skills/code-review-skill`（https://github.com/awesome-skills/code-review-skill，1.9k star，SKILL.md ~232 行 + reference/ 26 语言指南 + cross-cutting 5 + assets/ + scripts/，约 848KB/50 文件） | code-review-skill（整目录导入并适配本地 schema，保留 LICENSE 归属） |
 | 远程仓库（方法论导入，MIT） | `snarktank/ralph`（https://github.com/snarktank/ralph，skills/prd/SKILL.md，英文单文件方法论） | prd-generator（方法论吸收 + 中文产品化适配，`author` 字段归属上游） |
+| 远程仓库（方法论导入 + 中文本地化，Apache-2.0） | `anthropics/skills` 的 `skills/mcp-builder`（https://github.com/anthropics/skills/tree/main/skills/mcp-builder，SKILL.md + reference/×4 + scripts/ + LICENSE.txt） | mcp-builder（入口中文化 + 本地 schema 适配，保留官方 reference/scripts/LICENSE） |
+| 自建（skill-creator 流程） | 本仓库创建；frontmatter `source: self`；对比相邻上游 `sickn33/agentic-awesome-skills` 的 `unreal-engine-cpp-pro` | ue5-performance-optimization |
 
-> 上游对比/导入记录（位于技能创建器 `skill-creator/skills/skill-creator/evolutions/`）：`2026-09-02-compare-pr-summarizer.md`（自建版采纳上游精华 + 差异化定位）；`2026-09-03-import-code-review-skill.md`（本地无候选 A → 直接导入上游 B，整目录）；`2026-09-09-import-prd-generator.md`（本地无候选 A → 直接导入上游 B，方法论吸收 + 中文产品化）。
+> 上游对比/导入记录（位于技能创建器 `skill-creator/skills/skill-creator/evolutions/`）：`2026-09-02-compare-pr-summarizer.md`（自建版采纳上游精华 + 差异化定位）；`2026-09-03-import-code-review-skill.md`（本地无候选 A → 直接导入上游 B，整目录）；`2026-09-09-import-prd-generator.md`（本地无候选 A → 直接导入上游 B，方法论吸收 + 中文产品化）；`2026-09-10-import-mcp-builder.md`（官方导入 + 中文本地化 + 对比择优）；`2026-09-10-compare-ue5-performance-optimization.md`（自建 vs 相邻上游，采纳自建）。
 
 ## 3. 技能清单
 
@@ -40,6 +44,8 @@
 | pr-summarizer | `skills/git/pr-summarizer/SKILL.md` | git | safe | self | 自建 + 上游 sickn33/agentic-awesome-skills（comprehensive-review-pr-enhance） | ✅ | ✅ 合规（2026-09-03 按规则 4 迁入 `skills/git/`） |
 | code-review-skill | `skills/development/code-review-skill/SKILL.md` | development | safe | community | 上游 `awesome-skills/code-review-skill`（MIT）整目录导入 | ✅ | ✅ 合规（2026-09-03 导入，保留 LICENSE 归属） |
 | prd-generator | `skills/product-design/prd-generator/SKILL.md` | product | safe | community | 上游 `snarktank/ralph` 的 prd skill（交互式需求规格化，MIT，方法论吸收 + 中文产品化） | ✅ | ✅ 合规（2026-09-09 补 evolutions 记录后转合规） |
+| mcp-builder | `skills/development/mcp-builder/SKILL.md` | development | safe | community | 上游 `anthropics/skills` 的 `mcp-builder`（Apache-2.0，方法论导入 + 中文本地化，保留官方 reference/scripts/LICENSE） | ✅ | ✅ 合规（2026-09-10 导入，对比 0.93 vs 0.51 采纳适配版） |
+| ue5-performance-optimization | `skills/game-development/ue5-performance-optimization/SKILL.md` | game-development | safe | self | 自建；对比相邻上游 `unreal-engine-cpp-pro`（aas，0.81 vs 0.68 采纳自建） | ✅ | ✅ 合规（2026-09-10 自建，含 compare 记录） |
 
 ## 4. 维护要求
 
