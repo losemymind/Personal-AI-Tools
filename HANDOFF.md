@@ -1,4 +1,4 @@
-# 会话交接（2026-09-09）
+# 会话交接（2026-09-10）
 
 本文件为本次会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**本会话新增的上下文与待办**。
 
@@ -8,6 +8,7 @@
 - 根 `opencode.json`（已提交）：项目级 opencode 配置，`instructions` 显式注册三份 `AGENTS.md`（根 / skill-creator / agent-creator）——保证任意 cwd 下会话都加载全部角色守则（不依赖 opencode 按 cwd 就近自动发现）。不入 `.gitignore`，随仓库分发。
 - 两工作区已**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 均在各自工作区根、成品 `SKILL.md` 为唯一入口）。发布检查差异只在**成品自校验能力**：skill-creator 用成品 `validate_skills.py --strict` 自检；agent-creator 的 `validate_agents.py` 校验 AGENT.md 代理库（非自身成品），故自包含扫描落在 dev-only pytest。两工作区根均已有 dev-only `AGENTS.md` **角色守则**（成品演进维护者；agent-creator 版为本会话补齐，见改动 13）。
 - 能力库：根 `skills/` = 3 技能（development/code-review-skill、git/pr-summarizer、product-design/prd-generator），根 `agents/` = 3 顶层分类（academic/code-quality/ue-game-studio）。`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 自动生成（见改动 18）。
+- **本会话（2026-09-10）新增未提交改动**：修复 skill-creator 评测链 `evals.json` 键名漂移（`prompt`→`query`，见改动 21）；工作树现有 7 改 2 新（`README.md`、`skill-creator/AGENTS.md`、成品 `SKILL.md`+`scripts/utils.py`+`run_eval.py`+`run_trigger_tests.py`+`templates/evals.json.template`、新增 `evolutions/2026-09-10-fix-evals-schema-drift.md` 与 `tests/test_eval_schema.py`），版本 skill-creator **0.6.2**。`.opencode/skills/skill-creator/` 测试副本已同步。
 
 ## 本会话已完成的改动
 
@@ -152,6 +153,16 @@
 - **A2 evolutions 模板补齐**：两份 `evolutions/README.md` 从只定义 compare- 扩为三类表格（compare- 择优 / import- 上游导入 / adopt- 采纳升级，各配真实示例）+ import/adopt 记录要点。
 - **A3 文档同步债扫描**：全仓 grep 计数/版本/幽灵工具名——skill 8 项、agent 6 项、10 阶段、0.6.x/0.5.0 引用均一致；无 install_/rollback_/uninstall_ 残留（除 evolutions 历史）；skill-creator/README.md:65 pytest 15 例属历史沿革保留。
 - 门禁全绿：agent pytest 16、skill pytest 16、skill 成品 strict、能力库 strict（agents 32/skills 3）、CATALOG `--check` exit 0。
+
+**21. 修复评测链 evals.json 键名漂移（本会话，用户指令「修复」）**
+- 背景：应「创建多个测试 skill/agent 验证两创建器」任务做端到端验证时，按成品 `templates/evals.json.template` 写出的 evals.json 跑 `run_eval.py` 直接 `KeyError: 'query'` 崩溃。
+- 根因：**权威键 = `query`**（`references/benchmark-schema.md` + `run_eval.py` + `run_loop.py` + 既有 test 全用 `query`），但 `templates/evals.json.template` 与 `run_trigger_tests.py` 用 `prompt`——静态校验器不检查 evals 内容，故发布门全绿也发现不了。
+- 修复：`templates/evals.json.template` 键 `prompt`→`query`；`scripts/utils.py` 增 `eval_query(item)`（优先 `query`、回退 `prompt`，兼容旧文件）；`run_eval.py`（heuristic+cli 两路径）、`run_trigger_tests.py`（读取 + 输出键）改用该助手。
+- 测试：新增 `tests/test_eval_schema.py` 4 例（模板键名断言防漂移 / `eval_query` 优先回退 / legacy `prompt` 文件不崩溃 / `run_trigger_tests` 读 `query` 输出 `query`）→ skill pytest 16 → **20**。
+- 版本 bump：skill-creator 0.6.1 → **0.6.2**（patch）；`evolutions/2026-09-10-fix-evals-schema-drift.md` 记录学习点（模板是 schema 第二事实源须契约测试；静态校验不覆盖运行时数据契约；向后兼容优于硬切）。
+- 文档同步：root `README.md`（skill tests 15→20，两处）、`skill-creator/AGENTS.md`（命令速查 16→20）；`.opencode/skills/skill-creator/` 测试副本同步 6 文件。
+- 端到端复验：模板原样产出的 evals.json 现可被 `run_eval.py` 与 `run_trigger_tests.py` 正常消费（改前崩溃）。
+- 门禁全绿：skill pytest 20、成品 strict 自检、能力库 skills strict（3）。
 
 ## 已知待办 / 潜在风险（给下一会话）
 

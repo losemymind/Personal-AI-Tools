@@ -9,6 +9,16 @@ claude/opencode/codex/deepseek).
 from pathlib import Path
 
 
+def eval_query(item: dict) -> str:
+    """Return an eval item's prompt text.
+
+    Canonical key is ``query`` (see references/benchmark-schema.md). Legacy eval
+    sets written from an older template may use ``prompt``; accept it as a
+    fallback so those files keep working instead of raising KeyError.
+    """
+    return item.get("query") or item.get("prompt") or ""
+
+
 def parse_skill_md(skill_path: Path) -> tuple[str, str, str]:
     """Parse a skill's SKILL.md, returning (name, description, full_content).
 

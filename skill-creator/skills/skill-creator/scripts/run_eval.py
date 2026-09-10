@@ -26,7 +26,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from utils import parse_skill_md
+from utils import eval_query, parse_skill_md
 from run_trigger_tests import classify, keyword_tokens  # noqa: F401 (reused heuristic)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -69,9 +69,10 @@ def run_heuristic(evals, description: str) -> list[dict]:
     """Classify each query by keyword overlap (no external CLI)."""
     results = []
     for item in evals:
-        triggered = classify(item["query"], description)
+        query = eval_query(item)
+        triggered = classify(query, description)
         results.append({
-            "query": item["query"],
+            "query": query,
             "should_trigger": bool(item.get("should_trigger")),
             "triggered": triggered,
             "pass": triggered == bool(item.get("should_trigger")),
@@ -129,7 +130,7 @@ def main() -> int:
         results = run_heuristic(eval_list, description)
     else:
         for item in eval_list:
-            query = item["query"]
+            query = eval_query(item)
             triggers = 0
             for _ in range(max(1, args.runs_per_query)):
                 if run_cli(query, name, description, args.client):

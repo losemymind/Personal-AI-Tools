@@ -19,6 +19,8 @@ import re
 import sys
 from pathlib import Path
 
+from utils import eval_query
+
 
 def configure_utf8_output() -> None:
     if sys.platform != "win32":
@@ -97,7 +99,7 @@ def main() -> int:
     results = []
     tp = fp = tn = fn = 0
     for ev in evals:
-        prompt = ev.get("prompt", "")
+        prompt = eval_query(ev)
         should = bool(ev.get("should_trigger", True))
         predicted = classify(prompt, description)
         if should and predicted:
@@ -111,7 +113,7 @@ def main() -> int:
         results.append(
             {
                 "id": ev.get("id"),
-                "prompt": prompt,
+                "query": prompt,
                 "should_trigger": should,
                 "predicted": predicted,
                 "match": predicted == should,
@@ -147,7 +149,7 @@ def main() -> int:
         mark = "✓" if r["match"] else "✗"
         should = "should" if r["should_trigger"] else "should-not"
         got = "triggers" if r["predicted"] else "silent"
-        print(f"  {mark} [id {r['id']}] ({should} -> {got}): {r['prompt'][:80]}")
+        print(f"  {mark} [id {r['id']}] ({should} -> {got}): {r['query'][:80]}")
     print()
     print(f"📊 accuracy={acc:.0%} precision={precision:.0%} recall={recall:.0%} (tp={tp} fp={fp} tn={tn} fn={fn})")
     print("ℹ️  Heuristic signal only — confirm trigger behavior with a real client run (SKILL.md 阶段 7).")
