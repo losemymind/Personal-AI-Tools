@@ -139,17 +139,22 @@ Respond with ONLY the new description text inside <new_description> tags.
 """
 
 
-def call_improver_cli(prompt: str, client: str, timeout: int = 300) -> str:
-    """Shell out to a client's headless CLI to improve the description."""
+def call_improver_cli(prompt: str, client: str, timeout: int = 300, model: str = "") -> str:
+    """Shell out to a client's headless CLI to improve the description.
+
+    --model is appended only when given (a client whose default model is unset or
+    misconfigured needs it, else the improver call fails).
+    """
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
     try:
         if client == "claude":
             # claude -p reads the prompt from stdin when no positional arg is given.
-            proc = subprocess.run(["claude", "-p"], input=prompt, capture_output=True,
+            cmd = ["claude", "-p"] + (["--model", model] if model else [])
+            proc = subprocess.run(cmd, input=prompt, capture_output=True,
                                   text=True, env=env, timeout=timeout)
         elif client == "opencode":
-            proc = subprocess.run(["opencode", "run", "--format", "json", prompt],
-                                  capture_output=True, text=True, env=env, timeout=timeout)
+            cmd = ["opencode", "run", "--format", "json"] + (["-m", model] if model else []) + [prompt]
+            proc = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=timeout)
         else:
             raise RuntimeError(f"--improve-mode cli not available for client '{client}'")
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
@@ -187,6 +192,8 @@ def main() -> int:
                         help="manual=print prompt & read pasted reply (default), cli=headless client CLI")
     parser.add_argument("--client", default="claude", choices=["claude", "opencode"],
                         help="CLI client for --improve-mode cli")
+    parser.add_argument("--model", default="",
+                        help="Model id passed to the client CLI (--model/-m) for --improve-mode cli")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for train/test split")
     parser.add_argument("--report", type=Path, help="Write final JSON iteration log here")
     args = parser.parse_args()
@@ -239,7 +246,7 @@ def main() -> int:
         prompt = build_improve_prompt(name, content, current, train_results, best_so_far)
         try:
             if args.improve_mode == "cli":
-                current = call_improver_cli(prompt, args.client)
+                current = call_improver_cli(prompt, args.client, model=args.model)
             else:
                 current = call_improver_manual(prompt)
         except RuntimeError as e:

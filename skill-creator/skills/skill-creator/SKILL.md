@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.9.3"
+version: "0.9.4"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -294,9 +294,11 @@ python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
 # 1) 确定性触发启发式（无外部 CLI，默认；CJK 感知）
 python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录>
 # 2) 真实客户端无头 CLI 触发（需对应客户端 CLI：claude / opencode）
-python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client claude
-python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client opencode
+python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client claude --model <模型id>
+python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client opencode --model <模型id> --timeout 120
 ```
+
+> cli 模式**判定真实触发**：只认客户端把技能工具派发出去（如 opencode 的 `tool_use` 事件里 `tool=="skill"` 且 `input.name` 等于本技能）；**不做全文子串匹配**——工作区列表里出现技能路径、或模型仅在正文提到技能名，都不算触发。客户端默认模型未配置/配错时，用 `--model` 显式指定（否则每次都是 run_error）；单条查询耗时不定，用 `--timeout` 兜底。
 
 输出每条查询的触发判定 + 汇总（passed/total、precision、recall）；`--json` 可机器读取；`--output-dir <目录>` 把结果 JSON 落盘为 `eval-results-<技能名>.json`（供后续评分/复盘引用）。**运行错误（CLI 缺失/超时/非零退出）汇总为 `errors` 单列**，不计入假阴性——改描述前先按阶段 7 的失败分类归因。
 
@@ -306,14 +308,14 @@ python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技
 
 ```bash
 # with_skill：把技能装进一次性工作区后运行
-python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" \
+python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" --model <模型id> \
   --skill-dir <技能目录> --run-dir <workspace>/iteration-N/eval-<名>/with_skill/run-1
 # without_skill：同一提示词、不装技能
-python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" \
+python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" --model <模型id> \
   --run-dir <workspace>/iteration-N/eval-<名>/without_skill/run-1
 ```
 
-> 需要与客户端 CLI 不同的调用方式或做测试时用 `--client-cmd "<命令模板>"`（支持 `{prompt}` 占位）。技能会被复制进一次性工作区，`without_skill` 组看不到它。
+> 需要与客户端 CLI 不同的调用方式或做测试时用 `--client-cmd "<命令模板>"`（支持 `{prompt}` 占位）。`--model` 传给客户端 `-m/--model`（默认模型未配置时必需）。技能会被复制进一次性工作区，`without_skill` 组看不到它。
 
 **第 3 步：断言打分（拉起评分子代理）**：跑完两组、产物落到 `<workspace>/iteration-N/eval-<名>/<with_skill|without_skill>/run-N/` 后，**拉起评分（grader）子代理**：提示词中给出 `expectations` / `transcript_path` / `outputs_dir`，令其读入 `agents/grader.md` 执行——逐条断言判定、核验隐含声明、审视断言质量，把 `grading.json` 写进每个 run 目录（字段契约见 `references/benchmark-schema.md`）。
 
@@ -396,12 +398,12 @@ python scripts/compare_skills.py <自建目录> <上游目录> --all-candidates
 
 ```bash
 python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> \
-  --holdout 0.4 --max-iterations 5 --improve-mode manual|cli --report <输出>.json
+  --holdout 0.4 --max-iterations 5 --improve-mode manual|cli [--client <客户端> --model <模型id>] --report <输出>.json
 ```
 
 - 评测按 `should_trigger` 分层的 60/40 切分为 train/test；每轮用当前 description 评 train+test，再按失败模式请求改写。
 - `--improve-mode manual`（默认）：打印改进提示词，粘贴返回的 description，以独立 `EOF` 行结束。
-- `--improve-mode cli`：调用客户端无头 CLI（`--client claude|opencode`）生成新 description。
+- `--improve-mode cli`：调用客户端无头 CLI（`--client claude|opencode`，必要时 `--model <模型id>`）生成新 description。
 - **最终选取以 test 集得分最高者为准**（不选 train 满分者），避免过拟合到测试用例。
 
 注意：复杂、多步、专精的查询才适合评估触发（简单单步查询无论描述多好都常不触发）。触发评测结果 `--json` 输出写入 `evals/` 或技能目录，作为阶段 8 验证记录的一部分。

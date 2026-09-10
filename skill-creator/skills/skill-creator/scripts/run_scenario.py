@@ -43,10 +43,18 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# client -> (workspace subpath for a skill, argv builder)
+# client -> (workspace subpath for a skill, argv builder).
+# --model is appended only when given: a machine whose client default model is
+# unset/misconfigured needs it, otherwise every scenario run fails.
 CLIENTS = {
-    "opencode": (".opencode/skills", lambda prompt, model: ["opencode", "run", "--format", "json", prompt]),
-    "claude": (".claude/skills", lambda prompt, model: ["claude", "-p", prompt]),
+    "opencode": (
+        ".opencode/skills",
+        lambda prompt, model: ["opencode", "run", "--format", "json"] + (["-m", model] if model else []) + [prompt],
+    ),
+    "claude": (
+        ".claude/skills",
+        lambda prompt, model: ["claude", "-p"] + (["--model", model] if model else []) + [prompt],
+    ),
 }
 
 
@@ -83,8 +91,10 @@ def count_tool_calls(raw: str) -> int:
     """Count tool invocations in a client's JSON event stream.
 
     Parses each JSON line instead of substring-counting a serialized key, so the
-    count is independent of the client's whitespace/formatting. Plain-text output
-    (e.g. `claude -p`) yields 0.
+    count is independent of the client's whitespace/formatting. opencode emits
+    tool events as `{"type":"tool_use","part":{"type":"tool",...}}`; accept both
+    that and a top-level `type == "tool"` (older/simplified streams). Plain-text
+    output (e.g. `claude -p`) yields 0.
     """
     count = 0
     for line in raw.splitlines():
@@ -95,7 +105,11 @@ def count_tool_calls(raw: str) -> int:
             ev = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if isinstance(ev, dict) and ev.get("type") == "tool":
+        if not isinstance(ev, dict):
+            continue
+        part = ev.get("part") or {}
+        if ev.get("type") == "tool_use" or (isinstance(part, dict) and part.get("type") == "tool") \
+                or ev.get("type") == "tool":
             count += 1
     return count
 
@@ -142,8 +156,6 @@ def main() -> int:
 
         cmd = build_command(args.client, args.prompt, args.model, args.client_cmd)
         env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
-        if args.model:
-            env["OPENCODE_MODEL"] = args.model
         print(f"▶ [{args.client}] skill={skill_name or '(none)'} :: {args.prompt[:60]}", file=sys.stderr)
         start = time.time()
         try:

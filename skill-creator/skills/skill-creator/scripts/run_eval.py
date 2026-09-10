@@ -15,7 +15,7 @@ Run errors (missing/timeout/failed CLI) are reported separately as `errors`
 instead of being silently counted as "did not trigger".
 
 Usage:
-    python scripts/run_eval.py --eval-set <evals.json> --skill-dir <skill> [--mode heuristic|cli] [--client claude|opencode] [--runs-per-query 1] [--threshold 0.5] [--json] [--output-dir <dir>]
+    python scripts/run_eval.py --eval-set <evals.json> --skill-dir <skill> [--mode heuristic|cli] [--client claude|opencode] [--model <id>] [--timeout 60] [--runs-per-query 1] [--threshold 0.5] [--json] [--output-dir <dir>]
 
 Exit code 0 = evaluation produced; 1 if error.
 """
@@ -31,10 +31,17 @@ from utils import classify, eval_query, parse_skill_md
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# client -> list of argv for one headless run of `query`
+# client -> argv builder for one headless run of `query` (optionally with --model).
+# A model override is required on machines whose client default model is unset or
+# misconfigured (e.g. opencode's config `model` pointing at a non-existent provider),
+# otherwise every cli run fails with a provider/model error — a run_error, not a miss.
 CLI_COMMANDS = {
-    "claude": lambda query: ["claude", "-p", query, "--output-format", "json"],
-    "opencode": lambda query: ["opencode", "run", "--format", "json", query],
+    "claude": lambda query, model: (
+        ["claude", "-p", query, "--output-format", "json"] + (["--model", model] if model else [])
+    ),
+    "opencode": lambda query, model: (
+        ["opencode", "run", "--format", "json"] + (["-m", model] if model else []) + [query]
+    ),
 }
 
 
@@ -51,7 +58,41 @@ def configure_utf8_output() -> None:
             pass
 
 
-def run_cli(query: str, skill_name: str, description: str, client: str, timeout: int = 60) -> bool:
+def detect_triggered(client: str, raw: str, skill_name: str) -> bool:
+    """Decide whether the skill was actually *invoked*, from the raw client output.
+
+    A real trigger is the client dispatching its skill tool for this skill. For
+    opencode that is a JSON line `{"type":"tool_use","part":{"tool":"skill",
+    "state":{"input":{"name":"<skill>"}}}}`. Substring-matching the whole
+    transcript is wrong: a workspace listing (`Get-ChildItem` showing
+    `.opencode/skills/<name>`), the model merely *mentioning* the skill, or a
+    failed attempt would all count as a trigger — a false-positive source that
+    only shows up against a real client.
+
+    Clients whose stream format we don't model (e.g. claude) fall back to a
+    best-effort substring check.
+    """
+    target = skill_name.lower()
+    if client == "opencode":
+        for line in raw.splitlines():
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            part = ev.get("part") or {}
+            if ev.get("type") == "tool_use" and part.get("tool") == "skill":
+                name = ((part.get("state") or {}).get("input") or {}).get("name")
+                if isinstance(name, str) and name.lower() == target:
+                    return True
+        return False
+    return target in raw.lower()
+
+
+def run_cli(query: str, skill_name: str, description: str, client: str, timeout: int = 60,
+            model: str = "") -> bool:
     """Run one query via the client's headless CLI; return whether it triggered.
 
     Raises RuntimeError when the CLI cannot be run or fails — such run_error
@@ -60,7 +101,7 @@ def run_cli(query: str, skill_name: str, description: str, client: str, timeout:
     """
     if client not in CLI_COMMANDS:
         raise RuntimeError(f"--mode cli not available for client '{client}'; use --mode heuristic")
-    cmd = CLI_COMMANDS[client](query)
+    cmd = CLI_COMMANDS[client](query, model)
     env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
@@ -71,7 +112,7 @@ def run_cli(query: str, skill_name: str, description: str, client: str, timeout:
     if proc.returncode != 0:
         raise RuntimeError(f"cli exited {proc.returncode} ({client}): {(proc.stderr or '')[-300:]}")
     output = (proc.stdout or "") + (proc.stderr or "")
-    return skill_name.lower() in output.lower()
+    return detect_triggered(client, output, skill_name)
 
 
 def run_heuristic(evals, description: str) -> list[dict]:
@@ -89,16 +130,38 @@ def run_heuristic(evals, description: str) -> list[dict]:
     return results
 
 
-def summarize(results: list[dict]) -> dict:
+def _is_triggered(r: dict, threshold: float) -> bool | None:
+    """Normalize the two result shapes to a boolean trigger verdict.
+
+    heuristic results carry `triggered` (bool); cli results carry `trigger_rate`
+    (float, over runs) with no `triggered` key — derive it from the same threshold.
+    Returns None when neither is available.
+    """
+    if "triggered" in r:
+        return bool(r["triggered"])
+    rate = r.get("trigger_rate")
+    return None if rate is None else (rate >= threshold)
+
+
+def summarize(results: list[dict], threshold: float = 0.5) -> dict:
     errors = sum(1 for r in results if r.get("error"))
     scored = [r for r in results if not r.get("error")]
     passed = sum(1 for r in scored if r["pass"])
     # total counts scored queries only, so passed + failed == total; run errors are
     # reported separately and never inflate the denominator (see stage 7 attribution).
     total = len(scored)
-    tp = sum(1 for r in scored if r["should_trigger"] and r["triggered"])
-    fp = sum(1 for r in scored if not r["should_trigger"] and r["triggered"])
-    fn = sum(1 for r in scored if r["should_trigger"] and not r["triggered"])
+    tp = fp = fn = 0
+    for r in scored:
+        triggered = _is_triggered(r, threshold)
+        if triggered is None:
+            continue
+        should = bool(r["should_trigger"])
+        if should and triggered:
+            tp += 1
+        elif not should and triggered:
+            fp += 1
+        elif should and not triggered:
+            fn += 1
     precision = tp / (tp + fp) if (tp + fp) else 1.0
     recall = tp / (tp + fn) if (tp + fn) else 1.0
     return {
@@ -120,8 +183,12 @@ def main() -> int:
                         help="heuristic=keyword classifier (default), cli=headless client CLI")
     parser.add_argument("--client", default="claude", choices=sorted(CLI_COMMANDS),
                         help="CLI client for --mode cli")
+    parser.add_argument("--model", default="",
+                        help="Model id passed to the client CLI (--model/-m); required when the "
+                             "client default model is unset/misconfigured")
     parser.add_argument("--runs-per-query", type=int, default=1, help="Runs per query (cli mode)")
     parser.add_argument("--threshold", type=float, default=0.5, help="Trigger rate threshold (cli mode)")
+    parser.add_argument("--timeout", type=int, default=60, help="Per-query CLI timeout in seconds (cli mode)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     parser.add_argument("--output-dir", default=None,
                         help="Write results JSON (eval-results-<skill>.json) into this directory")
@@ -150,7 +217,7 @@ def main() -> int:
             try:
                 triggers = 0
                 for _ in range(max(1, args.runs_per_query)):
-                    if run_cli(query, name, description, args.client):
+                    if run_cli(query, name, description, args.client, timeout=args.timeout, model=args.model):
                         triggers += 1
                 rate = triggers / max(1, args.runs_per_query)
             except RuntimeError as e:
@@ -174,7 +241,7 @@ def main() -> int:
         "description": description,
         "mode": args.mode,
         "results": results,
-        "summary": summarize(results),
+        "summary": summarize(results, threshold=args.threshold),
     }
     if args.output_dir:
         out_dir = Path(args.output_dir)

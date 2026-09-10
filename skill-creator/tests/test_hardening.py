@@ -391,3 +391,117 @@ def test_classify_does_not_inflate_on_repeated_description_tokens():
     desc = "创建技能。创建技能。创建技能。"  # 创建 appears 3x but is a single distinct token
     assert not classify("创建", desc), "one distinct shared token must not trigger"
     assert classify("创建技能并验证", desc), "two distinct shared tokens must trigger"
+
+
+# --- 2026-09-10 real-machine CLI: model flag propagation ---
+#
+# Unblocks the real-client benchmark (HANDOFF item 1): a machine whose client
+# default model is unset/misconfigured otherwise fails every cli run. All three
+# cli call sites must forward an explicit model.
+
+def test_run_eval_cli_command_includes_model():
+    _scripts_on_path()
+    try:
+        from run_eval import CLI_COMMANDS
+    finally:
+        _pop_path()
+
+    assert CLI_COMMANDS["opencode"]("q", "") == ["opencode", "run", "--format", "json", "q"]
+    cmd = CLI_COMMANDS["opencode"]("q", "prov/model")
+    assert cmd == ["opencode", "run", "--format", "json", "-m", "prov/model", "q"]
+    assert CLI_COMMANDS["claude"]("q", "prov/model") == [
+        "claude", "-p", "q", "--output-format", "json", "--model", "prov/model"]
+
+
+def test_run_scenario_cli_command_includes_model():
+    _scripts_on_path()
+    try:
+        from run_scenario import CLIENTS
+    finally:
+        _pop_path()
+
+    assert CLIENTS["opencode"][1]("p", "") == ["opencode", "run", "--format", "json", "p"]
+    assert CLIENTS["opencode"][1]("p", "prov/model") == [
+        "opencode", "run", "--format", "json", "-m", "prov/model", "p"]
+
+
+# A real trigger is the client's skill tool firing — NOT the skill name appearing
+# anywhere in the transcript (a workspace listing or a mere mention must not count).
+def test_detect_triggered_opencode_uses_skill_tool_event():
+    _scripts_on_path()
+    try:
+        from run_eval import detect_triggered
+    finally:
+        _pop_path()
+
+    listing = '{"type":"tool_use","part":{"tool":"bash","state":{"input":{"command":"ls"},"output":".opencode/skills/skill-creator"}}}'
+    assert not detect_triggered("opencode", listing, "skill-creator"), \
+        "a path listing naming the skill is not a trigger"
+
+    fired = ('{"type":"tool_use","part":{"tool":"skill","state":'
+             '{"input":{"name":"skill-creator"},"status":"completed"}}}')
+    assert detect_triggered("opencode", fired, "skill-creator")
+
+    other = ('{"type":"tool_use","part":{"tool":"skill","state":{"input":{"name":"pr-summarizer"}}}}')
+    assert not detect_triggered("opencode", other, "skill-creator")
+
+
+def test_run_scenario_counts_opencode_tool_use_events(tmp_path):
+    stub = tmp_path / "stub.py"
+    stub.write_text(
+        "import json\n"
+        "print(json.dumps({'type':'tool_use','part':{'type':'tool','tool':'bash'}}))\n"
+        "print(json.dumps({'type':'tool_use','part':{'type':'tool','tool':'skill'}}))\n"
+        "print(json.dumps({'type':'text','part':{'text':'done'}}))\n",
+        encoding="utf-8",
+    )
+    run_dir = tmp_path / "run-1"
+    r = run_script("scripts/run_scenario.py", "--client", "opencode",
+                   "--prompt", "do x", "--run-dir", str(run_dir), "--client-cmd", _stub_cmd(stub))
+    assert r.returncode == 0, r.stdout + r.stderr
+    metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["total_tool_calls"] == 2
+
+
+# Real-machine cli results use `trigger_rate`, not `triggered`; summarize must
+# accept both shapes (regression for the KeyError seen on the first real run).
+def test_summarize_accepts_cli_trigger_rate_shape():
+    _scripts_on_path()
+    try:
+        from run_eval import summarize
+    finally:
+        _pop_path()
+
+    s = summarize([
+        {"query": "a", "should_trigger": True, "trigger_rate": 1.0, "pass": True},
+        {"query": "b", "should_trigger": False, "trigger_rate": 0.0, "pass": True},
+        {"query": "c", "should_trigger": True, "trigger_rate": 0.0, "pass": False},
+        {"query": "d", "should_trigger": False, "trigger_rate": 1.0, "pass": False},
+    ], threshold=0.5)
+    assert s["total"] == 4
+    assert s["passed"] == 2
+    assert s["precision"] == 0.5  # tp=1, fp=1
+    assert s["recall"] == 0.5     # tp=1, fn=1
+
+
+def test_run_loop_improver_forwards_model(monkeypatch):
+    _scripts_on_path()
+    captured = {}
+
+    class _Proc:
+        returncode = 0
+        stdout = "<new_description>better</new_description>"
+        stderr = ""
+
+    def _fake_run(cmd, **kwargs):
+        captured["cmd"] = cmd
+        return _Proc()
+
+    try:
+        import run_loop
+    finally:
+        _pop_path()
+    monkeypatch.setattr(run_loop.subprocess, "run", _fake_run)
+    out = run_loop.call_improver_cli("prompt", "opencode", model="prov/model")
+    assert out == "better"
+    assert captured["cmd"] == ["opencode", "run", "--format", "json", "-m", "prov/model", "prompt"]
