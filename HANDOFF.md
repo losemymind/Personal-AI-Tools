@@ -1,10 +1,10 @@
-# 会话交接（2026-09-10 · 第 9 版）
+# 会话交接（2026-09-10 · 第 10 版）
 
 本文件为最近会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**当前上下文与待办**。
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ **已提交 `e819536`（未推送）：真机评测提速/保真/隔离（0.9.5-0.9.7）+ 全量审计九轮修复（0.9.8-0.9.16，见 §E/§F）+ 独立审计第三/四轮（0.9.17-0.9.18，见 §G）**。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ `e819536` 真机评测隔离化 + 独立审计两轮修复（0.9.5-0.9.18，见 §E/§F/§G）→ `dfaf829` 交接状态修正。**origin/main 已同步，GitHub Actions CI 三 job 全绿（run 34480215967）**。
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
 - 版本：**skill-creator 0.9.18**、**agent-creator 0.7.0**。
@@ -127,6 +127,13 @@
 - 测试：`tests/test_hardening.py` **148 → 153 例**；`.opencode` 镜像同步（54 文件哈希一致）。
 - 记录：`evolutions/2026-09-10-audit-round4-recheck.md`。
 
+### I. 交付收尾：推送 + CI 首次验证（本次会话）
+
+- 复核上会话所有改动（0.9.5-0.9.18）实为已提交 `e819536`，HANDOFF 中「未提交」表述过期。
+- 本地发布门全绿：agent-creator pytest 18、skill-creator pytest 153、skill-creator 成品 strict + 能力库 5 技能 strict、能力库 32 代理 strict、`build_catalog.py --check`、索引 4 源 2187 条。
+- 修正 HANDOFF 过期状态 → 提交 `dfaf829` → 推送 `origin/main`。
+- **CI 首次真机运行全绿**：`.github/workflows/validate.yml` 三 job success（run 34480215967）。未改任何成品/能力库内容。
+
 ## 已知待办 / 潜在风险
 
 1. **真机基准已跑通（0.9.7，隔离版）**：工具侧 `--model`/`--timeout`/`--concurrency`/超时保信号/隔离全部就绪；14 查询 × 3 轮复跑 <5 分钟、零污染。当前成绩：正例 recall ≈ 0.625、precision 100%、0 假阳性。触发仍有非确定性（同句可能一次派发、一次直接作答）。**待办**：如需进一步提升 recall，方向是优化 description 或增加 runs——不属工具缺陷，勿擅自改描述。
@@ -135,8 +142,8 @@
 4. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。（本会话只改创建器成品，未改技能/代理集合，审计与 CATALOG 无需变动。）
 5. **触发代理追加的 5 个测试已保留**：`tests/test_hardening.py` 中 `test_run_cli_item_threshold_semantics` 等 5 例——经审阅内容正确、全绿，用户决定保留。
 6. **已评估、用户明确「不需要修复」的项（勿再主动提出）**：skill-creator 成品 `examples/`（103 文件学习样本）、两份 `indexes/upstream.db`（随成品提交）、能力库 UE/academic 垂直内容——维持现状。
-7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（改动已提交为 `e819536`；本次会话确认发布门全绿后推送，CI 首次运行。）
-8. **CI 已加但未在真机运行**：`.github/workflows/validate.yml` 仅本地校验了 YAML 语法与等价命令，首次 push 后才能确认 Actions 端全绿。
+7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（改动已提交 `e819536`、交接修正 `dfaf829` 并推送；本次会话确认发布门全绿后完成。）
+8. **CI 已首次在真机运行并全绿**：`.github/workflows/validate.yml` 在推送 `dfaf829` 后运行，三个 job（agent-creator pytest+strict / skill-creator pytest+strict / CATALOG --check）全部 **success**（run 34480215967，https://github.com/losemymind/Personal-AI-Tools/actions/runs/34480215967 ）。
 
 ## 验证命令备忘
 
