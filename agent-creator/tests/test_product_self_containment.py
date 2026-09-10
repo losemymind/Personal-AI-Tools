@@ -30,6 +30,7 @@ KNOWN_TOP = (
     "indexes",
     "references",
     "templates",
+    "agents",
     "evolutions",
 )
 SKIP_DIRS = {"examples", "evolutions"}

@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流代理（Agents）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.6.0"
+version: "0.7.0"
 date_added: "2026-09-02"
 author: losemymind
 tags: [agent-creator, agents, workflow, llm-clients]
@@ -60,9 +60,9 @@ tools: [claude, opencode, codex, deepseek]
 
 ## 资源路径基准
 
-本技能是**自包含完整体**：内部所有引用（`scripts/`、`references/`、`templates/`、`indexes/upstream.db`、`evolutions/`）一律以 **agent-creator 目录自身为根**书写，不依赖任何外部布局。脚本调用：在本技能目录内执行 `python scripts/xxx.py ...`；不在技能目录内执行时加目录前缀 `python "<技能目录>/scripts/xxx.py" ...`。定位本技能目录的方法：codex 的技能列表自带文件路径，直接使用；claude/opencode 按存在性依次探测——工作区候选 `<项目>/.claude/skills/agent-creator/`、`<项目>/.opencode/skills/agent-creator/`、`<项目>/.agents/skills/agent-creator/`；全局候选 `~/.claude/skills/agent-creator/`、`~/.config/opencode/skills/agent-creator/`、`~/.agents/skills/agent-creator/`。
+本技能是**自包含完整体**：内部所有引用（`scripts/`、`references/`、`templates/`、`agents/`、`indexes/upstream.db`、`evolutions/`）一律以 **agent-creator 目录自身为根**书写，不依赖任何外部布局。脚本调用：在本技能目录内执行 `python scripts/xxx.py ...`；不在技能目录内执行时加目录前缀 `python "<技能目录>/scripts/xxx.py" ...`。定位本技能目录的方法：codex 的技能列表自带文件路径，直接使用；claude/opencode 按存在性依次探测——工作区候选 `<项目>/.claude/skills/agent-creator/`、`<项目>/.opencode/skills/agent-creator/`、`<项目>/.agents/skills/agent-creator/`；全局候选 `~/.claude/skills/agent-creator/`、`~/.config/opencode/skills/agent-creator/`、`~/.agents/skills/agent-creator/`。
 
-读取规则：references 文档**按需读取**；需要字段/四端差异时读 `references/agent-template.md`，需要结构规范时读 `references/agent-anatomy.md`，需要质量标准时读 `references/agent-quality-bar.md`，需要检索上游/索引细节时读 `references/agent-index.md`，进行对比择优时读 `references/agent-comparison.md`。
+读取规则：references 文档**按需读取**；需要字段/四端差异时读 `references/agent-template.md`，需要结构规范时读 `references/agent-anatomy.md`，需要质量标准时读 `references/agent-quality-bar.md`，需要检索上游/索引细节时读 `references/agent-index.md`，进行对比择优时读 `references/agent-comparison.md`。评审子代理指令在 `agents/`（按需拉起，不自动加载）：需要评分/审核时读 `agents/reviewer.md`（产出 `pass`/`revise` + `review.json`）。
 
 ## 代理文件解剖（Anatomy）
 
@@ -209,6 +209,8 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 ### 阶段 6：测试与迭代
 
 提出 2-3 个该代理会被调用的真实场景，让代理实际跑一次：验证身份表述、边界执行、权限遵守、汇报格式。根据结果迭代 AGENT.md。
+
+**AI 评审闭环（agent1 ↔ agent2，无人工）**：把代理产物交给**评审子代理**（agent2，读 `agents/reviewer.md`）独立评审，产出 `review.json`（`verdict: pass|revise` + 可执行 `issues[]`）。`revise` 时由作者代理（agent1）按 `issues[]` 逐条修订，再交评审；**`pass` 或达 `max-iterations`（默认 5）即停**。评审者与作者分离——**别让 agent 自评自改闭环自嗨**；客观结构/元数据先过 `validate_agents.py --strict`，主观质量与纪律合规交 reviewer。`review.json` 随迭代目录版本化，下一轮用 `previous_review_path` 核验上轮问题是否修复。客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/reviewer.md` 内联扮演评审者。
 
 **触发失败分类（改前先归因）**：被调用行为不符预期时，先归因再决定改哪里——**假阴性**（该出现未出现 → description 漏触发词/说法没覆盖）、**假阳性**（不该出现却乱入 → description 过度泛化/兜底词过多）、**run_error**（被正确调用但运行失败 → 客户端格式/工具/环境问题，与 description 无关别乱改）。三类混改会把「改错病」当成「改好病」。
 

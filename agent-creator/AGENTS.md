@@ -93,7 +93,7 @@ python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\
 ## 命令速查（在本工作区根执行）
 
 ```bash
-python -m pytest tests/ -q                                     # 回归 + 成品自包含/布局断言（16 例）
+python -m pytest tests/ -q                                     # 回归 + 成品自包含/布局断言（18 例）
 python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents   # 能力库校验
 python skills/agent-creator/scripts/search_agent_index.py --stats    # 索引完整性（3 源 568 条）
 ```

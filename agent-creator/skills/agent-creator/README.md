@@ -24,6 +24,8 @@ agent-creator/
     agent-quality-bar.md            # 质量标准（6 项质量检查）
     agent-index.md                  # 上游代理索引：构建/检索/更新说明
     agent-comparison.md             # 对比择优：质量6维+结构4维评分维度
+  agents/
+    reviewer.md                    # 评审子代理：评分/审核 → pass·revise + review.json（无人工评审闭环）
   templates/
     AGENT.template.md              # 新代理骨架
   evolutions/                      # 对比择优学习记录（反馈闭环）

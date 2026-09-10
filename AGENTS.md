@@ -15,7 +15,7 @@ skill-creator/                     同上（把工作流蒸馏为 SKILL.md 技�
 
 - 工作区根可放 `AGENTS.md` 作为 dev-only **角色守则**（两工作区均已建：`agent-creator/AGENTS.md` 与 `skill-creator/AGENTS.md` 各为「成品演进维护者」，前者为后者的同构镜像），随工作区存留、不随成品分发；它与仓库根 `AGENTS.md`（全局布局/铁律/命令）分工不同，也与已删除的「成品内 AGENTS.md」无关——成品根一律不放 `AGENTS.md`/`INSTALL.md`。
 
-- 两工作区**同构**（已统一精简，无 `build/`）：成品 = `SKILL.md` + `README.md`（产品文档，随技能分发）+ `scripts/`/`references/`/`templates/`/`indexes/`/`evolutions/`（及 skill-creator 独有 `agents/`/`examples/`）；工作区根 = `README.md` + `INSTALL.md`（安装手册，不随成品分发）+ `tests/`（仅 dev）+ `AGENTS.md`（角色守则，仅 dev）。成品 `AGENTS.md` 均已删除、`INSTALL.md` 均已移至各自工作区根，**SKILL.md 为唯一入口**。同名不同物，别搞混。
+- 两工作区**同构**（已统一精简，无 `build/`）：成品 = `SKILL.md` + `README.md`（产品文档，随技能分发）+ `scripts/`/`references/`/`templates/`/`indexes/`/`agents/`/`evolutions/`（`examples/` 为 skill-creator 独有）；工作区根 = `README.md` + `INSTALL.md`（安装手册，不随成品分发）+ `tests/`（仅 dev）+ `AGENTS.md`（角色守则，仅 dev）。成品 `AGENTS.md` 均已删除、`INSTALL.md` 均已移至各自工作区根，**SKILL.md 为唯一入口**。同名不同物，别搞混。
 - 根目录 `agents/` 与 `skills/` 是**已验证能力库**（区别于两个工作区 `skills/` 下的创建器成品）：`skills/` = 3 个已验证技能（code-review-skill / pr-summarizer / prd-generator），`agents/` = 32 个已验证代理（academic×5 / code-quality×2 / ue-game-studio×25）。两个「skills」同名不同物：**根 `skills/` = 能力库**、`<creator>/skills/<creator>/` = 创建器成品。
 - 环境：纯 stdlib + pytest（无 requirements/锁文件），Python 3.10+（代码用 `X | None` 类型注解，实测 3.11）。
 
@@ -73,7 +73,7 @@ python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --
 ## 结构要点
 
 - 两工作区是同构孪生（agent↔skill），dev 布局已统一精简（无 `build/`）。发布检查差异只源于**成品自校验能力不同**：skill-creator 成品是 SKILL.md 技能形态，`validate_skills.py` 能自校验自身；agent-creator 成品的 `validate_agents.py` 校验对象是 AGENT.md 代理库（非技能形态成品），故自包含扫描以 pytest 形式落在 dev-only tests。tests 脚本仍同模板各写一份（仅命名差异，哈希不同）。改一处共享模式时，先想另一侧是否需要同步或删除。
-- skill-creator 更完整：评测工具链（`run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`）、子代理提示（`agents/grader|comparator|analyzer.md`）、`examples/`、`templates/evals.json.template`。agent-creator 目前只有 validate/search/build/compare/create + `evolutions/`。
+- skill-creator 更完整：评测工具链（`run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`）、子代理提示（`agents/grader|reviewer|comparator|analyzer.md`）、`examples/`、`templates/evals.json.template`。agent-creator 有 validate/search/build/compare/create/adapt + 子代理提示（`agents/reviewer.md`）+ `evolutions/`。
 - 脚本通过 `scripts/_project_paths.py` 自定位成品根，不依赖宿主仓库布局；文档可从任意 cwd 以绝对路径调用脚本。
 - 约定：产品文档用**中文**撰写（含 frontmatter description）；frontmatter 必须含 `version: "0.x.y"`（新产出物从 `0.1.0` 起步，校验器会查）；`evolutions/` 以 `YYYY-MM-DD-<slug>.md` 记录「上游更优」对比结论（反馈闭环）。
 - 改动创建器后跑通 §命令发布门、改动能力库后跑通 §能力库校验并同步审计、重跑 `tools/scripts/build_catalog.py` 刷新 CATALOG 即可推送；**提交/推送前必做收尾交接，见 §三条铁律 3**。

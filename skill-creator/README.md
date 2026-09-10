@@ -55,14 +55,16 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 以两个采纳源为准做了系统对比调研（仓库、目录、SKILL.md 全文实抓）：[anthropics/skills](https://github.com/anthropics/skills)（`skills/skill-creator/`，Anthropic 官方）与 [antongulin/opencode-skill-creator](https://github.com/antongulin/opencode-skill-creator)（其官方版的开源 opencode 移植）。两者的方法论、脚本与我们的核心高度重叠，我们已属严格超集（量化评测/盲测/evolutions 是独有）。
 
 **可吸收优点（已并入成品，见下方升级清单）**：
-1. **人审 UI 环**（anthropics/skills）：`eval-viewer`（HTML viewer + generate_review）+ `eval_review.html` 触发集审阅——把主观评审从对话搬到版本化、可回流 feedback.json 的结构化 UI。Apache-2.0。
+1. **结构化评审回流 → agent 评审闭环（无人工）**：把「需要评分和审核」的事务交给评审子代理（`agents/reviewer.md`）产出结构化 `review.json`（`pass`/`revise` + 可执行修复项），驱动 agent1↔agent2 自动迭代直到通过。官方 `eval-viewer`/`eval_review.html`（人审 UI 环）经评估**不采纳**（以含 outputs/ 的 run 目录为锚点、与本地布局耦合、宿主假设强）；只取其「结构化意见回流」思路，载体改由 agent 产出。
 2. **description 即唯一触发面 + 硬约束**（anthropics/skills 写作规范 + antongulin）：`description` 是唯一门面、≤1024 字符、禁占位符，强化我们的 description 规范与校验。
 3. **references 引用纪律量化**（anthropics/skills 渐进披露规范）：references 一层深链接、>100 行加目录、超大文件给 grep 模式——硬规则化渐进披露。
 4. **基线行为门（RED→GREEN）+ evals 随技能发布**：无技能基线失败在前、写后带技能必须消除失败，否则技能不成立；`evals/`（triggers.json + scenarios + holdout）随技能入库、改动必回归。它是编排规范而非纯脚本，引入为流程与文件格式约定。
 5. **发布纪律**：入库前 secret 扫描、隔离安装实测、PR/tag 后再放行，禁止直推默认分支——沉淀为本仓库的入库/发布纪律。
 6. **gold-standards 记忆库 + 失败分类 taxonomy**（antongulin）：高分 description 入库（含 passRate/notes，封顶排序）作 few-shot 先例注入优化；触发失败分 false_negative/false_positive/run_error 并各配 remediation 模板。落地为 description 优化闭环增强（参考其机制，Python 化）。
 
-**升级落地清单（成品 `skills/skill-creator/`）**：`evolutions/` 记录（本日期 4 条：human-review-ui-loop / description-and-ref-discipline / red-green-gate-and-release-discipline / gold-standards-description-memory）；`SKILL.md` 扩 description 硬约束/引用纪律/RED→GREEN 判定、发布纪律与 description 记忆库闭环；`references/skill-writing-guide.md` 与 `quality-bar.md`（7→8 项）同步增强；stage7 补 eval 集审阅、holdout 与失败分类纪律；`validate_skills.py` 增 description advisory。验证器/评测脚本纯增量，pytest 15 例、成品 strict 自检、能力库 strict 校验均通过。
+**升级落地清单（成品 `skills/skill-creator/`）**：`evolutions/` 记录（description-and-ref-discipline / red-green-gate-and-release-discipline / gold-standards-description-memory 三条 + 2026-09-10 `adopt-agent-review-loop`）；`SKILL.md` 扩 description 硬约束/引用纪律/RED→GREEN 判定、发布纪律与 description 记忆库闭环、**agent 评审闭环（阶段 6）**；`references/skill-writing-guide.md` 与 `quality-bar.md`（7→8 项）同步增强；stage7 补 eval 集审阅（改由评审子代理执行）、holdout 与失败分类纪律；`run_loop.py` 落地 gold-standard 先例注入；`validate_skills.py` 增 description advisory。验证器/评测脚本纯增量，pytest 全绿、成品 strict 自检、能力库 strict 校验均通过。
+
+**2026-09-10 跟进（版本 0.7.0）**：原「人审 UI 环」改为 **agent 评审闭环（无人工）**——新增评审子代理 `agents/reviewer.md`，阶段 6 由 agent1↔agent2 自动迭代；阶段 7 查询集审阅改由评审子代理执行；阶段 8 `VERIFICATION.md` 降为可选留痕；`run_loop.py` 落地 gold-standard 先例注入。孪生 agent-creator 同步（0.7.0）。
 
 ## 提交说明
 

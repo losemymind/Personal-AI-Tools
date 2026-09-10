@@ -42,6 +42,7 @@ skill-creator/
     _project_paths.py       # 仓库根定位辅助
   agents/                   # 子代理指令（SKILL.md 按需拉起，不自动加载）
     grader.md               # 评分子代理：断言判定 → grading.json
+    reviewer.md             # 评审子代理：评分/审核 → pass·revise + review.json（无人工评审闭环）
     comparator.md           # 盲测对比子代理：A/B 定性对比 → comparison.json
     analyzer.md             # 复盘/基准分析子代理：改进建议 / 观察笔记
   indexes/

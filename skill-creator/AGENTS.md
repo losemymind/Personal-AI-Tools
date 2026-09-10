@@ -92,7 +92,7 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\
 ## 命令速查（在本工作区根执行）
 
 ```bash
-python -m pytest tests/ -q                                     # 回归（20 例）
+python -m pytest tests/ -q                                     # 回归（23 例）
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator   # 成品 strict 自检
 python skills/skill-creator/scripts/search_index.py --stats    # 索引完整性（2 源 2132 条）
 python skills/skill-creator/scripts/validate_skills.py --strict --dir <能力库绝对路径>       # 库校验

@@ -10,6 +10,9 @@ Port from Anthropic's official anthropics/skills skill-creator
     --improve-mode manual prints the prompt and reads a human/pasted reply;
     --improve-mode cli shells out to a client CLI (default `claude -p`).
   - Best description is selected by TEST score to avoid overfitting train.
+  - The improve prompt injects the best-so-far description (highest test
+    score in the run) as a few-shot gold-standard precedent, so each round
+    improves on validated wording instead of inventing from scratch.
 
 Usage:
     python scripts/run_loop.py --eval-set <evals.json> --skill-dir <skill> \
@@ -68,6 +71,7 @@ def build_improve_prompt(
     skill_content: str,
     current_description: str,
     train_results: list[dict],
+    best_so_far: str = "",
 ) -> str:
     failed = [r for r in train_results if r["should_trigger"] and not r["pass"]]
     false_positive = [r for r in train_results if not r["should_trigger"] and not r["pass"]]
@@ -76,6 +80,19 @@ def build_improve_prompt(
 
     def lines(items: list[dict]) -> str:
         return "\n".join(f'- "{r["query"]}"' for r in items) or "(none)"
+
+    # Gold-standard precedent: the best description seen so far (by test score) is
+    # a few-shot guide — "pick a better wording from a validated one", not invent
+    # from scratch each round. Mirrors the antongulin gold-standards mechanism.
+    precedent_block = ""
+    if best_so_far and best_so_far != current_description:
+        precedent_block = (
+            "\nBest description so far (highest test score in this run) — treat it as a\n"
+            "few-shot precedent and improve on this wording instead of starting from scratch:\n"
+            "<best_so_far>\n"
+            f'"{best_so_far}"\n'
+            "</best_so_far>\n"
+        )
 
     return f"""You are optimizing the description of the skill "{skill_name}".
 
@@ -87,7 +104,7 @@ Current description:
 <current_description>
 "{current_description}"
 </current_description>
-
+{precedent_block}
 Train score: {passed}/{total} correct on the training set.
 
 FAILED TO TRIGGER (should trigger, but didn't):
@@ -200,7 +217,8 @@ def main() -> int:
             exit_reason = f"all_passed (iteration {iteration})"
             break
 
-        prompt = build_improve_prompt(name, content, current, train_results)
+        best_so_far = max(history, key=lambda h: h["test_passed"])["description"]
+        prompt = build_improve_prompt(name, content, current, train_results, best_so_far)
         try:
             if args.improve_mode == "cli":
                 current = call_improver_cli(prompt, args.client)

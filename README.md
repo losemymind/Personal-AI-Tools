@@ -11,7 +11,7 @@ Personal-AI-Tools/
 │   ├── README.md               布局与开发指引
 │   ├── AGENTS.md               dev 角色守则：成品演进维护者
 │   ├── INSTALL.md              安装手册（不随成品分发）
-│   ├── tests/                  dev-only：pytest（20 用例）
+│   ├── tests/                  dev-only：pytest（23 用例）
 │   └── skills/skill-creator/   成品 = 技能唯一源（编辑在此；随仓库提交）
 └── agent-creator/              # dev 工作区（同构）
     ├── README.md
@@ -28,7 +28,7 @@ Personal-AI-Tools/
 ## 常用命令（在各 creator 工作区根执行）
 
 ```bash
-python -m pytest tests/ -q              # skill-creator 20 例 / agent-creator 回归 + 成品自包含自检
+python -m pytest tests/ -q              # skill-creator 23 例 / agent-creator 18 例 + 成品自包含自检
 # skill-creator 发布检查：pytest 之外，成品 strict 自检（引用不悬空等）
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 ```

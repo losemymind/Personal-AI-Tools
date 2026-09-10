@@ -6,7 +6,7 @@
 |---|---|---|---|
 | 择优对比 | `<YYYY-MM-DD>-compare-<技能名>.md` | 自建技能 vs 上游候选对比择优 | `2026-09-02-compare-pr-summarizer.md` |
 | 上游导入 | `<YYYY-MM-DD>-import-<技能名>.md` | 本地无候选（A 空），按用户指定直接导入上游并适配 | `2026-09-03-import-code-review-skill.md` |
-| 采纳升级 | `<YYYY-MM-DD>-adopt-<主题>.md` | 采纳上游的纪律/工具/方法论的升级记录 | `2026-09-09-adopt-human-review-ui-loop.md` |
+| 采纳升级 | `<YYYY-MM-DD>-adopt-<主题>.md` | 采纳上游的纪律/工具/方法论的升级记录 | `2026-09-10-adopt-agent-review-loop.md` |
 
 ## 记录规范
 

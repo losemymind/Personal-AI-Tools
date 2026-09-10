@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.6.2"
+version: "0.7.0"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -37,6 +37,7 @@ skill-creator/
 │   └── _project_paths.py       ← 技能根定位辅助（自包含，不依赖宿主仓库）
 ├── agents/                     ← 子代理指令（SKILL.md 按需拉起，不自动加载）
 │   ├── grader.md               ← 评分子代理：断言判定 → grading.json
+│   ├── reviewer.md             ← 评审子代理：质量/纪律评分 + pass·revise 判定 → review.json
 │   ├── comparator.md           ← 盲测对比子代理：A/B 定性对比 → comparison.json
 │   └── analyzer.md             ← 复盘/基准分析子代理：改进建议 / 观察笔记
 ├── indexes/
@@ -351,15 +352,15 @@ python scripts/compare_skills.py <自建目录> <上游目录> --all-candidates
 - **基线不失败 → 技能不必要**——停下，向用户说明「没有可修的行为差」，不硬写技能（写出来也只是冗余指导）。
 - **基线失败（verbatim 记录借口）→ 才进入写作**；写后带技能重跑（GREEN）必须消除基线失败——若仍失败则补正/删冗余，直到行为差消失。
 
-**人审闭环**：把「有/无技能」两组输出交给带反馈 UI 的人审（或在对话里请用户逐条给结构化意见），意见随 iteration 目录版本化并回流下一轮——先给人看，再自己改，别让 agent 自评自改闭环自嗨。
+**AI 评审闭环（agent1 ↔ agent2，无人工）**：把「有/无技能」两组输出与产物交给**评审子代理**（agent2，读 `agents/reviewer.md`）独立评审，产出 `review.json`（`verdict: pass|revise` + 可执行 `issues[]`）。`revise` 时由作者代理（agent1）按 `issues[]` 逐条修订，再交评审；**`pass` 或达 `max-iterations`（默认 5）即停**。评审者与作者分离——**别让 agent 自评自改闭环自嗨**；客观断言仍交 grader，主观质量与纪律合规交 reviewer。`review.json` 随 iteration 目录版本化，下一轮用 `previous_review_path` 核验上轮问题是否修复。客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/reviewer.md` 内联扮演评审者。
 
 提出 2-3 个**真实用户会说的话**作为测试提示词，请用户确认后运行：
 
 - **有技能** 和 **无技能（基线）** 两组对比运行同一提示词，记录输出、耗时与 token。
-- 断言打分**拉起评分子代理**（读 `agents/grader.md`，产物 `grading.json`）：客观断言逐条判过/不过并引用证据；客户端不支持子代理时由主持会话按同一份指令内联完成。主观部分交用户定性评审；两组输出需定性比较时拉起盲测对比子代理（`agents/comparator.md`，A/B 随机标签保密来源）。
-- 把结果整理成便于用户对照的形式（输出对比 + 量化指标），请用户逐条反馈。
-- 根据反馈改进：从反馈中**归纳共性**而非死板套用；剔除不生效的指令；把各测试中反复手写的辅助脚本沉淀为 `scripts/`。
-- 重复「改进 → 重跑 → 评审」直到用户满意或反馈为空。
+- 断言打分**拉起评分子代理**（读 `agents/grader.md`，产物 `grading.json`）：客观断言逐条判过/不过并引用证据；客户端不支持子代理时由主持会话按同一份指令内联完成。主观质量与纪律合规交**评审子代理**（`agents/reviewer.md`，产物 `review.json`）；两组输出需定性比较时拉起盲测对比子代理（`agents/comparator.md`，A/B 随机标签保密来源）。
+- 把结果整理成便于对照的形式（输出对比 + 量化指标 + `review.json`）。
+- 根据 reviewer 的 `issues[]` 改进：从反馈中**归纳共性**而非死板套用；剔除不生效的指令；把各测试中反复手写的辅助脚本沉淀为 `scripts/`。
+- 重复「改进 → 重跑 → 评审」直到 reviewer 判 `pass` 或达 `max-iterations`（无人工介入）。
 
 测试用例与结果记录在工作区内，参考官方结构的元数据字段（eval id、描述性名称、断言、输出路径、时间/token）。
 
@@ -369,13 +370,13 @@ python scripts/compare_skills.py <自建目录> <上游目录> --all-candidates
 
 **手动档（默认）**：
 1. 生成约 20 条**真实风格**触发查询：约一半应触发、一半不应触发。不应触发的最有价值的是「近似干扰项」——关键词重叠但实际需要别的技能。
-2. **先审查询集再跑**：请用户审阅并签名确认查询集（坏查询会训练出坏描述——假阴性/假阳性/运行错误必须先排除，再让它们进评测）。
+2. **先审查询集再跑**：由**评审子代理**（读 `agents/reviewer.md`）审查询集质量并给 `pass`/`revise`（坏查询会训练出坏描述——假阴性/假阳性/运行错误必须先排除，再让它们进评测）；判 `revise` 时按 `issues[]` 修正查询后复审。
 3. 用现版与改进版描述分别跑 `run_eval.py`，对比触发率。
 4. 选择测试集分数更高的版本，展示前后对比与得分。
 
 **触发失败分类（改前先归因）**：把每次 eval 失败归入三类再决定怎么改——**假阴性**（应触发未触发 → 触发面漏词/说法没覆盖）、**假阳性**（不应触发却触发 → 描述过度泛化/兜底词过多）、**run_error**（运行失败 → 工具/依赖/路径问题，与描述无关别乱改 description）。三类混改会把「改错病」当成「改好病」。
 
-**gold-standard 先例（从好里选更好）**：每轮改进提示里，附上上一轮 test 分最高的 description（连同其 run_eval 得分）当 few-shot 先例——描述优化是「从已验证的好措辞里选更好的」，不是每轮从零发明措辞。历史高通过率描述按分数优先复用。
+**gold-standard 先例（从好里选更好）**：每轮改进提示里，附上上一轮 test 分最高的 description（连同其 run_eval 得分）当 few-shot 先例——描述优化是「从已验证的好措辞里选更好的」，不是每轮从零发明措辞（`run_loop.py` 已实现：改进提示注入 `history` 中 test 分最高的描述）。历史高通过率描述按分数优先复用。
 
 **自动档（借鉴 Anthropic 官方 run_loop，train/test 60/40 分层分集，防过拟合）**：
 
@@ -393,7 +394,7 @@ python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技
 
 ### 阶段 8：记录验证与治理信息
 
-创建 `VERIFICATION.md`（生成时检查记录：结构、代码、安全模式、示例）：它记录**当时**做过的检查，不承诺未来的运行安全。缺失的凭据、权限或安全输入应产出「verification-blocked」说明，并给出一个具体的下一步动作。
+**可选留痕**：需要时创建 `VERIFICATION.md`（生成时检查记录：结构、代码、安全模式、示例）：它记录**当时**做过的检查，不承诺未来的运行安全——不创建不阻断流程。缺失的凭据、权限或安全输入应产出「verification-blocked」说明，并给出一个具体的下一步动作。
 
 技能使用后若需修正，记录修正的原因与回归记录（版本化、带原因的原子补丁，即本技能的 `evolutions/` 模式）。**不要把未经单独验证的草稿直接应用进 `SKILL.md`。**
 
