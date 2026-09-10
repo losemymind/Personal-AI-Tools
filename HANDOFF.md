@@ -1,36 +1,28 @@
-# 会话交接（2026-09-10 · 第 2 版）
+# 会话交接（2026-09-10 · 第 3 版）
 
 本文件为最近会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**当前上下文与待办**。
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → **本会话续提交**（见下「本会话已完成改动」分组提交）。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → **本会话：修复 metrics.json 契约（见下）**。
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
-- 版本：**skill-creator 0.9.0**、**agent-creator 0.7.0**。
+- 版本：**skill-creator 0.9.1**、**agent-creator 0.7.0**。
 - `opencode.json`（仓库根）用 `instructions` 注册三份 `AGENTS.md`；`.opencode/`（安装测试副本）已 gitignore。
 
-## 本会话已完成改动
+## 本会话已完成改动（skill-creator 成品演进，0.9.0 → 0.9.1）
 
-**1. skill-creator 参考来源扩为三个**
-- `skill-creator/README.md`「来源与沿革」：`anthropics/skills`（深路径链接）、`ComposioHQ/awesome-claude-skills`（新增，官方方法论分发副本）、`antongulin/opencode-skill-creator` 三源；2026-09-09 对比段表述同步为「两个方法论源」。
-- `skill-creator/AGENTS.md` SOP「被采纳/参考来源」补 ComposioHQ。均为 dev-only 文档，不 bump 版本。
+只读审阅 skill-creator 成品后，修复基准评测链的 5 处缺陷（C1 为真实产物契约断裂）：
 
-**2. 上游索引新增两个数据源（skill-creator 0.8.0 → 0.9.0）**
-- 用户指定纳入 `anthropics/skills`（`skills/*/SKILL.md`）与 `ComposioHQ/awesome-claude-skills`（**仓库根** `*/SKILL.md`）。
-- `scripts/build_index.py`：`SOURCES` 注册两源（别名 `anthropics` / `composiohq`）；`scan_skill_dir` 支持 `skills_root=""`（根级扫描、`path` 无前导 `/`）；`meta.data_source`/`sources` 改为按 `SOURCES` 派生；`--incremental` 刷新元数据并**修正 `skill_count` 被写成单源计数的缺陷**；`cleanup_tmp` 加固为 best-effort（Windows 不可访问路径不再抛错污染退出码）。
-- `scripts/search_index.py`：`SOURCE_ALIASES` 增 `anthropics`/`composiohq` 等，帮助文案更新。
-- `indexes/upstream.db`：全量重建四源 → **2187 条**（aas 2115 + composiohq 28 + addy 25 + anthropics 19）。
-- 文档同步：`references/skill-index.md`、成品 `README.md`、`SKILL.md` 阶段 0、`skill-creator/AGENTS.md`、`INSTALL.md`、工作区 `README.md`。
-- 测试：新增 `tests/test_build_index.py`（7 例）+ `test_search_index.py` 别名断言 → skill pytest 41。
-- evolutions：`2026-09-10-adopt-index-sources-anthropics-composiohq.md`。
-
-**3. 两个新技能入库（走完整 skill-creator 流程）**
-- **`skills/development/mcp-builder/`**（`source: community`）：用户需求与官方 `anthropics/skills` 的 `mcp-builder` description 逐字一致 → **官方导入 + 中文本地化**。保留官方 `reference/`×4 + `scripts/`×4 + `LICENSE.txt`（Apache-2.0），入口 `SKILL.md` 重写为中文并补本地 schema/章节，新增 `evals.json`。对比：本地适配版 0.93 > 官方 0.51 > aas `mcp-tool-developer` 0.75 → 采纳适配版。触发评测 12/12。
-- **`skills/game-development/ue5-performance-optimization/`**（`source: self`）：自建，兼顾剖析定位（Unreal Insights/stat/内存）与实现层优化（Tick/GC/Draw Call/Nanite-Lumen-VSM/TSR/Niagara/异步）。含 `references/profiling-toolkit.md` + `references/optimization-patterns.md` + `evals.json`。上游无专门 UE 性能技能（0 命中），与相邻候选 `unreal-engine-cpp-pro` 对比 0.81 vs 0.68 → 采纳自建。触发评测 11/12（「Unity 性能优化」为启发式固有近义假阳性）。
-- 合规登记：`skills/SKILLS-AUDIT.md`（3→5 技能，两行 + 数据来源 + evolutions 指针）；`skills/CATALOG.md` 重跑生成器刷新。
-- evolutions：`2026-09-10-import-mcp-builder.md`、`2026-09-10-compare-ue5-performance-optimization.md`。
-- `.opencode/skills/skill-creator/` 镜像已同步（146 文件逐字节一致）。
+- **C1 metrics.json 写入/读取路径不一致**（数据丢失）：`run_scenario.py` 写 run 根目录，`agents/grader.md` 却读 `outputs/` 子目录，导致该文件无人消费、`tool_calls` 恒 0。修复：grader 路径改为 `{outputs_dir}/../metrics.json`；`aggregate_benchmark.py` 增确定性回退，直接读 run 根 `metrics.json`。
+- **C2 tool 计数脆弱**：`run_scenario.py` 新增 `count_tool_calls()`，改逐行 `json.loads` 按 `type=="tool"` 计数（原空格敏感子串计数）。
+- **C3 schema 缺记录**：`references/benchmark-schema.md` 补 `metrics.json` 小节、读取契约与完整工作区布局。
+- **C4 run_loop 选优口径**：新增 `_test_rank()`，按 test **通过率**选优、并列回退 passed 计数。
+- **C5 run_eval 汇总口径**：`summarize()` 的 `total` 只计已评分查询（`passed+failed==total`），run errors 单列。
+- 测试：`tests/test_hardening.py` +5 例（tool 计数 / aggregate 回退 / grader 路径契约 / run_eval 口径 / run_loop 排序）→ skill pytest **41 → 46**。
+- 记录：`evolutions/2026-09-10-fix-metrics-contract.md`（新增）。
+- `.opencode/skills/skill-creator/` 安装副本已同步 7 个改动文件（逐字节一致）。
+- 未改动：agent-creator、根能力库 `skills/`/`agents/`、两份 `CATALOG.md`（`--check` 仍 up to date）。
 
 ## 已知待办 / 潜在风险
 
@@ -47,7 +39,7 @@
 python -m pytest tests/ -q        # 回归 + 成品自包含自检（18 例）
 
 # skill-creator（在 skill-creator/ 根）
-python -m pytest tests/ -q                                                    # 41 例
+python -m pytest tests/ -q                                                    # 46 例
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
 python skills/skill-creator/scripts/search_index.py --stats                   # 4 源 2187 条

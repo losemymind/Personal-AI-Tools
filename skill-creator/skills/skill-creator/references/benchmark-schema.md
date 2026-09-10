@@ -125,6 +125,23 @@ python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
 }
 ```
 
+## metrics.json（可选，场景执行计数）
+
+`<run-dir>/metrics.json`，由 `run_scenario.py` 产出（与 `timing.json`/`grading.json` 同级；`outputs/` 是其子目录）：
+
+```json
+{
+  "client": "opencode",
+  "model": "",
+  "skill": "example-skill",
+  "returncode": 0,
+  "output_chars": 12450,
+  "total_tool_calls": 15
+}
+```
+
+- **读取契约**：评分子代理从 `{outputs_dir}/../metrics.json`（即 run 根目录）并入 `grading.json` 的 `execution_metrics`；`aggregate_benchmark.py` 在 `execution_metrics` 未提供 `total_tool_calls`/`total_tokens` 时**回退读同一文件**。因此 `metrics.json` 必须落在 run 根目录，而非 `outputs/` 内。
+
 ## benchmark.json / benchmark.md（aggregate_benchmark 产物）
 
 由 `aggregate_benchmark.py <workspace>/iteration-N` 生成到该目录下：
@@ -168,12 +185,15 @@ python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
 └── eval-<descriptive-name>/
     ├── with_skill/
     │   └── run-1/
-    │       ├── grading.json
-    │       └── timing.json
+    │       ├── transcript.md      # run_scenario.py
+    │       ├── metrics.json       # run_scenario.py（run 根，见上）
+    │       ├── timing.json
+    │       ├── outputs/
+    │       │   └── response.txt   # run_scenario.py
+    │       └── grading.json       # 评分子代理
     └── without_skill/
         └── run-1/
-            ├── grading.json
-            └── timing.json
+            └── ...                # 同结构
 ```
 
 对比优先级：先看 delta 的 pass_rate（技能相对基线的提升）；其次看 tokens/time 的开销是否值得；高方差（stddev 大）的 eval 视为 flaky，需更多 run 或换提示词。

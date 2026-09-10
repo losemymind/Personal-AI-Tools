@@ -59,7 +59,7 @@ Grader 通读执行记录与输出文件，判定每条断言（expectation）�
 
 ### 第 8 步：并入执行度量与计时
 
-若 `{outputs_dir}/metrics.json` 存在，并入 `execution_metrics`；若 `{outputs_dir}/../timing.json` 存在，并入 `timing`。
+若 `{outputs_dir}/../metrics.json` 存在（run 根目录，与 `grading.json` 同级），并入 `execution_metrics`；若 `{outputs_dir}/../timing.json` 存在，并入 `timing`。
 
 ## grading.json 输出格式
 

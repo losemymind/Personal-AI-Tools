@@ -93,7 +93,9 @@ def summarize(results: list[dict]) -> dict:
     errors = sum(1 for r in results if r.get("error"))
     scored = [r for r in results if not r.get("error")]
     passed = sum(1 for r in scored if r["pass"])
-    total = len(results)
+    # total counts scored queries only, so passed + failed == total; run errors are
+    # reported separately and never inflate the denominator (see stage 7 attribution).
+    total = len(scored)
     tp = sum(1 for r in scored if r["should_trigger"] and r["triggered"])
     fp = sum(1 for r in scored if not r["should_trigger"] and r["triggered"])
     fn = sum(1 for r in scored if r["should_trigger"] and not r["triggered"])

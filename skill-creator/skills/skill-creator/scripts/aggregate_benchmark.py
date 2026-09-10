@@ -107,10 +107,24 @@ def load_run_results(benchmark_dir: Path) -> dict[str, list[dict]]:
                 timing = grading.get("timing", {})
                 result["time_seconds"] = timing.get("total_duration_seconds", 0.0)
                 # Tokens must come from a token field — never from output_chars
-                # (characters are not tokens). timing.json may supply them below.
-                metrics = grading.get("execution_metrics", {})
+                # (characters are not tokens). timing.json / metrics.json may supply them below.
+                metrics = grading.get("execution_metrics", {}) or {}
                 result["tokens"] = metrics.get("total_tokens", metrics.get("tokens", 0))
                 result["tool_calls"] = metrics.get("total_tool_calls", 0)
+                # run_scenario.py writes a sibling metrics.json in the run dir (next to
+                # timing.json). Use it as the deterministic fallback when the grader's
+                # execution_metrics does not carry the counts — the contract documented
+                # in references/benchmark-schema.md and agents/grader.md.
+                metrics_file = run_dir / "metrics.json"
+                if metrics_file.exists():
+                    try:
+                        mdata = json.loads(metrics_file.read_text(encoding="utf-8-sig"))
+                    except json.JSONDecodeError:
+                        mdata = {}
+                    if not result["tool_calls"]:
+                        result["tool_calls"] = mdata.get("total_tool_calls", result["tool_calls"])
+                    if not result["tokens"]:
+                        result["tokens"] = mdata.get("total_tokens", result["tokens"])
                 timing_file = run_dir / "timing.json"
                 if timing_file.exists():
                     try:

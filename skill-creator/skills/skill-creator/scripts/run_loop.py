@@ -66,6 +66,18 @@ def split_eval_set(eval_items: list[dict], holdout: float, seed: int = 42) -> tu
     return train, test
 
 
+def _test_rank(entry: dict) -> tuple[float, int]:
+    """Rank key for best-description selection: test pass rate, then passed count.
+
+    Selecting by rate (not the raw passed count) keeps iterations with different
+    test-set sizes comparable; ties fall back to the raw passed count so the
+    earlier, equal-scoring iteration is not silently preferred on a size artifact.
+    """
+    total = entry.get("test_total", 0)
+    rate = entry["test_passed"] / total if total else 0.0
+    return (rate, entry["test_passed"])
+
+
 def build_improve_prompt(
     skill_name: str,
     skill_content: str,
@@ -223,7 +235,7 @@ def main() -> int:
             exit_reason = f"all_passed (iteration {iteration})"
             break
 
-        best_so_far = max(history, key=lambda h: h["test_passed"])["description"]
+        best_so_far = max(history, key=_test_rank)["description"]
         prompt = build_improve_prompt(name, content, current, train_results, best_so_far)
         try:
             if args.improve_mode == "cli":
@@ -235,7 +247,7 @@ def main() -> int:
             exit_reason = f"improver_error (iteration {iteration})"
             break
 
-    best = max(history, key=lambda h: h["test_passed"])
+    best = max(history, key=_test_rank)
     output = {
         "skill_name": name,
         "original_description": original_description,

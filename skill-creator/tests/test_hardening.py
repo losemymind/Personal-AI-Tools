@@ -6,6 +6,7 @@ silently regress.
 
 import json
 import sys
+from pathlib import Path
 
 from conftest import ARTIFACT, SKILL_FIXTURE, run_script
 
@@ -191,3 +192,88 @@ def test_run_scenario_records_artifacts(tmp_path):
     assert (run_dir / "transcript.md").exists()
     timing = json.loads((run_dir / "timing.json").read_text(encoding="utf-8"))
     assert "total_duration_seconds" in timing
+
+
+# --- 2026-09-10 metrics.json contract audit (D1/D2) ---
+
+
+def _stub_cmd(stub: Path) -> str:
+    exe = sys.executable.replace("\\", "/")
+    stub_path = str(stub).replace("\\", "/")
+    return f'"{exe}" "{stub_path}" {{prompt}}'
+
+
+# D2 — tool-call counting is JSON-parse based, not whitespace-sensitive substring count
+def test_run_scenario_counts_tool_calls_from_json_stream(tmp_path):
+    stub = tmp_path / "stub.py"
+    stub.write_text(
+        "import json\n"
+        "print(json.dumps({'type':'tool','part':{}}))\n"
+        "print(json.dumps({'type': 'tool', 'part': {}}))\n"
+        "print(json.dumps({'type':'text','part':{'type':'text','text':'HI'}}))\n",
+        encoding="utf-8",
+    )
+    run_dir = tmp_path / "run-1"
+    r = run_script("scripts/run_scenario.py", "--client", "opencode",
+                   "--prompt", "do x", "--run-dir", str(run_dir), "--client-cmd", _stub_cmd(stub))
+    assert r.returncode == 0, r.stdout + r.stderr
+    metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["total_tool_calls"] == 2
+
+
+# D1 — aggregate falls back to the run-root metrics.json when execution_metrics is absent
+def test_aggregate_reads_run_metrics_json_fallback(tmp_path):
+    ws = tmp_path / "iteration-1"
+    run = ws / "eval-x" / "with_skill" / "run-1"
+    run.mkdir(parents=True)
+    (run / "grading.json").write_text(json.dumps({
+        "expectations": [],
+        "summary": {"passed": 1, "failed": 0, "total": 1, "pass_rate": 1.0},
+        "timing": {"total_duration_seconds": 5.0},
+    }), encoding="utf-8")
+    (run / "metrics.json").write_text(
+        json.dumps({"total_tool_calls": 7, "output_chars": 100}), encoding="utf-8")
+
+    r = run_script("scripts/aggregate_benchmark.py", str(ws), "--skill-name", "s")
+    assert r.returncode == 0, r.stdout + r.stderr
+    bench = json.loads((ws / "benchmark.json").read_text(encoding="utf-8-sig"))
+    assert bench["runs"][0]["result"]["tool_calls"] == 7
+
+
+# D1 — grader's documented metrics.json path is the run root, not outputs/
+def test_grader_docs_metrics_json_at_run_root():
+    src = (ARTIFACT / "agents" / "grader.md").read_text(encoding="utf-8")
+    assert "{outputs_dir}/../metrics.json" in src
+    assert "{outputs_dir}/metrics.json" not in src
+
+
+# D4 — run_eval summary counts scored queries only; run errors never inflate total
+def test_run_eval_summary_run_errors_excluded_from_total():
+    _scripts_on_path()
+    try:
+        from run_eval import summarize
+    finally:
+        _pop_path()
+
+    s = summarize([
+        {"query": "a", "should_trigger": True, "triggered": True, "pass": True},
+        {"query": "b", "should_trigger": False, "triggered": False, "pass": True},
+        {"query": "c", "should_trigger": True, "pass": None, "error": "boom"},
+    ])
+    assert s["errors"] == 1
+    assert s["total"] == 2
+    assert s["passed"] == 2
+
+
+# D5 — run_loop ranks candidate descriptions by test pass rate, then passed count
+def test_run_loop_ranks_by_test_rate():
+    _scripts_on_path()
+    try:
+        from run_loop import _test_rank
+    finally:
+        _pop_path()
+
+    # 3/3 (1.0) must outrank 4/5 (0.8) even though 4 > 3 in raw count
+    assert _test_rank({"test_passed": 3, "test_total": 3}) > _test_rank({"test_passed": 4, "test_total": 5})
+    # tie on rate -> higher passed count wins
+    assert _test_rank({"test_passed": 3, "test_total": 6}) > _test_rank({"test_passed": 2, "test_total": 4})

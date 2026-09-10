@@ -10,8 +10,12 @@ per-run artifacts the grader / aggregator expect:
     ├── transcript.md      # prompt + raw client output
     ├── outputs/
     │   └── response.txt   # extracted assistant text
-    ├── metrics.json       # output_chars, tool calls, client, model, skill
+    ├── metrics.json       # output_chars, total_tool_calls, client, model, skill
     └── timing.json        # total_duration_seconds
+
+metrics.json lives in the run-dir root (sibling of timing.json / grading.json).
+The grader merges it into grading.json execution_metrics, and
+aggregate_benchmark.py reads it directly as a fallback.
 
 The skill (when given) is copied into a throwaway client workspace, so the
 "without_skill" run never sees it. `--client-cmd` overrides the invoked command
@@ -73,6 +77,27 @@ def extract_text(raw: str) -> str:
             if ev.get("type") == "text" and part.get("text"):
                 texts.append(part["text"])
     return "\n".join(texts).strip() if texts else raw.strip()
+
+
+def count_tool_calls(raw: str) -> int:
+    """Count tool invocations in a client's JSON event stream.
+
+    Parses each JSON line instead of substring-counting a serialized key, so the
+    count is independent of the client's whitespace/formatting. Plain-text output
+    (e.g. `claude -p`) yields 0.
+    """
+    count = 0
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(ev, dict) and ev.get("type") == "tool":
+            count += 1
+    return count
 
 
 def build_command(client: str, prompt: str, model: str, override: str | None) -> list[str]:
@@ -154,7 +179,7 @@ def main() -> int:
             "skill": skill_name,
             "returncode": proc.returncode,
             "output_chars": len(raw),
-            "total_tool_calls": raw.count('"type":"tool"'),
+            "total_tool_calls": count_tool_calls(raw),
         }, indent=2), encoding="utf-8")
 
     print(f"✅ wrote run artifacts to {run_dir} ({duration}s, rc={proc.returncode})", file=sys.stderr)
