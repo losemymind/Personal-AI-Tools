@@ -4,10 +4,10 @@
 
 ## 仓库状态速览
 
-- git：`main` @ `fe4049a`（与 `origin/main` 同步；上一提交为第 16 版交接记录，CI 三 job 全绿）。**本次改动尚未提交、未推送**（遵守铁律 3，等待用户确认）。
+- git：`main` @ `33141f1`（已推送，与 `origin/main` 同步；CI 三 job 全绿 run 34552826611）。本会话 6 项改动已提交 `33141f1`（前序交接记录为 `fe4049a`）。
 - 版本：**skill-creator 0.10.0**（本会话 0.9.22 → 0.10.0，新增 `package_skill.py`，minor）、**agent-creator 0.7.5**（本会话 0.7.4 → 0.7.5，安全扫描增强 + 验证器 fail-loud）。
 - 能力库：`skills/` = **5 技能**、`agents/` = **32 代理**（本会话**未增删**，审计 `skills/SKILLS-AUDIT.md` / `agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md` 无需变动；已复核 `build_catalog.py --check` up to date）。
-- 两工作区同构：成品即源（直接编辑 `skill-creator/skills/skill-creator/`、`agent-creator/skills/agent-creator/`）；成品自包含；`.opencode/skills/skill-creator` 安装镜像（gitignore）已同步至源码一致（1244 文件，含 loki 快照与 package_skill）。
+- 两工作区同构：成品即源（直接编辑 `skill-creator/skills/skill-creator/`、`agent-creator/skills/agent-creator/`）；成品自包含；`.opencode/skills/skill-creator` 安装镜像（gitignore）已用 robocopy `/MIR` 重同步至源码一致（**222/222 文件**，含精选 loki 快照与 `package_skill.py`，镜像自身 strict 校验通过）。
 - 本机可用模型串：`deepseek/deepseek-v4-flash`、`deepseek-responses/deepseek-v4-flash`（全局 `model` 指向不存在的 `siliconflow/...`，真机评测须 `--model`/`-m` 显式指定）。
 
 ## 本会话已完成（6 项，逐条）
@@ -65,7 +65,7 @@ agent-creator：pytest 68 passed（64 → +4）
 
 ## 未完成项 / 风险 / 下一副 agent 精确待办
 
-1. **待提交/推送**：本会话 6 项改动已完成收尾（发布门全绿、文档/evolutions/版本/HANDOFF 同步、镜像同步），**尚未 git 提交/推送**。下一会话若用户确认：先 `git add -A`，提交信息建议 `feat(creators): 六项加固（skill-creator 0.10.0 / agent-creator 0.7.5）`，再推送；推送后确认 CI 三 job 全绿。
+1. **已提交/推送**：本会话 6 项改动已收尾并提交 **`33141f1`**（`fe4049a..33141f1`），CI 三 job 全绿（run 34552826611）。无待提交项。
 2. **examples/loki-mode 已精选（经用户确认）**：剔除 `benchmarks/`（999 产物）、`demo/`（1.28MB gif）、上游 `.github/`，保留技能内容共 **91 文件 / 约 0.88 MB**；`references/` 15 个。README 注记已同步。
 3. **能力库未变**：`skills/` 5、`agents/` 32；未动审计与 CATALOG。任何后续增删仍须走创建器 + 登记审计 + 重跑 `build_catalog.py`。
 4. **触发评测**：`--mode heuristic` 为词面覆盖代理指标（本轮已定性，不再作为缺陷）；真机 `--mode cli` 为权威信号。若要提升真机 recall，方向是优化 description 或增加 runs，**不属工具缺陷**。
