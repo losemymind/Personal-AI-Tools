@@ -76,7 +76,7 @@ python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --
 
 ## 结构要点
 
-- 两工作区是同构孪生（agent↔skill），dev 布局已统一精简（无 `build/`）。发布检查差异只源于**成品自校验能力不同**：skill-creator 成品是 SKILL.md 技能形态，`validate_skills.py` 能自校验自身；agent-creator 成品的 `validate_agents.py` 校验对象是 AGENT.md 代理库（非技能形态成品），故自包含扫描以 pytest 形式落在 dev-only tests。tests 脚本仍同模板各写一份（仅命名差异，哈希不同）。改一处共享模式时，先想另一侧是否需要同步或删除。
+- 两工作区是同构孪生（agent↔skill），dev 布局已统一精简（无 `build/`）。**两侧都有** dev-only `tests/test_product_self_containment.py`（成品全 md 的 dev-only/悬空引用扫描 + 布局 slim 断言）；发布检查差异只源于**成品自校验能力不同**：skill-creator 成品是 SKILL.md 技能形态，`validate_skills.py --strict` 能对成品自身再做一层 frontmatter/章节/安全护栏/引用校验；agent-creator 成品的 `validate_agents.py` 校验对象是 AGENT.md 代理库（非技能形态成品），故其成品自校验只能落在 dev-only tests。tests 脚本仍同模板各写一份（仅命名差异，哈希不同）。改一处共享模式时，先想另一侧是否需要同步或删除。
 - skill-creator 更完整：评测工具链（`run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`）、子代理提示（`agents/grader|reviewer|comparator|analyzer.md`）、`examples/`、`templates/evals.json.template`。agent-creator 有 validate/search/build/compare/create/adapt + 子代理提示（`agents/reviewer.md`）+ `evolutions/`。
 - 脚本通过 `scripts/_project_paths.py` 自定位成品根，不依赖宿主仓库布局；文档可从任意 cwd 以绝对路径调用脚本。
 - 约定：产品文档用**中文**撰写（含 frontmatter description）；技能类 frontmatter 只含 `name`/`description`/`risk`/`category`（**不含** `version`/`tags`/来源字段——来源/作者/日期记入 `skills/SKILL-RECORDS.md` 台账，版本以 git 提交历史为准）；`evolutions/` 以 `YYYY-MM-DD-<slug>.md` 记录「上游更优」对比结论（反馈闭环）。

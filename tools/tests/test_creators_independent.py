@@ -6,8 +6,15 @@ the shipped artifact directory is the source, so the independence contract is
 enforced against those directories, not the workspaces around them.
 
 Scan rules:
-  - authored text/code files only: .md/.py/.sh/.json/.yaml/.yml/.txt
-  - skip examples/ (upstream learning samples) and evolutions/ (historical)
+  - authored text/code files only: .md/.py/.sh/.json/.yaml/.yml/.txt/.template
+    (templates/*.json.template and the like ship with the artifact too)
+  - token matching is case-insensitive: a cross-reference written as
+    "Agent-Creator" couples the artifacts just as much as the exact spelling
+  - skip examples/ (upstream learning samples) and evolutions/ (historical
+    cross-creator comparison/borrowing records). These DELIBERATELY name the
+    sibling — an evolution note exists to record "what we learned from the other
+    creator" — so scanning them would be a false-positive storm, not a contract
+    violation. This is an intentional exclusion, covered by a regression test.
   - skip indexes/upstream.db (third-party index bytes — an external repo naming
     one creator is data, not our cross-reference)
   - the forbidden set is the sibling's repo-facing name in both languages
@@ -43,7 +50,7 @@ FORBIDDEN = {
     ),
 }
 
-SCAN_EXTS = {".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt"}
+SCAN_EXTS = {".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt", ".template"}
 SKIP_DIRS = {"examples", "evolutions", "__pycache__"}
 SKIP_FILES = {"upstream.db"}
 
@@ -62,6 +69,22 @@ def _authored_files(artifact: Path):
         yield p
 
 
+def _scan_for_tokens(artifact: Path, tokens) -> list[str]:
+    """Return one 'relpath: token' problem per authored file that names a token.
+
+    Case-insensitive; the artifact root is arbitrary so tests can point it at a
+    fixture dir as well as the real shipped artifact.
+    """
+    problems = []
+    lowered = [(t, t.lower()) for t in tokens]
+    for f in _authored_files(artifact):
+        text = f.read_text(encoding="utf-8", errors="replace").lower()
+        for token, token_lc in lowered:
+            if token_lc in text:
+                problems.append(f"{f.relative_to(artifact).as_posix()}: {token!r}")
+    return problems
+
+
 def test_each_creator_is_self_contained():
     for name, artifact in CREATORS.items():
         assert artifact.is_dir(), f"artifact missing: {artifact}"
@@ -70,17 +93,40 @@ def test_each_creator_is_self_contained():
 def test_no_cross_references_between_creators():
     problems = []
     for name, artifact in CREATORS.items():
-        tokens = FORBIDDEN[name]
-        for f in _authored_files(artifact):
-            text = f.read_text(encoding="utf-8", errors="replace")
-            for token in tokens:
-                if token in text:
-                    rel = f.relative_to(artifact).as_posix()
-                    problems.append(f"{name}/.../{rel}: references sibling token {token!r}")
+        for p in _scan_for_tokens(artifact, FORBIDDEN[name]):
+            problems.append(f"{name}/.../{p}")
     assert not problems, (
         "creators must not cross-reference each other (strict independence):\n"
         + "\n".join(problems)
     )
+
+
+def test_scan_catches_template_files_and_case_variants(tmp_path):
+    """`.template` files are authored artifacts, and a casing variant is still a
+    cross-reference — both must be caught (regression: they used to slip)."""
+    artifact = tmp_path / "art"
+    (artifact / "templates").mkdir(parents=True)
+    (artifact / "templates" / "x.json.template").write_text(
+        '{"skill_name": "AGENT-CREATOR"}', encoding="utf-8"
+    )
+    problems = _scan_for_tokens(artifact, FORBIDDEN["skill-creator"])
+    assert problems, "a sibling token in a .template file (different case) must be flagged"
+    assert any("x.json.template" in p for p in problems)
+
+
+def test_scan_skips_evolutions_and_examples_by_design(tmp_path):
+    """Historical records and upstream samples intentionally name the sibling;
+    the scan must not treat them as contract violations."""
+    artifact = tmp_path / "art"
+    (artifact / "evolutions").mkdir(parents=True)
+    (artifact / "examples" / "sample").mkdir(parents=True)
+    (artifact / "evolutions" / "2026-01-01-adopt.md").write_text(
+        "learned from agent-creator", encoding="utf-8"
+    )
+    (artifact / "examples" / "sample" / "SKILL.md").write_text(
+        "compare against agent-creator", encoding="utf-8"
+    )
+    assert _scan_for_tokens(artifact, FORBIDDEN["skill-creator"]) == []
 
 
 def test_no_cross_artifact_imports():

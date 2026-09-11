@@ -48,7 +48,12 @@ def test_artifact_index_is_available_outside_repo(tmp_path):
 
 
 def test_artifact_has_no_sibling_reference():
-    """No authored artifact file may name the sibling creator's scripts/name."""
+    """No authored artifact file may name the sibling creator's scripts/name.
+
+    Case-insensitive, and `.template` files count (they ship too). Historical
+    `evolutions/` and upstream `examples/` are excluded by design: they
+    deliberately name the sibling when recording what was borrowed.
+    """
     forbidden = (
         "agent-creator", "代理创建器", "adapt_agent", "package_agent",
         "validate_agents", "security_scan", "search_agent_index",
@@ -62,10 +67,10 @@ def test_artifact_has_no_sibling_reference():
         rel = p.relative_to(ARTIFACT)
         if any(part in skip_dirs for part in rel.parts):
             continue
-        if p.suffix.lower() not in {".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt"}:
+        if p.suffix.lower() not in {".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt", ".template"}:
             continue
-        text = p.read_text(encoding="utf-8", errors="replace")
+        text = p.read_text(encoding="utf-8", errors="replace").lower()
         for token in forbidden:
-            if token in text:
+            if token.lower() in text:
                 problems.append(f"{rel.as_posix()}: {token!r}")
     assert not problems, "skill-creator artifact references its sibling:\n" + "\n".join(problems)

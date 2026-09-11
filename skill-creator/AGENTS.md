@@ -52,6 +52,7 @@
 python -m pytest tests/ -q
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 ```
+- `pytest tests/` 内含 `tests/test_product_self_containment.py`：成品**全 md**（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用扫描——补 `validate_skills.py`（仅 SKILL.md 反引号引用）的覆盖盲区；新增/改动成品文档后此测试是自包含的硬门。
 - 若改动 `validate_skills.py` 且可能影响库判定，加跑能力库 strict（用绝对路径，相对路径会漏扫）：
 ```bash
 python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
@@ -71,7 +72,7 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\
 ## 硬约束
 
 1. **成品即源，不复制**：编辑直接落在 `skills/skill-creator/`；仓库内不保留第二份成品副本。
-2. **成品自包含**：成品内文档引用只能指向成品内部（`scripts/`、`references/`、`templates/`、`agents/`、`indexes/`、`examples/`、`evolutions/`），**不得引用**本文件或工作区 `tests/`、`INSTALL.md`、`README.md`。发布门扫反引号引用，悬空即失败。
+2. **成品自包含**：成品内文档引用只能指向成品内部（`scripts/`、`references/`、`templates/`、`agents/`、`indexes/`、`examples/`、`evolutions/`），**不得引用**本文件或工作区 `tests/`、`INSTALL.md`、`README.md`。发布门双保险：成品 `validate_skills.py --strict` 校验 SKILL.md 的反引号引用不悬空；dev-only pytest（`tests/test_product_self_containment.py`）扫成品全 md（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用。
 3. **SKILL.md 为唯一入口**：成品根不放 `AGENTS.md`/`INSTALL.md`；成品内不再注入上下文引导。
 4. **引用纪律**：references 只允许从 SKILL.md 一层深引用、references 之间不互链成图；>100 行文件顶部加目录；超大文件在 SKILL.md 引用处附 grep 模式。
 5. **渐进披露**：正文克制（普通技能 <1000 行），细节进 `references/`；skill-creator 自身是元技能，不受行数上限约束但仍是正文+按需 references。

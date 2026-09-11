@@ -72,7 +72,7 @@ skills/
 **templates/**：可复用代码/输出模板
 **references/**：外部文档或 API 参考，按需注入
 
-在 SKILL.md 中引用：`bash scripts/setup.sh`，或用反引号路径指向成品内文件（如 `templates/component.tsx`）。不使用 `{{#include ...}}`——本技能链的任何客户端都不会展开该语法。
+在 SKILL.md 中引用：`bash scripts/setup.sh`，或用反引号路径指向成品内文件（如 `templates/<模板名>.tsx`）。不使用 `{{#include ...}}`——本技能链的任何客户端都不会展开该语法。
 
 ## 技能大小指南
 

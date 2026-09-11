@@ -22,6 +22,7 @@ skill-creator/                     ← 开发工作区（本目录）
 - 内部引用（`scripts/`、`references/` 等）一律以成品目录自身为根书写。
 - 不得引用本工作区的 `INSTALL.md`、`tests/`、`README.md`（那是 dev-only，不进成品）。
 - 由成品 `validate_skills.py --strict --dir skills/skill-creator` 自检把关（引用悬空/指向不存在的路径即失败）。
+- dev-only `tests/test_product_self_containment.py` 补 SKILL.md 之外的覆盖：扫成品**全 md**（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用，并断言成品根无 `AGENTS.md`/`INSTALL.md`。
 
 ## 常用命令
 
@@ -68,6 +69,8 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 **2026-09-10 跟进（版本 0.7.0）**：评审改为 **agent 评审闭环（无人工）**——新增评审子代理 `agents/reviewer.md`，阶段 6 由 agent1↔agent2 自动迭代；阶段 7 查询集审阅改由评审子代理执行；阶段 8 `VERIFICATION.md` 降为可选留痕；`run_loop.py` 落地 gold-standard 先例注入。孪生 agent-creator 同步（0.7.0）。
 
 **2026-09-11 跟进（版本 0.7.1）**：一轮创建器审计修复（不扩功能，仅纠缺陷/对齐文档）。成品侧：`scripts/package_skill.py` 补 `--out` 指向已存在文件的显式守卫（不再泄漏 traceback）；`evolutions/README.md` 记录类型表补全、去掉硬编码类数。孪生 agent-creator 同批修复（`compare_agents` 递归候选发现同时覆盖带 `AGENT.md` 的目录与上游扁平 `<division>/<name>.md`、`adapt_agent` opencode 权限放大、`create_agent` 工具名大小写归一、`build_agent_index` 过期文档、发布门死分支）。记录见两成品 `evolutions/2026-09-11-fix-*`。
+
+**2026-09-11 跟进（版本 0.7.2）**：发布门加固。交叉引用门禁覆盖 `.template` 文件并改大小写不敏感（`tools/tests` + 两侧 `test_independence.py`）；skill 侧新增 dev-only `tests/test_product_self_containment.py`，与 agent 侧对等扫描成品**全 md** 的 dev-only/悬空引用（此前仅 `validate_skills.py` 校验 SKILL.md），并修正 `references/skill-anatomy.md` 一处悬空示意路径。记录见 `evolutions/2026-09-11-fix-independence-and-self-containment-gates.md`。
 
 ## 提交说明
 
