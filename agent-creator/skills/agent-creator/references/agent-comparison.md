@@ -1,6 +1,6 @@
 # 代理对比标准（Agent Comparison）
 
-定义 agent-creator「阶段 5.5 与上游候选对比择优」的评分维度，由 `compare_agents.py` 自动计算，供执行代理结合用户需求做最终判断。与技能创建器（独立项目 Personal-AI-Tools 的成品）的「质量 6 维 + 结构 4 维」同构，但维度按代理的**身份/边界/权限/协作**特性调整。
+定义 agent-creator「阶段 5.5 与上游候选对比择优」的评分维度，由 `compare_agents.py` 自动计算，供执行代理结合用户需求做最终判断。与技能创建器（独立项目 Personal-AI-Tools 的成品）的「质量 + 结构」评分模型同构，但维度按代理的**身份/边界/权限/协作**特性细化为「质量 7 维 + 结构 4 维」。
 
 ## 评分模型
 
@@ -8,10 +8,10 @@
 
 | 维度 | 权重 | 计算方式 |
 |---|---|---|
-| 质量（Quality） | 60% | 6 个子维度平均 |
+| 质量（Quality） | 60% | 7 个子维度平均 |
 | 结构（Structure） | 40% | 4 个子维度平均 |
 
-## 质量 6 维（对应 agent-quality-bar 的检查项）
+## 质量 7 维（对应 agent-quality-bar 的检查项）
 
 | 维度 | 满分条件 | 权重说明 |
 |---|---|---|
@@ -21,8 +21,7 @@
 | 协作与升级 `collab_escalation` | 有「协作协议」章节且声明升级路径（仅协作给 0.6） | 何时被调用/如何汇报/何时交还人类 |
 | 完成标准 `completion_criteria` | 有「完成标准 / Completion Criteria」章节 | 产出如何验收（可验证） |
 | 安全护栏 `security_guardrails` | offensive 代理必有授权免责声明；无危险管道 | 安全审查核心 |
-
-另含元数据完整性 `metadata_complete`（`name` + `description` 齐全）计入质量 6 维之一。
+| 元数据完整 `metadata_complete` | `name` + `description` 齐全 | 触发依据与生命周期记账 |
 
 ## 结构 4 维（对应 agent-anatomy 的渐进式披露 + 单一职责）
 

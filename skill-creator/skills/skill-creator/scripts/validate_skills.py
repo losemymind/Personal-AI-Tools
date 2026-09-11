@@ -96,10 +96,34 @@ EVAL_QUERY_KEYS = ("query", "prompt")
 # Text/code files scanned for inline secrets across the whole skill dir (not just
 # SKILL.md). Backtick path-ref checking stays SKILL.md-scoped: references/agents
 # legitimately cite generic (`references/x.md`) and upstream paths, so a dir-wide
-# dangling-ref scan would false-positive.
+# dangling-ref scan would false-positive. Keep this in sync with the code
+# extensions BACKTICK_REF_RE recognizes: a bundled helper is just as scannable as
+# a referenced one (a `.js`/`.ts` script with a pasted token or `curl … | bash`
+# must not slip through the release sweep).
 TEXT_SCAN_EXTS = {
     ".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt", ".toml", ".cfg",
     ".ini", ".conf", ".env", ".ps1", ".psm1", ".psd1", ".bat", ".cmd",
+    ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".rb", ".go", ".java",
+    ".rs", ".php", ".vue", ".svelte",
+}
+
+# Credential-bearing files with no (or a misleading) extension, matched by exact
+# name. Kept in sync with the agent-side scanner (`security_scan.py`). Includes
+# extensionless files common inside hidden dirs (`.aws/credentials`) and shell rc
+# files that frequently export tokens.
+SENSITIVE_DOTFILES = {
+    ".netrc", ".git-credentials", ".npmrc", ".pgpass", ".htpasswd",
+    ".dockercfg", ".envrc", "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519",
+    ".pypirc", ".netrc.gpg", "credentials", ".gitconfig", ".bashrc",
+    ".zshrc", ".profile", ".bash_profile", ".secrets",
+}
+
+# Noise dirs skipped by the directory security sweep. The sweep deliberately
+# descends into hidden dirs (credentials live in `.ssh/`, `.aws/`, …), so only
+# VCS/cache trees that cannot hold authored text are skipped.
+SECURITY_SKIP_DIRS = {
+    ".git", ".hg", ".svn", "__pycache__", "node_modules",
+    ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox", ".venv", "venv",
 }
 
 
@@ -108,10 +132,14 @@ def _is_scannable_text(fn: str) -> bool:
 
     ``os.path.splitext`` mishandles dotfiles: bare ``.env`` yields ``('.env','')``
     and ``.env.local`` yields ``('.env','.local')``, so the most common dotenv
-    names were never scanned. Treat any ``.env``/``.env.*`` name as scannable.
+    names were never scanned. Treat any ``.env``/``.env.*`` name as scannable,
+    and sweep known credential filenames (``id_rsa``, ``.aws/credentials``, …)
+    that carry no usable extension.
     """
     low = fn.lower()
     if low == ".env" or low.startswith(".env."):
+        return True
+    if low in SENSITIVE_DOTFILES:
         return True
     return os.path.splitext(fn)[1].lower() in TEXT_SCAN_EXTS
 
@@ -223,7 +251,10 @@ def check_dir_secrets(root: str, rel_path: str) -> list[str]:
     """
     errs: list[str] = []
     for dirpath, dirs, files in os.walk(root):
-        dirs[:] = [d for d in dirs if not d.startswith(".") and not is_exempt_dir(os.path.join(dirpath, d))]
+        # The secret sweep must descend into hidden dirs (credentials live in
+        # `.ssh/`, `.aws/`, …); only VCS/cache trees are skipped. Exempt resource
+        # dirs are still excluded (their content is scanned by other means).
+        dirs[:] = [d for d in dirs if d not in SECURITY_SKIP_DIRS and not is_exempt_dir(os.path.join(dirpath, d))]
         for fn in files:
             if fn == "SKILL.md":
                 continue
@@ -457,6 +488,10 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
             if _is_in_fence(m.start()):
                 continue
             link = m.group(1)
+            # CommonMark allows an optional title after the destination
+            # (`[x](path "Title")`). Strip it so a valid titled link is not
+            # mistaken for a path containing spaces and reported dangling.
+            link = re.sub(r"\s+(?:\"[^\"]*\"|'[^']*'|\([^)]*\))\s*$", "", link.strip()).strip()
             link_clean = link.split("#")[0].strip()
             if not link_clean or link_clean.startswith(("http://", "https://", "mailto:", "<", ">")):
                 continue

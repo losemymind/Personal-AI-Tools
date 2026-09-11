@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.9.18"
+version: "0.9.22"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -143,7 +143,7 @@ skills/<skill-name>/
 ├── examples/             ← 可选：真实示例
 ├── scripts/              ← 可选：可执行辅助脚本（可复现/重复任务）
 ├── templates/            ← 可选：输出模板
-├── references/           ← 可选：参考文档（>300 行的大文件附目录；多领域按文件拆分）
+├── references/           ← 可选：参考文档（>100 行的大文件附目录；多领域按文件拆分）
 ├── agents/               ← 可选：子代理指令文件（由 SKILL.md 按需拉起，不自动加载）
 └── README.md             ← 可选：附加说明（跨客户端差异、维护记录）
 ```

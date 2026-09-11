@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流代理（Agents）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.7.0"
+version: "0.7.4"
 date_added: "2026-09-02"
 author: losemymind
 tags: [agent-creator, agents, workflow, llm-clients]
@@ -183,11 +183,11 @@ python scripts/search_agent_index.py --list-categories     # 分类（division�
 python scripts/validate_agents.py [--dir <agents目录>] [--strict]
 ```
 
-验证器检查：frontmatter 有效性（YAML、`name` 格式、`description` 存在且 ≤300 字符、可选 `version` semver）、「职责边界」章节、工具/权限声明、正文非空、引用不悬空。offensive 类代理（渗透等）同样要求授权声明。
+验证器检查：frontmatter 有效性（YAML、`name` 格式、`description` 存在且 ≤300 字符、可选 `version` semver）、「职责边界」章节、工具/权限声明、正文非空、引用不悬空（fenced 代码块豁免）、**安全扫描**（明文密钥/凭据、危险远程执行管道，`<!-- security-allowlist -->` 可按行/块豁免）。offensive 类代理（渗透等）同样要求授权声明。
 
 ### 阶段 5.5：与上游候选对比择优
 
-若阶段 0 检索到匹配候选，将自建代理与上游候选进行结构化对比（使用 `compare_agents.py`，实现 **质量 6 维 + 结构 4 维** 评分）：
+若阶段 0 检索到匹配候选，将自建代理与上游候选进行结构化对比（使用 `compare_agents.py`，实现 **质量 7 维 + 结构 4 维** 评分）：
 
 ```bash
 # 对比单个代理
@@ -198,7 +198,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 ```
 
 评分维度（详见 `references/agent-comparison.md`）：
-- **质量 6 维**（权重 60%）：边界清晰度 / 必须做-拒绝做 / 权限声明 / 协作与升级 / 完成标准 / 元数据完整
+- **质量 7 维**（权重 60%）：边界清晰度 / 必须做-拒绝做 / 权限声明 / 协作与升级 / 完成标准 / 安全护栏 / 元数据完整
 - **结构 4 维**（权重 40%）：渐进式披露 / 资源组织 / 单一职责 / 正文行数控制
 
 **决策：**

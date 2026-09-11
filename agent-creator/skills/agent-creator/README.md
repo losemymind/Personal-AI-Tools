@@ -10,20 +10,21 @@ agent-creator/
   SKILL.md                         # 核心：创建/改进/验证/安装代理的方法论（唯一入口）
   scripts/
     create_agent.py                 # 交互式脚手架生成器
-    validate_agents.py              # 自动验证器（frontmatter/边界/权限/协作/链接）
-    compare_agents.py               # 自建 vs 上游候选对比择优（质量6维+结构4维）
+    validate_agents.py              # 自动验证器（frontmatter/边界/权限/协作/链接/密钥与危险管道扫描）
+    compare_agents.py               # 自建 vs 上游候选对比择优（质量7维+结构4维）
     adapt_agent.py                  # 安装前 frontmatter 四端转换器（claude/opencode 适配+post-check）
     search_agent_index.py           # 检索上游代理索引（FTS5/CJK/分类过滤）
     build_agent_index.py           # 构建上游代理索引（三源：agency/ccgs/agency-zh）
+    security_scan.py                # 密钥/危险远程执行管道扫描（被 validate_agents.py 复用）
     _project_paths.py              # 技能根定位辅助（自包含，不依赖宿主仓库）
   indexes/
     upstream.db                    # 上游代理 SQLite 索引（随技能分发，安装即得）
   references/
     agent-template.md              # 代理模板：字段与四端兼容矩阵
     agent-anatomy.md               # 代理解剖：结构与技能/代理取舍
-    agent-quality-bar.md            # 质量标准（6 项质量检查）
+    agent-quality-bar.md            # 质量标准（7 项质量检查）
     agent-index.md                  # 上游代理索引：构建/检索/更新说明
-    agent-comparison.md             # 对比择优：质量6维+结构4维评分维度
+    agent-comparison.md             # 对比择优：质量7维+结构4维评分维度
   agents/
     reviewer.md                    # 评审子代理：评分/审核 → pass·revise + review.json（无人工评审闭环）
   templates/

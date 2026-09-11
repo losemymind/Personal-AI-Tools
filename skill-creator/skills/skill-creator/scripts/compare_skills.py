@@ -103,7 +103,12 @@ def score_structure(s: dict) -> dict:
     sd = s["subdirs"]
     st = {}
     st["progressive_disclosure"] = 1.0 if "references" in sd else (0.4 if s["body_lines"] > 500 else 0.8)
-    st["resource_organization"] = min(1.0, len(sd) / 3.0)
+    # Count only the *known* resource directories (see references/skill-comparison.md).
+    # Counting every subdirectory let a skill with three arbitrary/junk folders score
+    # a full 1.0, contradicting the documented "scripts/references/examples/templates"
+    # definition of this dimension.
+    resource_dirs = {"scripts", "references", "examples", "templates"}
+    st["resource_organization"] = min(1.0, len(set(sd) & resource_dirs) / 3.0)
     st["script_reuse"] = 1.0 if "scripts" in sd else 0.0
     st["body_size_control"] = 1.0 if s["body_lines"] <= 1000 else (0.5 if s["body_lines"] <= 1500 else 0.2)
     return st

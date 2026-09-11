@@ -64,6 +64,7 @@ python scripts/build_agent_index.py --source agency-zh
 
 # 从本地已 clone/解压的仓库构建（避免重复下载；需与 --source 单值搭配）
 python scripts/build_agent_index.py --source agency --from-extracted <本地仓库目录>
+python scripts/build_agent_index.py --source agency --no-dl   # 在当前目录（该源 checkout）扫描，同样需 --source 单值
 ```
 
 **同步策略：** 手动触发（推荐）。索引文件已提交入仓库，用户克隆即得索引；日常更新上游用 `--source <单源>` 按需同步。结构变更（新增/改名源）时用全量重建。注意构建会下载源 tarball，网络不可用时用 `--from-extracted` 指向本地 checkout。

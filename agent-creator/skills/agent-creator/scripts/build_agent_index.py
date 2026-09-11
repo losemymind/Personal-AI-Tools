@@ -17,7 +17,7 @@ Usage:
     python scripts/build_agent_index.py --source agency       # only one source
     python scripts/build_agent_index.py --incremental         # reuse upstream.db
     python scripts/build_agent_index.py --from-extracted <dir> # use an already-checked-out repo (single source)
-    python scripts/build_agent_index.py --no-dl               # scan local checkout
+    python scripts/build_agent_index.py --no-dl               # scan cwd (single --source)
 
 Exit code 0 = success.
 """
@@ -147,21 +147,43 @@ def parse_frontmatter(content: str) -> dict:
     if not m:
         return {}
     data: dict = {}
-    for line in m.group(1).splitlines():
-        if not line.strip() or line.startswith((" ", "\t", "#")):
-            continue
-        if ":" not in line:
+    lines = m.group(1).splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if not line.strip() or line.startswith((" ", "\t", "#")) or ":" not in line:
+            i += 1
             continue
         key, _, val = line.partition(":")
         key = key.strip()
-        if not key:
-            continue
         val = val.strip()
+        if not key:
+            i += 1
+            continue
+        if val in (">", ">-", ">+", "|", "|-", "|+"):
+            # Block scalar: consume the indented continuation (and blank) lines.
+            # Storing the literal marker (">"/"|") would corrupt the index.
+            block = []
+            i += 1
+            while i < len(lines):
+                nxt = lines[i]
+                if nxt.strip() and not nxt.startswith((" ", "\t")):
+                    break
+                block.append(nxt)
+                i += 1
+            nonblank = [b for b in block if b.strip()]
+            indent = min((len(b) - len(b.lstrip(" \t")) for b in nonblank), default=0)
+            text = "\n".join(b[indent:] if len(b) >= indent else "" for b in block).strip("\n")
+            if val.startswith(">"):
+                text = " ".join(part.strip() for part in text.split("\n") if part.strip())
+            data[key] = text
+            continue
         if len(val) >= 2 and val[0] == val[-1] and val[0] in ("'", '"'):
             val = val[1:-1]
         if val in ("", "null", "~"):
             val = ""
         data[key] = val
+        i += 1
     return data
 
 
@@ -179,7 +201,7 @@ def is_agent_definition(f: Path) -> bool:
     if f.suffix.lower() != ".md" or f.name.lower().startswith(("readme", "license", "changelog", "contribut")):
         return False
     try:
-        content = f.read_text(encoding="utf-8", errors="replace")
+        content = f.read_text(encoding="utf-8-sig", errors="replace")
     except OSError:
         return False
     return bool(re.match(r"^---\s*\n", content))
@@ -216,7 +238,7 @@ def extract_entries(repo_root: Path, source: dict) -> list[dict]:
     for f in files:
         rel = f.relative_to(repo_root).as_posix()
         try:
-            content = f.read_text(encoding="utf-8", errors="replace")
+            content = f.read_text(encoding="utf-8-sig", errors="replace")
         except OSError:
             continue
         fm = parse_frontmatter(content)
@@ -325,7 +347,7 @@ def main() -> int:
     parser.add_argument("--source", choices=["all", *SOURCES.keys()], default="all", help="Which upstream source to index (default: all)")
     parser.add_argument("--keep", action="store_true", help="Keep downloaded tarballs")
     parser.add_argument("--from-extracted", default=None, help="Build from an already-checked-out single source dir (must pair --source)")
-    parser.add_argument("--no-dl", action="store_true", help="Scan local repo root instead of downloading")
+    parser.add_argument("--no-dl", action="store_true", help="Scan a local checkout of a single source instead of downloading (must pair --source)")
     args = parser.parse_args()
 
     tmp = Path(tempfile.gettempdir()) / "pw-upstream-agent-index"
@@ -333,9 +355,17 @@ def main() -> int:
 
     selected = SOURCES.keys() if args.source == "all" else [args.source]
 
-    # --from-extracted requires a single --source
+    # --from-extracted / --no-dl both describe ONE locally available checkout,
+    # so they require a single --source; otherwise the same cwd would be scanned
+    # once per source and pollute the index with duplicated rows.
     if args.from_extracted and len(selected) != 1:
         print("❌ --from-extracted must be paired with a single --source")
+        return 1
+    if args.no_dl and len(selected) != 1:
+        print("❌ --no-dl must be paired with a single --source")
+        return 1
+    if args.from_extracted and not Path(args.from_extracted).is_dir():
+        print(f"❌ --from-extracted must point to an existing directory: {args.from_extracted}")
         return 1
 
     all_entries = []
@@ -344,13 +374,24 @@ def main() -> int:
         if args.from_extracted:
             root = Path(args.from_extracted)
             print(f"🗂️  {source['repo']}: using extracted checkout {root}")
+        elif args.no_dl:
+            # Scan the CURRENT directory as the repo root (run it from an
+            # upstream checkout paired with a single --source).
+            root = Path.cwd()
+            print(f"🗂️  {source['repo']}: using local repo root {root}")
         else:
-            tar_path = download_tarball(source, tmp)
-            root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
+            try:
+                tar_path = download_tarball(source, tmp)
+                root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
+            except (RuntimeError, OSError, tarfile.TarError) as e:
+                print(f"❌ {source['repo']}: fetch/unpack failed ({e}); index not written.")
+                return 1
         entries = extract_entries(root, source)
         if not entries:
-            print(f"❌ {source['repo']}: no agent definitions found; aborting this source.")
-            continue
+            # Abort the whole build rather than overwrite the committed index
+            # with a silently smaller (partial-source) one.
+            print(f"❌ {source['repo']}: no agent definitions found; aborted (index not written).")
+            return 1
         all_entries.extend(entries)
 
     if not all_entries:
@@ -360,7 +401,7 @@ def main() -> int:
     count = build_db(all_entries, DB_PATH)
     print(f"✅ Indexed {count} agents -> {DB_PATH}")
 
-    if not args.no_dl and not args.from_extracted:
+    if not (args.no_dl or args.from_extracted or args.keep):
         for p in tmp.rglob("*"):
             try:
                 if p.is_file():

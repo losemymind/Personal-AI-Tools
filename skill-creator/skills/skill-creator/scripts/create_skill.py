@@ -256,6 +256,9 @@ def main() -> int:
     if not VALID_VERSION.match(args.version):
         print(f"❌ 无效版本号: {args.version}（需 semver x.y.z）")
         return 1
+    if not description.strip():
+        print("❌ 描述不能为空白（validate_skills.py 会拒绝）")
+        return 1
     if len(description) > 1024:
         print(f"❌ 描述超长: {len(description)} 字符（上限 1024）")
         return 1

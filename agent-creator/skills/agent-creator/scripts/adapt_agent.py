@@ -13,7 +13,8 @@ and placing the canonical form verbatim can make the agent unloadable:
     (Read, Grep, Bash, ...); `model` must be an alias (sonnet/opus/haiku/
     inherit) or absent.
   - codex / deepseek: no official agent frontmatter convention (best-effort) —
-    YAML sanity check only, content passes through byte-identical.
+    YAML sanity check only, body passes through unchanged (a leading UTF-8 BOM is
+    dropped on read, and text-mode newline translation applies).
 
 Every transform ends with a per-client post-check derived from the client's
 published schema; violations exit 1 (fail loudly, never emit a file that would
@@ -347,7 +348,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         agent_file = resolve_agent_path(args.agent_path)
-        content = open(agent_file, "r", encoding="utf-8").read()
+        content = open(agent_file, "r", encoding="utf-8-sig").read()
         adapted, notes = adapt_agent_markdown(content, args.client, origin=os.path.basename(agent_file))
     except AgentFormatError as e:
         print(f"❌ {e}", file=sys.stderr)
@@ -357,10 +358,17 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ℹ️  {note}", file=sys.stderr)
 
     if args.out:
+        if os.path.isdir(args.out):
+            print(f"❌ --out is a directory, expected a file path: {args.out}", file=sys.stderr)
+            return 1
         out_dir = os.path.dirname(os.path.abspath(args.out))
-        os.makedirs(out_dir, exist_ok=True)
-        with open(args.out, "w", encoding="utf-8") as f:
-            f.write(adapted)
+        try:
+            os.makedirs(out_dir, exist_ok=True)
+            with open(args.out, "w", encoding="utf-8") as f:
+                f.write(adapted)
+        except OSError as e:
+            print(f"❌ cannot write {args.out}: {e}", file=sys.stderr)
+            return 1
         print(f"✅ wrote {args.out} ({args.client})")
     else:
         sys.stdout.write(adapted)

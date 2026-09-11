@@ -84,8 +84,13 @@ def build_query(args) -> tuple[str, list]:
                 params.extend([pattern] * len(TEXT_COLUMNS))
             clauses.append("(" + " AND ".join(like_parts) + ")")
         else:
+            # FTS5 treats many characters ( ) " + : * -, NEAR/ etc. as syntax, so a
+            # literal query like "c++" crashes MATCH. Quote each whitespace token as
+            # an FTS5 string (doubling embedded quotes) to search them literally.
+            tokens = [t for t in args.query.split() if t] or [args.query]
+            quoted = " ".join('"' + t.replace('"', '""') + '"' for t in tokens)
             clauses.append("agents.id IN (SELECT rowid FROM agents_fts WHERE agents_fts MATCH ?)")
-            params.append(args.query)
+            params.append(quoted)
 
     if args.category:
         clauses.append("LOWER(COALESCE(agents.category,'')) = ?")
@@ -155,6 +160,10 @@ def main() -> int:
         print("ℹ️  Usage: search_agent_index.py <keywords> [--source agency|ccgs|agency-zh] [--category X]")
         print("   Try:  search_agent_index.py \"code review\"  or  --stats / --list-categories")
         return 0
+
+    if args.limit < 0:
+        print("❌ --limit must be >= 0")
+        return 1
 
     sql, params = build_query(args)
     rows = cur.execute(sql, params).fetchall()

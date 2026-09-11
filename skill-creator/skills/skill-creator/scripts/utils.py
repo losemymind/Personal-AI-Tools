@@ -289,9 +289,12 @@ ALLOWLIST_MARKER_RE = re.compile(r"<!--\s*security-allowlist", re.IGNORECASE)
 # line-continuations while NOT falsely flagging `| grep bash`.
 _PIPE_CHAINS = [
     # (pipeline regex, set of shell/exec names considered dangerous on the right)
+    # `iex`/`invoke-expression` are included here because in PowerShell `curl`
+    # and `wget` are aliases of Invoke-WebRequest, so `curl x | iex` is a real
+    # download-and-execute cradle (kept in sync with the agent-side scanner).
     (re.compile(r"\b(?:curl|wget)\b[^\n]*?\|[^\n]*", re.IGNORECASE),
      {"bash", "sh", "zsh", "ksh", "dash", "ash", "fish",
-      "powershell", "pwsh", "cmd"}),
+      "powershell", "pwsh", "cmd", "iex", "invoke-expression"}),
     # `irm`=Invoke-RestMethod, `iwr`=Invoke-WebRequest (both pipe into iex).
     (re.compile(r"\b(?:irm|iwr|Invoke-WebRequest|Invoke-RestMethod)\b[^\n]*?\|[^\n]*",
                 re.IGNORECASE),
@@ -305,8 +308,14 @@ _SHELL_LAUNCHERS = {
 }
 # Obvious inline credentials (kept deliberately narrow to avoid false positives)
 SECRET_PATTERNS = [
-    re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})"),
+    # GitHub tokens: ghp_/gho_/ghu_/ghs_/ghr_ (classic) + github_pat_ (fine-grained),
+    # Slack tokens, and the generic sk- API-key prefix.
+    re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[oprsu]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    # Google API key.
+    re.compile(r"\bAIza[0-9A-Za-z_\-]{35}"),
+    # PEM private-key header (any of the common algorithm variants).
+    re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----"),
 ]
 # CommonMark fence opener: up to 3 spaces of indent, any blockquote prefix, then
 # >=3 backticks or tildes. Blockquote fences (`> ``` `) are real fenced blocks;
@@ -384,18 +393,30 @@ def security_allowlist_ranges(content: str) -> list[tuple[int, int]]:
         pos += len(ln) + 1
     fences = fenced_ranges(content)
     fence_starts = {s for s, _ in fences}
+    _, indents = _line_indent_map(content)
     excused: list[tuple[int, int]] = []
     for i, ln in enumerate(lines):
         if not ALLOWLIST_MARKER_RE.search(ln):
             continue
         excused.append((offsets[i], offsets[i] + len(ln)))
+        annotated_fence = False
         for j in (i, i + 1):
             if j < len(lines) and offsets[j] in fence_starts:
                 for s, e in fences:
                     if s == offsets[j]:
                         excused.append((s, e))
                         break
+                annotated_fence = True
                 break
+        # The marker also excuses the immediately following indented (>=4-column)
+        # code block. The validator's own message promises "annotate its block/line";
+        # honoring only fenced blocks left an indented `curl … | bash` example
+        # impossible to excuse even when the author annotated it.
+        if not annotated_fence:
+            j = i + 1
+            while j < len(lines) and (indents[j] >= 4 or not lines[j].strip()):
+                excused.append((offsets[j], offsets[j] + len(lines[j])))
+                j += 1
     return excused
 
 
@@ -429,6 +450,24 @@ def _line_index(pos: int, starts: list[int]) -> int:
     return max(0, bisect.bisect_right(starts, pos) - 1)
 
 
+def _normalize_token(tok: str) -> str:
+    """Strip shell quoting/grouping wrappers from a command token.
+
+    `"bash"` (quoted), `(bash)` (subshell), and `$(bash)` (command substitution)
+    all invoke bash; a plain token comparison would miss them. Only balanced
+    leading `(` / `$(`, trailing `)`, and surrounding quotes are peeled.
+    """
+    t = tok.strip("\"'")
+    for _ in range(3):
+        if t.startswith("$("):
+            t = t[2:]
+        elif t.startswith("("):
+            t = t[1:]
+        if t.endswith(")"):
+            t = t[:-1]
+    return t.strip("\"'")
+
+
 def _segment_runs_shell(segment: str, shells: set[str]) -> bool:
     """True if a pipe segment invokes a shell/exec binary.
 
@@ -436,7 +475,7 @@ def _segment_runs_shell(segment: str, shells: set[str]) -> bool:
     `env bash`, `/bin/bash`, `busybox sh`, `timeout 30 bash` all match, while a
     benign `grep bash` (first token is a non-launcher) does not.
     """
-    tokens = segment.split()
+    tokens = [_normalize_token(t) for t in segment.split()]
     i = 0
     while i < len(tokens):
         base = tokens[i].rsplit("/", 1)[-1].lower()
@@ -482,6 +521,13 @@ def find_dangerous_pipes(content: str, fenced_only: bool = True) -> list:
     # A shell also allows a trailing pipe at end-of-line with the command on the
     # next line (`curl x |` <newline> `bash`); join that so the chain matches.
     normalized = re.sub(r"\|[ \t]*\r?\n[ \t]*", "| ", normalized)
+    # PowerShell uses a trailing backtick and CMD a trailing caret as their line
+    # continuations; without joining them `curl x ` + newline + `| iex` splits
+    # the pipeline across lines and escapes a per-line regex. Only join when the
+    # pipe actually follows, so a bare backtick at end-of-line (Markdown inline
+    # code, or a ``` fence opener) is never swallowed.
+    normalized = re.sub(r"(?<!`)`(?!`)[ \t]*\r?\n[ \t]*(?=\|)", " ", normalized)
+    normalized = re.sub(r"\^[ \t]*\r?\n[ \t]*(?=\|)", " ", normalized)
     excused = security_allowlist_ranges(normalized)
     fences = fenced_ranges(normalized)
     starts, indents = _line_indent_map(normalized)

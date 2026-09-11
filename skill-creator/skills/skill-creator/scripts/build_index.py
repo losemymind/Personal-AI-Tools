@@ -273,7 +273,10 @@ def entry_root(e: dict, fallback: Path) -> Path:
 
 
 def enrich_structure(repo_root: Path, entry: dict) -> dict:
-    rel = entry.get("path", "").removesuffix("/")
+    # Mirror extract_fields' path fallback: an official-index entry may carry only
+    # an `id`. Without the same fallback the stored path pointed at `skills/<id>`
+    # while structure stats were measured against the whole repo root.
+    rel = (entry.get("path") or (entry.get("id") and "skills/" + entry["id"]) or "").removesuffix("/")
     skill_dir = repo_root / rel
     result = {
         "has_script": 0,

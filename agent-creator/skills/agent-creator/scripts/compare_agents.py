@@ -3,9 +3,9 @@
 Part of the agent-creator skill. See references/agent-comparison.md.
 
 Scores are computed on the AGENT.md files themselves (no index required), using:
-   - Quality 6 dimensions (mirroring agent-quality-bar): boundary clarity, must/refuse
+   - Quality 7 dimensions (mirroring agent-quality-bar): boundary clarity, must/refuse
     declared, permission declared, collaboration/escalation declared, completion criteria,
-    metadata completeness
+    security guardrails, metadata completeness
    - Structure 4 dimensions: progressive disclosure, resource organization,
     single-responsibility, body size control
 
@@ -23,6 +23,8 @@ import os
 import re
 import sys
 from pathlib import Path
+
+from security_scan import find_dangerous_pipes
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -87,7 +89,7 @@ def read_agent(agent_dir: Path) -> dict:
     agent_file = agent_dir / "AGENT.md" if agent_dir.is_dir() else agent_dir
     if not agent_file.exists():
         return {"error": f"AGENT.md not found in {agent_dir}"}
-    content = agent_file.read_text(encoding="utf-8", errors="replace")
+    content = agent_file.read_text(encoding="utf-8-sig", errors="replace")
     fm = {}
     m = re.match(r"^---\s*\n(.*?)\n?---(?:\s*\n|$)", content, re.DOTALL)
     if m:
@@ -96,6 +98,8 @@ def read_agent(agent_dir: Path) -> dict:
 
             fm = yaml.safe_load(m.group(1)) or {}
         except Exception:
+            fm = {}
+        if not isinstance(fm, dict):
             fm = {}
     subdirs = []
     if agent_dir.is_dir():
@@ -140,7 +144,7 @@ def score_quality(a: dict) -> dict:
     q["completion_criteria"] = 1.0 if any(p.search(content) for p in COMPLETION_PATTERNS) else 0.0
     if fm.get("risk") == "offensive":
         q["security_guardrails"] = 1.0 if any(p.search(content) for p in SECURITY_DISCLAIMER_PATTERNS) else 0.0
-    elif re.search(r"curl\s*\||wget\s*\||irm\s*\||/isx", content):
+    elif find_dangerous_pipes(content):
         q["security_guardrails"] = 0.0
     else:
         q["security_guardrails"] = 0.8
@@ -149,11 +153,17 @@ def score_quality(a: dict) -> dict:
     return q
 
 
+# Directories that count towards "resource organization" (mirrors
+# references/agent-comparison.md: a references/ or scripts/ subdir). Arbitrary
+# subdirs must not inflate the dimension.
+RESOURCE_DIRS = {"references", "scripts"}
+
+
 def score_structure(a: dict) -> dict:
     sd = a["subdirs"]
     st = {}
     st["progressive_disclosure"] = 1.0 if "references" in sd else (0.4 if a["body_lines"] > 500 else 0.8)
-    st["resource_organization"] = min(1.0, len(sd) / 2.0)
+    st["resource_organization"] = min(1.0, len(set(sd) & RESOURCE_DIRS) / 2.0)
     st["single_responsibility"] = 1.0 if a["body_lines"] <= 300 else (0.6 if a["body_lines"] <= 500 else 0.3)
     st["body_size_control"] = 1.0 if a["body_lines"] <= 500 else (0.5 if a["body_lines"] <= 800 else 0.2)
     return st
@@ -199,7 +209,11 @@ def main() -> int:
     args = parser.parse_args()
 
     local = Path(args.local_dir)
-    ls = score_agent(read_agent(local))
+    local_repr = read_agent(local)
+    if "error" in local_repr:
+        print(f"❌ {local_repr['error']}")
+        return 1
+    ls = score_agent(local_repr)
 
     # Non-agent docs to skip when scanning a directory as candidates (mirrors validate_agents.py)
     NON_AGENT_DOCS = {
@@ -221,31 +235,37 @@ def main() -> int:
         print("❌ No upstream candidate given. Pass <upstream_dir> or --all-candidates <dir>.")
         return 1
 
-    print("📊 Comparison Report\n")
-    print(f"LOCAL       {ls['name']}  total {fmt_score(ls['total_score'])}")
-    print_report(ls["name"], ls, indent="   ")
-    print()
-
     results = []
     for u in candidates:
-        sc = score_agent(read_agent(u))
-        results.append((u, sc))
-        print_report(f"UPSTREAM    {sc['name']} (from {u})", sc, indent="   ")
-        print()
+        sc = read_agent(u)
+        if "error" in sc:
+            print(f"❌ {sc['error']}")
+            return 1
+        results.append((u, score_agent(sc)))
 
-    # verdict
+    # --json is a machine contract: emit ONLY the JSON document (the human
+    # report below would otherwise make stdout unparseable).
     if args.json:
         out = {
             "local": ls,
             "candidates": [{"dir": str(d), **sc} for d, sc in results],
             "meta": {
-                "comparison_dimensions": "quality6+structure4",
+                "comparison_dimensions": "quality7+structure4",
                 "quality_weight": 0.6,
                 "structure_weight": 0.4,
             },
         }
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0
+
+    print("📊 Comparison Report\n")
+    print(f"LOCAL       {ls['name']}  total {fmt_score(ls['total_score'])}")
+    print_report(ls["name"], ls, indent="   ")
+    print()
+
+    for u, sc in results:
+        print_report(f"UPSTREAM    {sc['name']} (from {u})", sc, indent="   ")
+        print()
 
     best = max(results, key=lambda t: t[1]["total_score"])
     verdict = "upstream" if best[1]["total_score"] > ls["total_score"] else "local"

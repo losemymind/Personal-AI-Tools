@@ -152,13 +152,25 @@ def load_run_results(benchmark_dir: Path) -> dict[str, list[dict]]:
                 grading_summary = grading.get("summary", {})
                 if not isinstance(grading_summary, dict):
                     grading_summary = {}
+                passed = _as_int(grading_summary.get("passed", 0))
+                failed = _as_int(grading_summary.get("failed", 0))
+                total = _as_int(grading_summary.get("total", 0))
+                # `pass_rate` is a derived field. The grader is an LLM and may emit
+                # only passed/failed/total; defaulting a missing pass_rate to 0.0
+                # silently reports a 0% run (and flips the delta). Derive it from the
+                # counts when absent so the summary contract stays truthful.
+                pass_rate_raw = grading_summary.get("pass_rate")
+                if pass_rate_raw is None:
+                    pass_rate = (passed / total) if total > 0 else 0.0
+                else:
+                    pass_rate = _as_float(pass_rate_raw)
                 result = {
                     "eval_id": eval_id,
                     "run_number": run_number,
-                    "pass_rate": _as_float(grading_summary.get("pass_rate", 0.0)),
-                    "passed": _as_int(grading_summary.get("passed", 0)),
-                    "failed": _as_int(grading_summary.get("failed", 0)),
-                    "total": _as_int(grading_summary.get("total", 0)),
+                    "pass_rate": pass_rate,
+                    "passed": passed,
+                    "failed": failed,
+                    "total": total,
                 }
                 timing = grading.get("timing", {})
                 if not isinstance(timing, dict):
