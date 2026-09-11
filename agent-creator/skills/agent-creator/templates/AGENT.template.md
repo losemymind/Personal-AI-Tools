@@ -5,9 +5,6 @@ mode: subagent
 tools: [read, grep, glob, bash]
 permission:
   edit: deny
-version: "0.1.0"
-tools_clients: [claude, opencode, codex, deepseek]
-tags: [agent-name]
 ---
 
 # 代理名称

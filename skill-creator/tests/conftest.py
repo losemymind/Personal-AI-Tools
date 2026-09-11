@@ -20,9 +20,6 @@ name: {name}
 description: "{desc}"
 category: testing
 risk: safe
-source: self
-version: "0.1.0"
-date_added: "2026-09-02"
 ---
 
 # {name}

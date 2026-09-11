@@ -3,12 +3,6 @@ name: agent-creator
 description: "创建、改进并验证个人工作流代理（Agents）。当用户需要从零创建代理、把反复出现的工作角色或子代理需求沉淀为代理、修改或优化现有代理、评估代理质量、或为 claude/opencode/codex/deepseek 等客户端管理代理时使用。当用户提到「创建agent」「写个代理」「agent-creator」「把这个角色做成代理」等说法时，使用本技能。"
 category: productivity
 risk: safe
-source: self
-version: "0.8.0"
-date_added: "2026-09-02"
-author: losemymind
-tags: [agent-creator, agents, workflow, llm-clients]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # 代理创建器（agent-creator）
@@ -87,12 +81,24 @@ mode: subagent                  # 客户端相关（opencode: primary/subagent/a
 model: <provider/model-id>      # 可选：指定模型
 tools: [read, grep, bash]       # 可选：允许的工具列表（最小权限）
 permission: { "edit": "deny" }  # 可选：权限规则
-version: "0.1.0"                # 可选但推荐：语义化版本，生命周期记账
 temperature: 0.2                # 可选
-tags: [agent-name, review]      # 可选
-tools_clients: [claude, opencode, codex, deepseek]  # 可选：声明适用客户端
 ---
+
+# <代理名>
 ```
+
+**来源/版本/标签不进 frontmatter**：`version`、`tools_clients`、`tags`、`source`、`author`、`date_added` 一律不写入 `AGENT.md`——打包前代理应是**客户端中立、内容自足**的，来源/作者/日期集中记录在代理库根的**创建记录账本**（见「创建记录账本」），版本以 git 提交历史为准；`tools_clients` 的多端适配由打包器/安装阶段决定；领域分层由目录结构表达（`agents/<分类>/…`），无需 `tags`。
+
+### 创建记录账本
+
+frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作者/日期等创建元数据集中写入**创建记录账本**——代理库根的一个 Markdown 文件（本仓库约定 `AGENTS-RECORDS.md`），由 `create_agent.py --records <文件>` 在创建/导入时追加一行：
+
+| 代理 | mode | created | author | source | source_repo | method | evolutions |
+|---|---|---|---|---|---|---|---|
+
+- `create_agent.py` 传 `--records` 即自动追加一行；`--author` / `--source`（默认 `self`）/ `--source-repo` / `--method`（默认 `created`）提供各列值。不传 `--records` 则不写账本（任意目录脚手架保持干净）。
+- 导入/迁移上游代理时 `method` 记 `imported`/`migrated`，`source` 记 `community`/`official`/`external`，`source_repo` 记 `OWNER/REPO` 或本地来源名。
+- 账本是**逐条创建/来源的可查询台账**；与库的**入库审计**文件（`AGENTS-AUDIT.md`）互补：账本记事实，审计记合规结论。
 
 **字段细节与四端兼容矩阵见 `references/agent-template.md`。**
 
@@ -185,7 +191,7 @@ python scripts/validate_agents.py [--dir <agents目录>] [--strict]
 
 不带 `--dir` 时默认扫描**当前工作目录（CWD）**——在代理库/代理目录根运行即可自然生效；`--dir` 指定其他目录。**无论目标来自哪里，扫到 0 个代理定义都会 fail-loud（退出码 1）**，避免空跑全绿。
 
-验证器检查：frontmatter 有效性（YAML、`name` 格式、`description` 存在且 ≤300 字符、可选 `version` semver）、「职责边界」章节、工具/权限声明、正文非空、引用不悬空（fenced 代码块豁免）、**安全扫描**（明文密钥/凭据、危险远程执行管道，`<!-- security-allowlist -->` 可按行/块豁免）。offensive 类代理（渗透等）同样要求授权声明。
+验证器检查：frontmatter 有效性（YAML、`name` 格式、`description` 存在且 ≤300 字符）、「职责边界」章节、工具/权限声明、正文非空、引用不悬空（fenced 代码块豁免）、**安全扫描**（明文密钥/凭据、危险远程执行管道，`<!-- security-allowlist -->` 可按行/块豁免）。offensive 类代理（渗透等）同样要求授权声明。
 
 ### 阶段 5.5：与上游候选对比择优
 
@@ -244,7 +250,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 **元数据：**
 - [ ] frontmatter 是有效 YAML，`name` kebab-case 且与目录一致
 - [ ] `description` 单行、≤200 字符，包含做什么 + 何时调用，无 `<`/`>` 占位符
-- [ ] 声明了代理所需客户端（tools_clients）与版本
+- [ ] **无** `version`/`tools_clients`/`tags`/来源字段（来源进创建记录账本 `AGENTS-RECORDS.md`，版本以 git 为准）
 
 **边界与权限：**
 - [ ] 「职责范围」章节同时列出 必须做 / 拒绝做
@@ -272,7 +278,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 
 - **secret 扫描**：提交/入库前扫一遍代理目录与脚本，确认无明文密钥/token/凭据示例；危险管道（curl 下载执行等）按「安全护栏」处理，必要时显式声明授权边界。
 - **隔离验证再交付**：非直推——代理先在本技能验证（阶段 5）+ 真实场景试跑（阶段 6），在**隔离环境**（独立客户端/临时目录）安装实测一次通过后再宣告入库；未经验证的草稿不得直接当成品交付。
-- **版本化原子补丁**：代理或方法论改动记录版本与原因（代理 frontmatter `version`；本技能改进记 `evolutions/`），不要把未经单独验证的草稿直接应用进 `SKILL.md`。
+- **版本化原子补丁**：代理或方法论改动记录原因（代理版本以 git 提交历史为准、不写 frontmatter；本技能改进记 `evolutions/`），不要把未经单独验证的草稿直接应用进 `SKILL.md`。
 
 ## 安全护栏
 
@@ -306,7 +312,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 A: 需要常驻角色、权限、协作协议 → 代理；只是一次性步骤流程 → 技能。技能是代理的「工具包」。
 
 **Q: 四端 frontmatter 不兼容怎么办？**
-A: 仓库内保持规范形式（name/description/version/tags + `tools: [...]` 白名单 + `tools_clients`）；安装时用 `scripts/adapt_agent.py --client <端>` 转换（claude/opencode 自动适配 + post-check，codex/deepseek 原样校验后输出）。
+A: 仓库内保持规范形式（name/description/mode + `tools: [...]` 白名单，来源进创建记录账本）；安装时用 `scripts/adapt_agent.py --client <端>` 转换（claude/opencode 自动适配 + post-check，codex/deepseek 原样校验后输出）。
 
 **Q: 代理需要跨多个职责？**
 A: 保持单一职责——一个代理一件事，协作流程解决多角色需求（多个代理通过协作协议互相调用）。

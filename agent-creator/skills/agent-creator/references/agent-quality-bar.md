@@ -8,7 +8,7 @@
 
 - `name`：kebab-case，与目录/文件名一致
 - `description`：≤200 字符（验证器上限 300），单行、含「做什么 + 何时被调用」、无 `<`/`>` 占位符（description 是唯一无条件加载的触发面）
-- 推荐声明：`version`（semver，生命周期记账）、`tools_clients`
+- 不写 `version`/`tools_clients`/来源字段：来源/作者/日期记入库根创建记录账本 `AGENTS-RECORDS.md`，版本以 git 提交历史为准
 
 ### 2. 职责边界清晰（自动章节检查）
 
@@ -61,7 +61,6 @@ python scripts/validate_agents.py --strict
 - [x] frontmatter 有效 YAML 且为映射
 - [x] `name` 存在、kebab-case、与目录/文件一致
 - [x] `description` 存在、为字符串、未超长
-- [x] `version` 若存在则要求 semver `x.y.z`
 - [x] 主体非空
 - [x] 「职责范围」章节存在（含必须做/拒绝做）
 - [x] 工具/权限声明存在

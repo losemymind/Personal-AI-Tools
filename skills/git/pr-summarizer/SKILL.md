@@ -3,12 +3,6 @@ name: pr-summarizer
 description: "将 git diff 转为结构化 PR 总结：一句话摘要、变更分类表、审查清单、风险标注与语义化标题建议。当用户要求总结变更、撰写 PR 描述、review 前梳理 diff、或说「总结我的改动」「写 PR 描述」「PR 摘要」时使用。"
 category: git
 risk: safe
-source: self
-version: "0.1.0"
-date_added: "2026-09-02"
-author: losemymind
-tags: [git, pr, summary, review]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # PR 总结助手（pr-summarizer）

@@ -1,6 +1,6 @@
 # AGENTS.md — Personal-AI-Tools
 
-本仓库是「个人 AI 工具」的开发源与能力库仓库：维护两个**同构、互不依赖**的创建器技能（可独立安装到 claude / opencode / codex / deepseek），并托管两个**已验证能力库**（`skills/` 技能库、`agents/` 代理库，数据来源登记在审计文件）。不是单一代码库——没有共享依赖、没有包管理清单。
+本仓库是「个人 AI 工具」的开发源与能力库仓库：维护两个**同构、互不依赖**的创建器技能（可独立安装到 claude / opencode / codex / deepseek），并托管两个**已验证能力库**（`skills/` 技能库、`agents/` 代理库，数据来源登记在各自的创建记录台账 `SKILL-RECORDS.md` / `AGENTS-RECORDS.md`）。不是单一代码库——没有共享依赖、没有包管理清单。
 
 ## 布局：两个各自独立的工作区
 
@@ -21,21 +21,22 @@ skill-creator/                     同上（把工作流蒸馏为 SKILL.md 技�
 
 ## 能力库（根 `skills/` 与 `agents/`）
 
-- 能力库是**已验证可安装**的技能/代理集合：创建用两创建器（成品在 `<creator>/skills/<creator>/`），校验用同一成品的验证器、目录用根 `tools/scripts/build_catalog.py` 生成：
+- 能力库是**已验证可安装**的技能/代理集合：创建用两创建器（成品在 `<creator>/skills/<creator>/`），校验用同一成品的验证器、目录用根 `tools/scripts/build_catalog.py` 生成、**安装用根 `tools/scripts/install.py`**：
   ```bash
   python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir skills
   python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --dir agents
   python tools/scripts/build_catalog.py            # 刷新 skills/CATALOG.md + agents/CATALOG.md
   python tools/scripts/build_catalog.py --check    # 目录过期校验（发布门）
+  python tools/scripts/install.py --all skills --client claude --scope workspace --dest <目标仓库根>
   ```
-- **安装 = 复制**：把 `skills/<name>` / `agents/<name>` 复制到目标客户端的 `skills/` / `agents/` 目录（本仓库无 manifest 安装器；落点见各库 `README.md`）。
+- **安装 = 经 `tools/scripts/install.py` 打包放置**：把 `skills/<name>` / `agents/<name>`（或 `--creator` / `--all`）按各端 frontmatter 适配后放到客户端落点，并做自检/回滚；跨产物编排与落点矩阵见 `tools/README.md`（权威）。纯复制仅作无该脚本时的**回退**（落点见各库 `README.md`）。
 - `skills/CATALOG.md` 与 `agents/CATALOG.md` 由 `tools/scripts/build_catalog.py` **自动生成**（源自 frontmatter，禁止手改）：LLM 读目录匹配需求 → 命中给复制提示，人类确认后执行；新增/删除/改进能力后**重跑生成器刷新**（发布门校验用 `python tools/scripts/build_catalog.py --check`）。
 - **能力库准入与审计**（新增能力入库须同时满足；与两审计文件 `agents/AGENTS-AUDIT.md` / `skills/SKILLS-AUDIT.md` 对应）：
   1. 入库 `agents/` 的代理**必经 agent-creator**（创建/改进 → 验证 → 对比择优），并在 `agents/AGENTS-AUDIT.md` 登记
   2. 入库 `skills/` 的技能**必经 skill-creator**（创建/改进 → 检索上游对比 → 验证），并在 `skills/SKILLS-AUDIT.md` 登记
-  3. **参考外部仓库的必须标注数据来源**（对应审计文件的登记字段）
+  3. **参考外部仓库的必须标注数据来源**（技能记 `skills/SKILL-RECORDS.md` 台账，代理记 `agents/AGENTS-RECORDS.md` 台账）
   4. **按功能归入分类目录**（`agents/<顶层分类>/<name>/`、`skills/<分类>/<name>/`），分类不存在则创建；**无「留顶层」例外**
-- 审计文件（`agents/AGENTS-AUDIT.md`、`skills/SKILLS-AUDIT.md`，随各自能力库目录存放）是数据来源与入库合规的**唯一记录入口**：新增/迁移/改进能力后同步更新，并把对比择优证据记入对应创建器成品的 `evolutions/`。
+- **记录入口**：技能库为 **`skills/SKILL-RECORDS.md`**（逐条创建/来源台账，skill-creator 用 `create_skill.py --records` 自动追加）+ `skills/SKILLS-AUDIT.md`（入库合规审计，人工维护）；代理库为 **`agents/AGENTS-RECORDS.md`**（逐条创建/来源台账，agent-creator 用 `create_agent.py --records` 自动追加）+ `agents/AGENTS-AUDIT.md`（入库合规审计，人工维护）。新增/迁移/改进能力后同步更新，并把对比择优证据记入对应创建器成品的 `evolutions/`。
 - **创建器排除在审计之外**：两个创建器工作区（`agent-creator/`、`skill-creator/`）及其成品是**创建工具**，不是能力库条目，不在能力库审计范围内；它们自身的迭代改进记录走各自成品 `evolutions/`，不做库条目审计登记。
 
 ## 三条铁律
@@ -48,6 +49,7 @@ skill-creator/                     同上（把工作流蒸馏为 SKILL.md 技�
 
 ```bash
 python -m pytest tests/ -q           # 回归（两工作区）
+python -m pytest tools/tests -q      # 工具层回归（安装编排器 install.py）
 ```
 
 聚焦单测：`python -m pytest tests/test_validate_agents.py -q`（skill-creator 另含 `test_search_index.py`、`test_quant_eval.py`）。
@@ -70,14 +72,14 @@ python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --
 python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir <skills目录>   # 校验技能库/目录
 ```
 
-**CI**：`.github/workflows/validate.yml` 在 push/PR 时复刻上述发布门（两工作区 pytest、成品/库 strict、`build_catalog.py --check`）——是本仓库唯一的自动门禁，改门禁时同步该文件。
+**CI**：`.github/workflows/validate.yml` 在 push/PR 时复刻上述发布门（两工作区 pytest、成品/库 strict、`build_catalog.py --check`、`tools/tests`）——是本仓库唯一的自动门禁，改门禁时同步该文件。
 
 ## 结构要点
 
 - 两工作区是同构孪生（agent↔skill），dev 布局已统一精简（无 `build/`）。发布检查差异只源于**成品自校验能力不同**：skill-creator 成品是 SKILL.md 技能形态，`validate_skills.py` 能自校验自身；agent-creator 成品的 `validate_agents.py` 校验对象是 AGENT.md 代理库（非技能形态成品），故自包含扫描以 pytest 形式落在 dev-only tests。tests 脚本仍同模板各写一份（仅命名差异，哈希不同）。改一处共享模式时，先想另一侧是否需要同步或删除。
 - skill-creator 更完整：评测工具链（`run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`）、子代理提示（`agents/grader|reviewer|comparator|analyzer.md`）、`examples/`、`templates/evals.json.template`。agent-creator 有 validate/search/build/compare/create/adapt + 子代理提示（`agents/reviewer.md`）+ `evolutions/`。
 - 脚本通过 `scripts/_project_paths.py` 自定位成品根，不依赖宿主仓库布局；文档可从任意 cwd 以绝对路径调用脚本。
-- 约定：产品文档用**中文**撰写（含 frontmatter description）；frontmatter 必须含 `version: "0.x.y"`（新产出物从 `0.1.0` 起步，校验器会查）；`evolutions/` 以 `YYYY-MM-DD-<slug>.md` 记录「上游更优」对比结论（反馈闭环）。
+- 约定：产品文档用**中文**撰写（含 frontmatter description）；技能类 frontmatter 只含 `name`/`description`/`risk`/`category`（**不含** `version`/`tags`/来源字段——来源/作者/日期记入 `skills/SKILL-RECORDS.md` 台账，版本以 git 提交历史为准）；`evolutions/` 以 `YYYY-MM-DD-<slug>.md` 记录「上游更优」对比结论（反馈闭环）。
 - 改动创建器后跑通 §命令发布门、改动能力库后跑通 §能力库校验并同步审计、重跑 `tools/scripts/build_catalog.py` 刷新 CATALOG 即可推送；**提交/推送前必做收尾交接，见 §三条铁律 3**。
 
 ## 权威文档

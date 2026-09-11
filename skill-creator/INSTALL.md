@@ -2,6 +2,12 @@
 
 > 本文件位于 skill-creator **开发工作区根**，说明如何把**成品** `skills/skill-creator/` 安装到各客户端的技能目录。成品是自包含完整体：安装 = 把该目录完整放置到目标客户端的技能目录，跑完下方验证关卡即完成，不依赖任何外部工具。
 > 覆盖已支持的 3 端：**claude / opencode / codex**。deepseek-harness 路径随版本变动，以其当前版本官方文档为准（best-effort，不在本手册范围）。
+>
+> **优先路径**：仓库内安装直接用根 `tools/scripts/install.py`（自动按端适配 frontmatter + 自检 + 回滚；落点矩阵权威见 `tools/README.md` §6）：
+> ```bash
+> python tools/scripts/install.py --creator skill-creator --client <claude|opencode|codex> --scope <global|workspace> --dest <目标仓库根>
+> ```
+> 下方「复制」流程是**无该脚本时的回退**。
 
 ## 0. 安装作用域（执行前必须询问用户）
 

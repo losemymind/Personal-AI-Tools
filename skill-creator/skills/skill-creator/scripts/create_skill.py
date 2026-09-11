@@ -1,6 +1,6 @@
 """Interactive skill scaffold generator (part of skill-creator tooling).
 
-Creates a complete skill skeleton: SKILL.md with valid frontmatter (+ version field),
+Creates a complete skill skeleton: SKILL.md with valid frontmatter,
 optional scripts/ references/ examples/ templates/ dirs. Output validates with
 validate_skills.py.
 
@@ -30,9 +30,31 @@ CATEGORIES = [
     "product", "planning", "communication", "research",
 ]
 RISKS = ["none", "safe", "critical", "offensive", "unknown"]
-TOOLS = ["claude", "opencode", "codex", "deepseek"]
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-VALID_VERSION = re.compile(r"^\d+\.\d+\.\d+$")
+
+# Central creation-record ledger (provenance/author/date live here, not in
+# SKILL.md frontmatter — a skill is client-neutral before packaging).
+RECORDS_HEADER = (
+    "# 技能创建记录（SKILL-RECORDS）\n\n"
+    "> 由 skill-creator 在创建/导入技能时追加（`create_skill.py --records <本文件>`）。\n"
+    "> 记录各技能的来源与创建元数据；`SKILL.md` frontmatter 只保留 "
+    "`name`/`description`/`risk`/`category`。\n\n"
+    "| 技能 | category | created | author | source | source_repo | method | evolutions |\n"
+    "|---|---|---|---|---|---|---|---|\n"
+)
+
+
+def append_record(records_path, name, category, author, source, source_repo, method) -> None:
+    """Append one provenance row to the creation-record ledger (create if absent)."""
+    records_path = Path(records_path)
+    records_path.parent.mkdir(parents=True, exist_ok=True)
+    if not records_path.exists():
+        records_path.write_text(RECORDS_HEADER, encoding="utf-8")
+    cells = [name, category, date.today().isoformat(), author, source,
+             source_repo or "-", method, "-"]
+    row = "| " + " | ".join(str(c).replace("|", "\\|") for c in cells) + " |\n"
+    with records_path.open("a", encoding="utf-8") as f:
+        f.write(row)
 
 
 def _yaml_str(value: str) -> str:
@@ -89,75 +111,38 @@ def ask_name() -> str:
         return value
 
 
-def build_skill_md(name, description, category, risk, tools, author, version) -> str:
+def build_skill_md(name, description, category, risk) -> str:
     if TEMPLATE_PATH.exists():
         content = TEMPLATE_PATH.read_text(encoding="utf-8")
         content = content.replace("your-skill-name", name)
-        content = content.replace('[tag-one, tag-two]', '[]')
-        import re as _re
-        content = _re.sub(
+        content = re.sub(
             r'^category: .*$',
             f"category: {category}",
             content,
             count=1,
-            flags=_re.MULTILINE,
+            flags=re.MULTILINE,
         )
-        content = _re.sub(
+        content = re.sub(
             r'^risk: .*$',
             f"risk: {risk}",
             content,
             count=1,
-            flags=_re.MULTILINE,
+            flags=re.MULTILINE,
         )
-        content = _re.sub(
+        content = re.sub(
             r'^description: ".*?"$',
             lambda m: f"description: {_yaml_str(description)}",
             content,
             count=1,
-            flags=_re.MULTILINE,
-        )
-        content = _re.sub(
-            r'^date_added: "YYYY-MM-DD"$',
-            f'date_added: "{date.today().isoformat()}"',
-            content,
-            count=1,
-            flags=_re.MULTILINE,
-        )
-        content = _re.sub(
-            r'^author: your-name-or-handle$',
-            lambda m: f"author: {_yaml_str(author)}",
-            content,
-            count=1,
-            flags=_re.MULTILINE,
-        )
-        content = _re.sub(
-            r'^tools: \[.*\]$',
-            lambda m: f"tools: [{', '.join(_yaml_str(t) for t in tools)}]",
-            content,
-            count=1,
-            flags=_re.MULTILINE,
-        )
-        content = _re.sub(
-            r'^version: .*$',
-            f'version: "{version}"',
-            content,
-            count=1,
-            flags=_re.MULTILINE,
+            flags=re.MULTILINE,
         )
         return content
     # fallback minimal skeleton
-    tools_str = ", ".join(_yaml_str(t) for t in tools)
     return f"""---
 name: {name}
 description: {_yaml_str(description)}
 category: {category}
 risk: {risk}
-source: self
-version: "{version}"
-date_added: "{date.today().isoformat()}"
-author: {_yaml_str(author)}
-tags: []
-tools: [{tools_str}]
 ---
 
 # {name.replace('-', ' ').title()}
@@ -208,9 +193,11 @@ def main() -> int:
     parser.add_argument("--description", default=None)
     parser.add_argument("--category", default=None, choices=CATEGORIES)
     parser.add_argument("--risk", default=None, choices=RISKS)
-    parser.add_argument("--tools", default="opencode", help="逗号分隔的客户端列表")
-    parser.add_argument("--author", default=None)
-    parser.add_argument("--version", default="0.1.0")
+    parser.add_argument("--author", default=None, help="作者标识（仅写入创建记录账本，不进 frontmatter）")
+    parser.add_argument("--source", default="self", help="来源：self/community/official/URL（仅记录账本）")
+    parser.add_argument("--source-repo", default="", dest="source_repo", help="上游仓库 OWNER/REPO（仅记录账本）")
+    parser.add_argument("--method", default="created", help="创建方式：created/imported/adapted（仅记录账本）")
+    parser.add_argument("--records", default=None, help="创建记录账本文件；提供则在创建后追加一行")
     parser.add_argument("--out", default=None, help="输出目录（默认当前目录）")
     parser.add_argument("--no-interactive", action="store_true", help="缺省字段使用默认值，不询问")
     args = parser.parse_args()
@@ -250,12 +237,8 @@ def main() -> int:
         else:
             risk = "safe"
 
-    tools = [t.strip() for t in args.tools.split(",") if t.strip()]
     author = args.author or (ask("作者标识", "losemymind") if interactive else "losemymind")
 
-    if not VALID_VERSION.match(args.version):
-        print(f"❌ 无效版本号: {args.version}（需 semver x.y.z）")
-        return 1
     if not description.strip():
         print("❌ 描述不能为空白（validate_skills.py 会拒绝）")
         return 1
@@ -277,7 +260,7 @@ def main() -> int:
         print(f"❌ 无法创建目录: {e}")
         return 1
 
-    body = build_skill_md(name, description, category, risk, tools, author, args.version)
+    body = build_skill_md(name, description, category, risk)
     (skill_dir / "SKILL.md").write_text(body, encoding="utf-8")
 
     # Ship trigger tests with the skill (quality-bar item 8 / release discipline):
@@ -302,6 +285,12 @@ def main() -> int:
 
     print(f"✅ 创建骨架: {skill_dir}")
     print(f"   含 evals/evals.json（触发用例，随技能回归）")
+    if args.records:
+        append_record(args.records, name, category, author,
+                      args.source, args.source_repo, args.method)
+        print(f"   已登记创建记录: {args.records}")
+    else:
+        print("   提示: 传 --records <账本文件> 可追加创建/来源记录")
     print(f"   下一步: python scripts/validate_skills.py --dir {skill_dir}")
     print(f"   然后按本技能 SKILL.md 阶段 4-6 完善内容与测试")
     return 0

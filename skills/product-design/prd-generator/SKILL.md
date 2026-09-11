@@ -3,12 +3,6 @@ name: prd-generator
 description: "将用户需求转化为结构化 PRD（Product Requirements Document）：接收功能描述 → 交互式澄清问题 → 生成完整章节文档。当用户要求『创建 PRD』『写需求文档』或说 plan this feature、requirements for spec out 时使用。"
 category: product
 risk: safe
-source: community
-version: "0.1.0"
-date_added: "2026-09-07"
-author: https://github.com/snarktank/ralph
-tags: [prd, requirements, feature-spec, planning]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # PRD Generator（prd-generator）

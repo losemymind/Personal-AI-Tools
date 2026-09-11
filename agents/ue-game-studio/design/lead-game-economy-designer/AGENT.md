@@ -19,8 +19,6 @@ permission:
   webfetch: deny
   websearch: deny
   external_directory: deny
-version: "0.1.0"
-tags: [design, ue-game-studio]
 maturity: static-verified
 ---
 

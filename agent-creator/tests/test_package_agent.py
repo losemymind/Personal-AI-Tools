@@ -21,7 +21,6 @@ AGENT_MD = """---
 name: pkg-demo
 description: "打包测试代理"
 mode: subagent
-version: "0.1.0"
 {extra}
 ---
 

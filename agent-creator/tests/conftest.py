@@ -22,7 +22,6 @@ mode: subagent
 tools: [read, grep, bash]
 permission:
   edit: deny
-version: "0.1.0"
 ---
 
 # {name}

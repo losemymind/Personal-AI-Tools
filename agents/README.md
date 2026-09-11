@@ -17,7 +17,7 @@
 
 ## 目录结构约定
 
-代理按 **类别 + layer 分层目录**组织。`academic/` 是**公共/通用代理**（不随 UE 包移动）；`ue-game-studio/` 是 **UE 游戏开发专用安装包**（6 个 layer 子目录，含安装清单 README 与协作规则 AGENTS.md）；`code-quality/` 为通用代码质量代理分类。
+代理按 **类别 + layer 分层目录**组织。`academic/` 是**公共/通用代理**（不随 UE 包移动）；`ue-game-studio/` 是 **UE 游戏开发专用安装包**（6 个 layer 子目录，含安装清单 README 与协作规则 AGENTS.md）；`code-quality/` 为通用代码质量代理分类。分层由目录结构承载，不再使用 frontmatter `tags`。
 
 ```
 agents/
@@ -42,38 +42,40 @@ agents/
 
 > `ue-game-studio/README.md` 是安装时的**权威清单**：列出该包在 UE 游戏项目中要安装的全部 agent，并引用 `academic/` 公共代理；**安装冲突时必须让用户选择保留哪一个**（本包版本/目标已有/并存改名/跳过），确认前不覆盖目标文件。
 
-## 领域分类（tag 约定）
+## 领域分层（目录约定）
 
-代理按 **frontmatter `tags`** 表达领域分类，两标签组合：
+代理的领域分层由**目录结构**表达（不写 frontmatter `tags`）：
 
-- `layer`：代理在协作体中的分层（academic / design / directors / orchestration / production / qa / technical）
-- `domain`：适用域（统一为 `ue-game-studio`，标识这批代理源自 UEGameStudio 项目组）
+- `layer`：代理在协作体中的分层 = `agents/` 下的第一层分类目录（academic / design / directors / orchestration / production / qa / technical / code-quality）
+- `domain`：适用域由顶层包目录表达（如 `ue-game-studio/` 标识源自 UEGameStudio 项目组）
 
-示例：`ue-gameplay-engineer` → `tags: [technical, ue-game-studio]`；`game-director` → `tags: [directors, ue-game-studio]`；`anthropologist` → `tags: [academic, ue-game-studio]`。目录放置须与 `layer` 标签一致（`ue-gameplay-engineer` 位于 technical 层下；academic 层内不以 `academic-` 为前缀）。
+示例：`ue-gameplay-engineer` 位于 `agents/ue-game-studio/technical/`；`game-director` 位于 `agents/ue-game-studio/directors/`；`anthropologist` 位于 `agents/academic/`。目录放置即分类，无需 `tags` 字段。
 
 ## 与 agent-creator 的关系
 
 - 创建/改进/验证代理 → 使用本仓库内代理创建器成品（`agent-creator/skills/agent-creator/`，方法论见其 `SKILL.md`，脚手架 `scripts/create_agent.py`，验证器 `scripts/validate_agents.py`）
-- 从本目录安装代理到 LLM 客户端 → **先转换 frontmatter、再复制**：用 agent-creator 成品转换器把仓库规范形适配到目标客户端，再把产物放到该客户端 agents/ 目录（落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`；工作区版本放 `<项目根>/.<客户端>/agents/`）：
+- 从本目录安装代理到 LLM 客户端 → **经根 `tools/scripts/install.py` 打包放置**（先按端适配 frontmatter、再落点 + 自检/回滚；落点矩阵见 `tools/README.md`）：
   ```bash
-  python agent-creator/skills/agent-creator/scripts/adapt_agent.py agents/<name> --client <claude|opencode|codex|deepseek> --out <落点>/AGENT.md
+  python tools/scripts/install.py agents/<分类>/<name> --client claude --scope workspace --dest <目标仓库根>
   ```
-  `claude`/`opencode` 会自动把 `tools:[...]` 白名单转为该端合法形态并做 post-check（转换失败即退出、不产出无法加载的文件）；`codex`/`deepseek` 无官方 frontmatter schema，YAML 校验后逐字节原样。
-- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` + `ue-game-studio/` 30 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。前者落 `claude`/`opencode` 前**必须**先 `adapt_agent.py` 转换；后者按目标端校验后复制（含 opencode-only 字段在其它端被忽略）。
-- 代理更新/卸载 → 更新即重新转换复制覆盖；卸载即删除目标副本（本仓库无 manifest 生命周期工具）
+  落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`（**单数**）；工作区版本放 `<项目根>/.<客户端>/<agents|agent>/`。纯复制仅作无该脚本时的回退（先 `adapt_agent.py` 转换再复制）。
+- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` + `ue-game-studio/` 30 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。`install.py`/`package_agent.py` 会按目标端适配并 post-check，无需手工转换。
+- 代理更新/卸载 → 更新即重装覆盖（`--force`）；卸载即删除目标副本（本仓库无独立 manifest 生命周期工具）。
 
 ## 能力目录（CATALOG.md）
 
 `CATALOG.md` 由根 `tools/scripts/build_catalog.py` 从各 `AGENT.md` frontmatter **自动生成**（禁止手改）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「先 `adapt_agent.py` 转换、再复制到客户端 agents/ 目录」提示，用户确认后执行。新增/删除/改进代理后**重跑生成器刷新**（发布门可用 `python tools/scripts/build_catalog.py --check` 校验）。
 
-## 审计（AGENTS-AUDIT.md）
+## 记录与审计
 
-本目录随放 `AGENTS-AUDIT.md`（数据来源 + 入库合规的唯一记录，规则见根 `AGENTS.md`）：新增/改进代理后同步登记。agent-creator 是**创建工具**（工作区 + 成品在 `agent-creator/`），不在代理库审计范围内。
+- `AGENTS-RECORDS.md`：**创建/来源台账**（逐条事实，agent-creator 自动追加）。入库代理用 `python agent-creator/skills/agent-creator/scripts/create_agent.py ... --records agents/AGENTS-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `AGENT.md` frontmatter（`version`/`tools_clients` 也不写，版本以 git 提交历史为准）。
+- `AGENTS-AUDIT.md`：**入库合规审计**（人工维护，规则见根 `AGENTS.md`）：新增/改进代理后同步登记。
+- agent-creator 是**创建工具**（工作区 + 成品在 `agent-creator/`），不在代理库审计范围内。
 
 ## 回馈流程
 
 1. 代理验证通过并稳定使用一段时间
-2. 完善 frontmatter 元数据（含 `maturity`）
+2. frontmatter 保持 `name`/`description`/`mode`/`maturity`（及 `tools`/`permission`）等运行时字段；**不写** `version`/`tools_clients`/`tags`/来源字段；来源信息登记到 `AGENTS-RECORDS.md`
 3. 重跑根 `tools/scripts/build_catalog.py` 刷新 `CATALOG.md`
 4. 提交到仓库
 

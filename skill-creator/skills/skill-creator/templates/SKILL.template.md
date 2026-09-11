@@ -3,12 +3,6 @@ name: your-skill-name
 description: "触发场景优先（≤1024 字符）：以「当用户…时使用 / Use when…」开头，写清会触发本技能的具体说法/症状/文件名；可带一句能力定位，但不写执行步骤或流程摘要。前端加载触发关键词，第三人称。"
 category: productivity
 risk: safe
-source: self
-version: "0.1.0"
-date_added: "YYYY-MM-DD"
-author: your-name-or-handle
-tags: [tag-one, tag-two]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # 技能标题

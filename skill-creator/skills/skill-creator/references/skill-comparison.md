@@ -20,7 +20,7 @@
 | 限制声明 `limitations_declared` | 有「限制/Limitations」章节 | 质量门槛第 5 项 |
 | 风险声明 `risk_declared` | frontmatter 的 `risk` 是合法值 | 质量门槛第 3 项 |
 | 安全护栏 `security_guardrails` | offensive 技能必有免责声明；非 offensive 且无（fenced 代码块内的）危险管道 | 无危险内容时默认给 0.8（无法自动确认即留余量） |
-| 元数据完整性 `metadata_complete` | `name`/`description`/`risk`/`source`/`version`/`category`/`date_added` 齐全 | 质量门槛第 1 项 |
+| 元数据完整性 `metadata_complete` | `name`/`description`/`risk`/`category` 齐全 | 质量门槛第 1 项 |
 
 ## 结构 4 维（对应 skill-anatomy 的渐进式披露）
 

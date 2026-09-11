@@ -83,7 +83,7 @@ def test_create_agent_out_conflicts_fail_cleanly(tmp_path):
 def test_adapt_agent_out_conflicts_fail_cleanly(tmp_path):
     agent = tmp_path / "AGENT.md"
     agent.write_text(
-        '---\nname: probe\ndescription: "d"\ntools: [read]\nversion: "0.1.0"\n---\n\n# x\n',
+        '---\nname: probe\ndescription: "d"\ntools: [read]\n---\n\n# x\n',
         encoding="utf-8",
     )
     outdir = tmp_path / "outdir"

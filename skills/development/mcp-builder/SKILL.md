@@ -3,14 +3,6 @@ name: mcp-builder
 description: "指导构建高质量的 MCP（Model Context Protocol）应用：让 LLM 通过精心设计的工具与外部服务交互，覆盖端点覆盖 vs 工作流工具取舍、工具命名与 schema 设计、上下文与分页、可执行错误信息、评测集构建，并提供 Python（FastMCP）与 TypeScript 官方 SDK 两套实现路径。当用户要创建或设计这类工具、编写工具 schema、提升可发现性、建评测集，或提到 FastMCP、tool schema、分页返回时使用。"
 category: development
 risk: safe
-source: community
-source_repo: anthropics/skills
-source_type: community
-version: "0.1.0"
-date_added: "2026-09-10"
-author: anthropics
-tags: [mcp, fastmcp, typescript-sdk, tool-design, llm-integration]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # MCP 服务器开发指南（mcp-builder）

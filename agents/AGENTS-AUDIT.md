@@ -1,8 +1,8 @@
 # agents/ — 代理审计（AGENTS-AUDIT）
 
-> 用途：审计 `agents/` 库中每个代理的**数据来源** 与 **入库流程合规性**。事实源 = 各 `AGENT.md` frontmatter + 本仓库 git 历史 + 迁移记录。
+> 用途：审计 `agents/` 库中每个代理的**数据来源** 与 **入库流程合规性**。事实源 = 创建记录台账 `AGENTS-RECORDS.md` + 本仓库 git 历史 + 迁移记录。
 > 范围：只审计能力库条目（`agents/` 下入库代理）。agent-creator 工作区及其成品是**创建工具**，排除在审计之外（其迭代记录走自身 `evolutions/`）。
-> 依据：本仓库根 `AGENTS.md`「能力库准入与审计」（规则 1：代理入库**无论参考本地文件还是远程仓库，必须经过 agent-creator**；规则 3：**参考外部仓库的代理必须在审计文件中标注数据来源**；规则 4：**代理按功能归入分类目录 `agents/<顶层分类>/<name>/`，分类不存在则创建；无「留顶层」例外**）。
+> 依据：本仓库根 `AGENTS.md`「能力库准入与审计」（规则 1：代理入库**无论参考本地文件还是远程仓库，必须经过 agent-creator**；规则 3：**参考外部仓库的代理必须在创建记录台账 `AGENTS-RECORDS.md` 标注数据来源**；规则 4：**代理按功能归入分类目录 `agents/<顶层分类>/<name>/`，分类不存在则创建；无「留顶层」例外**）。来源/作者/日期**不进** `AGENT.md` frontmatter，集中登记于 `AGENTS-RECORDS.md`（`version`/`tools_clients` 亦不写 frontmatter，版本以 git 为准）。
 > 本次审计日期：2026-09-03
 > 2026-09-03 更新：academic×5 + ue-game-studio×25 已逐一执行 agent-creator 对比择优（上游三源比对），结论全部为「自建（迁移版）更优/持平」→ **已转合规**。对比证据（agent-creator 成品 evolutions）：`agent-creator/skills/agent-creator/evolutions/2026-09-03-compare-migrated-ue-agents.md`。
 > 2026-09-09 更新：agent-creator 已在**本仓库** `agent-creator/skills/agent-creator/`；`agents/` 库校验用其 `scripts/validate_agents.py`。
@@ -48,7 +48,7 @@
 > 数据来源（全部）：外部本地仓库 `E:\GitHub\UEGameStudio\UEGameStudio\agents\academic`（随 UEGameStudio 迁移保留为公共代理）。
 > 审计期已逐一执行 agent-creator 对比择优（上游：agency-agents / agency-agents-zh 同名 academic 代理），结论自建更优 → ✅ 合规（规则 1）。
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | anthropologist | `agents/academic/anthropologist/AGENT.md` | academic | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 | geographer | `agents/academic/geographer/AGENT.md` | academic | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
@@ -63,7 +63,7 @@
 
 ### design（3）
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | lead-game-balance-designer | `agents/ue-game-studio/design/lead-game-balance-designer/AGENT.md` | design | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 | lead-game-economy-designer | `agents/ue-game-studio/design/lead-game-economy-designer/AGENT.md` | design | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
@@ -71,7 +71,7 @@
 
 ### directors（4）
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | audiovisual-director | `agents/ue-game-studio/directors/audiovisual-director/AGENT.md` | directors | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 | game-director | `agents/ue-game-studio/directors/game-director/AGENT.md` | directors | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
@@ -80,13 +80,13 @@
 
 ### orchestration（1）
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | orchestration-director | `agents/ue-game-studio/orchestration/orchestration-director/AGENT.md` | orchestration | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 
 ### production（3）
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | game-asset-production-manager | `agents/ue-game-studio/production/game-asset-production-manager/AGENT.md` | production | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 | game-visual-asset-artist | `agents/ue-game-studio/production/game-visual-asset-artist/AGENT.md` | production | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
@@ -94,7 +94,7 @@
 
 ### qa（3）
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | asset-compliance-auditor | `agents/ue-game-studio/qa/asset-compliance-auditor/AGENT.md` | qa | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 | qa-test-specialist | `agents/ue-game-studio/qa/qa-test-specialist/AGENT.md` | qa | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
@@ -102,7 +102,7 @@
 
 ### technical（11）
 
-| 代理名 | 位置 | layer 标签 | maturity | 数据来源 | 经 agent-creator | 结论 |
+| 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |
 |---|---|---|---|---|---|---|
 | character-animation-engineer | `agents/ue-game-studio/technical/character-animation-engineer/AGENT.md` | technical | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
 | game-ai-engineer | `agents/ue-game-studio/technical/game-ai-engineer/AGENT.md` | technical | static-verified | UEGameStudio 外部仓库 | ✅ | ✅ 合规 |
@@ -119,6 +119,7 @@
 ## 6. 维护要求
 
 - 新增/迁移/改进代理入库后，**必须更新本文件**：登记数据来源（规则 3）与是否经 agent-creator（规则 1）。
+- 逐条创建/来源事实记入 `AGENTS-RECORDS.md`（`create_agent.py --records` 自动追加）；本文件记合规结论。
 - 审计状态变化（如 30 个迁移代理补走 agent-creator 后转合规）应及时在「审计结论摘要」中刷新。
 - 本文件与 `skills/SKILLS-AUDIT.md` 同构（互为镜像，随各自能力库目录存放），均为数据来源的唯一记录入口。
 

@@ -23,7 +23,6 @@ mode: subagent
 tools: [read]
 permission:
   edit: deny
-version: "0.1.0"
 ---
 
 # {name}

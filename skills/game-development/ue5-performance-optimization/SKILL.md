@@ -3,12 +3,6 @@ name: ue5-performance-optimization
 description: "指导 Unreal Engine 5.6 游戏的性能剖析与优化：先用 Unreal Insights、stat 命令与 CSV Profiler 在可复现场景中定位 Game Thread、Render Thread、GPU、内存、加载与卡顿瓶颈，再落到实现层优化（Tick 与蓝图、GC 与内存分配、Draw Call 与实例化、Nanite/Lumen/VSM/TSR 可扩展性、Niagara、异步并行）。当用户要求 UE5 性能优化、卡顿/掉帧排查、Insights 分析、stat 命令解读、降低 Draw Call、GC 卡顿、内存/显存超标、打包后帧率低时使用。"
 category: game-development
 risk: safe
-source: self
-version: "0.1.0"
-date_added: "2026-09-10"
-author: personal-ai-tools
-tags: [unreal-engine, ue5, performance, profiling, optimization]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # UE5.6 性能优化（ue5-performance-optimization）

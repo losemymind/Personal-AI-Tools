@@ -72,14 +72,9 @@ def is_exempt_dir(path: str) -> bool:
 # Section-header patterns live in utils.py (single source of truth shared with
 # compare_skills.py, so the validator and the scorer never disagree).
 
-SOURCE_REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-VALID_SOURCE_TYPES = {"official", "community", "self"}
 VALID_RISK_LEVELS = ["none", "safe", "critical", "offensive", "unknown"]
-VALID_TOOLS = {"claude", "opencode", "codex", "deepseek"}
 NAME_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")  # lowercase kebab-case
 NAME_MAX_LEN = 100
-DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")  # YYYY-MM-DD
-VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")  # semver x.y.z
 
 # Backtick resource references that must resolve on disk. Extension whitelist keeps
 # the check from flagging non-path tokens (prose, command fragments); it is broader
@@ -378,56 +373,8 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
                 f"ℹ️  {rel_path}: risk 'unknown' is discouraged for new skills (see quality bar item 3)."
             )
 
-        if "source" not in metadata:
-            msg = f"⚠️  {rel_path}: Missing 'source' attribution"
-            (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
-
-        source_repo = metadata.get("source_repo")
-        if source_repo is not None:
-            if not isinstance(source_repo, str) or not SOURCE_REPO_PATTERN.fullmatch(source_repo.strip()):
-                errors.append(f"❌ {rel_path}: Invalid 'source_repo' format. Must be OWNER/REPO, got '{source_repo}'")
-
-        source_type = metadata.get("source_type")
-        if source_type is not None:
-            if not isinstance(source_type, str) or source_type not in VALID_SOURCE_TYPES:
-                errors.append(f"❌ {rel_path}: Invalid 'source_type' value. Must be one of {sorted(VALID_SOURCE_TYPES)}")
-
-        if "date_added" in metadata:
-            date_added = metadata["date_added"]
-            if not isinstance(date_added, str) or not DATE_PATTERN.match(date_added):
-                errors.append(f"❌ {rel_path}: Invalid 'date_added' format. Must be YYYY-MM-DD (e.g., '2026-01-15'), got '{metadata['date_added']}'")
-        else:
-            advisories.append(f"ℹ️  {rel_path}: Missing 'date_added' field (optional, but recommended)")
-
         if "category" not in metadata:
             advisories.append(f"ℹ️  {rel_path}: Missing 'category' field (recommended)")
-
-        if "version" in metadata:
-            version = metadata["version"]
-            if not isinstance(version, str) or not VERSION_PATTERN.match(version):
-                errors.append(f"❌ {rel_path}: Invalid 'version' format. Must be semver x.y.z (e.g., '0.1.0'), got '{metadata['version']}'")
-        elif metadata.get("name") != "skill-creator":
-            advisories.append(f"ℹ️  {rel_path}: Missing 'version' field (recommended for lifecycle tracking)")
-
-        # 2b. Optional advisory metadata (tags/tools/category shape)
-        tags = metadata.get("tags")
-        if tags is not None:
-            if not isinstance(tags, list):
-                errors.append(f"❌ {rel_path}: 'tags' must be a YAML list, got {type(tags).__name__}")
-            elif len(tags) > 5:
-                advisories.append(f"ℹ️  {rel_path}: {len(tags)} tags declared (>5); keep tags focused (≤5).")
-
-        tools = metadata.get("tools")
-        if tools is not None:
-            if not isinstance(tools, list):
-                errors.append(f"❌ {rel_path}: 'tools' must be a YAML list, got {type(tools).__name__}")
-            else:
-                unknown = [t for t in tools if isinstance(t, str) and t.lower() not in VALID_TOOLS]
-                if unknown:
-                    advisories.append(
-                        f"ℹ️  {rel_path}: Unknown client tool(s) {unknown}; "
-                        f"known values: {sorted(VALID_TOOLS)}."
-                    )
 
         # 3. Content checks (triggers)
         if not has_when_to_use_section(content):

@@ -6,9 +6,6 @@ tools: [read, grep, glob, edit, write]
 permission:
   edit: allow
   write: allow
-version: "0.1.0"
-tools_clients: [claude, opencode, codex, deepseek]
-tags: [code-simplify, refactor, code-quality]
 maturity: static-verified
 source_repo: anthropics/claude-plugins-official
 ---

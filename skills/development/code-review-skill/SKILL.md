@@ -3,14 +3,6 @@ name: code-review-skill
 description: "Provides comprehensive, expert-level code review guidance across 20+ languages and frameworks — React 19, Vue 3, Angular 17+, Svelte 5, Rust, TypeScript, Java 17/21, Java 8, PHP, Ruby/Rails, Python, Django/DRF, FastAPI, Go, C#/.NET 8, Kotlin/Android, Swift/SwiftUI, Dart/Flutter, NestJS, C/C++, Zig, CSS/Less/Sass, Qt, and more. Covers architecture review, performance review, security audit, code-quality anti-patterns, and common bugs across all ecosystems, with progressive-disclosure per-language guides. Use when: reviewing pull requests, conducting PR reviews, code review, reviewing code changes, establishing review standards, mentoring developers, architecture reviews, security audits, performance reviews, checking code quality, finding bugs, giving feedback on code — 或用户要求代码审查、review PR/代码改动、架构审查、安全审计、检查代码质量、找 Bug、给代码反馈时使用。"
 category: development
 risk: safe
-source: community
-source_repo: awesome-skills/code-review-skill
-source_type: community
-version: "0.1.0"
-date_added: "2026-09-03"
-author: awesome-skills
-tags: [code-review, pr, security, performance, architecture]
-tools: [claude, opencode, codex, deepseek]
 allowed-tools:
   - Read
   - Grep

@@ -10,8 +10,6 @@ tools: [read, grep, bash, write, customtool]
 permission:
   edit: ask
 model: anthropic/claude-sonnet-4-6
-version: "0.1.0"
-tools_clients: [claude, opencode, codex, deepseek]
 ---
 
 # demo-agent

@@ -7,17 +7,26 @@ never emitted. This is the skill-side counterpart of agent-creator's
 `adapt_agent.py` (same "transform + post-check" discipline).
 
 Frontmatter handling (the skill-side twist):
-  - A `tools` list whose entries are client labels (`claude`/`opencode`/...) is the
-    repo's *supported-clients* metadata, NOT a tool whitelist. It is dropped for
-    claude/opencode (those clients derive support from the folder) and left as-is
-    for codex/deepseek (best-effort passthrough).
-  - A `tools` list of actual tool names IS a least-privilege whitelist:
+  - `allowed-tools` is the repo's canonical least-privilege whitelist (Claude tool
+    names, e.g. `[Read, Grep, Glob, Bash]`):
+      * claude keeps the native `allowed-tools` key, normalized to a
+        comma-separated string (unknown names kept as-is).
+      * opencode translates each Claude name back to an opencode tool-class key
+        and merges it into a per-tool `permission` map (see below).
+      * codex/deepseek pass it through unchanged (best-effort).
+  - A legacy `tools` list whose entries are client labels (`claude`/`opencode`/...)
+    is the repo's *supported-clients* metadata, NOT a tool whitelist. It is dropped
+    for claude/opencode and left as-is for codex/deepseek. (Retained for backward
+    compatibility; the repo no longer emits `tools` in skills.)
+  - A legacy `tools` list of actual tool names IS a least-privilege whitelist
+    (same treatment as `allowed-tools`):
       * opencode: the whitelist is merged into a per-tool `permission` map
         (whitelisted tool -> allow, other tool-class keys -> deny; an explicit
         `permission` entry always wins). A bare `permission` **string shorthand**
         is NOT kept as a global rule (that would widen/loosen) — the whitelist is
         materialized into per-tool rules instead.
       * claude: the whitelist becomes a comma-separated Claude tool-name string.
+  - `allowed-tools` and a legacy `tools` whitelist are unioned when both appear.
   - codex/deepseek: no official skill frontmatter convention — YAML sanity check
     plus a generic name/description check, body passes through.
 
@@ -62,6 +71,16 @@ CLAUDE_TOOL_NAMES = {
     "read": "Read", "write": "Write", "edit": "Edit", "bash": "Bash",
     "glob": "Glob", "grep": "Grep", "webfetch": "WebFetch",
     "websearch": "WebSearch", "task": "Task", "todowrite": "TodoWrite",
+}
+
+# Reverse of CLAUDE_TOOL_NAMES (plus the tool classes with no forward mapping):
+# maps an `allowed-tools` Claude tool name to an opencode tool-class key. Used to
+# translate the skill's canonical whitelist into opencode per-tool permissions.
+CLAUDE_TO_OPENCODE = {
+    "read": "read", "write": "edit", "edit": "edit", "bash": "bash",
+    "glob": "glob", "grep": "grep", "webfetch": "webfetch",
+    "websearch": "websearch", "task": "task", "todowrite": "todowrite",
+    "list": "list", "skill": "skill", "question": "question",
 }
 
 # Copied tree noise that must never be shipped.
@@ -132,6 +151,46 @@ def _is_client_label_list(tools) -> bool:
     return bool(tools) and all(isinstance(t, str) and t.lower() in CLIENT_LABELS for t in tools)
 
 
+def normalize_allowed_tools(value, origin: str) -> list[str]:
+    """Canonicalize `allowed-tools` to a list of Claude tool-name strings."""
+    if isinstance(value, str):
+        return [p.strip() for p in value.split(",") if p.strip()]
+    if isinstance(value, list):
+        names = []
+        for item in value:
+            if not isinstance(item, str):
+                raise PackageError(f"{origin}: 'allowed-tools' entries must be tool names, got {item!r}")
+            names.append(item.strip())
+        return names
+    raise PackageError(f"{origin}: unsupported 'allowed-tools' form: {type(value).__name__}")
+
+
+def _allowed_tools_keys(names: list[str], origin: str):
+    """Map Claude tool names -> (opencode tool-class keys, unknown names).
+
+    A list that is really the repo's supported-clients metadata is rejected: a
+    whitelist must never silently degrade into a client-label list.
+    """
+    lowered = [n.lower() for n in names]
+    if lowered and all(n in CLIENT_LABELS for n in lowered):
+        raise PackageError(
+            f"{origin}: 'allowed-tools' listed client labels, not tool names: {names}"
+        )
+    keys, unknown = [], []
+    for n in names:
+        key = CLAUDE_TO_OPENCODE.get(n.lower())
+        if key:
+            keys.append(key)
+        else:
+            unknown.append(n.lower())
+    return keys, unknown
+
+
+def _canonical_claude_tool(name: str) -> str:
+    """Normalize a tool name to its canonical Claude spelling (unknown kept)."""
+    return CLAUDE_TOOL_NAMES.get(name.strip().lower(), name.strip())
+
+
 def _check_permission(perm, origin: str) -> None:
     if isinstance(perm, str):
         if perm not in PERMISSION_ACTIONS:
@@ -187,6 +246,11 @@ def check_claude_frontmatter(fm: dict, origin: str) -> None:
         raise PackageError(
             f"{origin}: claude 'tools' must be a non-empty comma-separated string, got {fm['tools']!r}"
         )
+    if "allowed-tools" in fm and (not isinstance(fm["allowed-tools"], str) or not fm["allowed-tools"].strip()):
+        raise PackageError(
+            f"{origin}: claude 'allowed-tools' must be a non-empty comma-separated string, "
+            f"got {fm['allowed-tools']!r}"
+        )
 
 
 def check_generic_frontmatter(fm: dict, origin: str) -> None:
@@ -197,33 +261,51 @@ def check_generic_frontmatter(fm: dict, origin: str) -> None:
 # Transforms
 # ---------------------------------------------------------------------------
 
-def _merge_whitelist_into_permission(perm, tools: list[str], origin: str) -> dict:
-    """Materialize a tool whitelist as per-tool permission rules.
+def _merge_whitelist_into_permission(perm, allow_keys, unknown_keys) -> dict:
+    """Materialize a normalized tool whitelist as per-tool permission rules.
 
     Whitelisted tool-class keys -> allow; every other tool-class key -> deny; an
-    explicit entry in an existing `permission` map always wins. A bare permission
-    string is intentionally NOT honored as a global rule: keeping e.g. `allow`
-    globally would grant un-whitelisted tools and is exactly the privilege
-    widening this merge prevents.
+    explicit entry in an existing `permission` map always wins. Unknown named keys
+    (from `unknown_keys`) are added as allow. A bare permission string is
+    intentionally NOT honored as a global rule: keeping e.g. `allow` globally would
+    grant un-whitelisted tools and is exactly the privilege widening this merge
+    prevents.
     """
     merged = dict(perm) if isinstance(perm, dict) else {}
-    allowed = set()
-    extra = []
-    for tool in tools:
-        key = OPENCODE_TOOL_ALIASES.get(tool, tool)
-        if key in OPENCODE_TOOL_KEYS:
-            allowed.add(key)
-        else:
-            extra.append(key)
+    allow = set(allow_keys)
     for key in OPENCODE_TOOL_KEYS:
         if key not in merged:
-            merged[key] = "allow" if key in allowed else "deny"
-    for key in extra:
+            merged[key] = "allow" if key in allow else "deny"
+    for key in unknown_keys:
         merged.setdefault(key, "allow")
     return merged
 
 
+def _whitelist_note(merged: dict) -> str:
+    denied = [k for k in OPENCODE_TOOL_KEYS if merged.get(k) == "deny"]
+    return "opencode: whitelist -> permission ({allow} allow{denied})".format(
+        allow=", ".join(
+            sorted(t for t, v in merged.items() if v == "allow" and t in OPENCODE_TOOL_KEYS)
+        ) or "-",
+        denied=f"; deny {', '.join(denied)}" if denied else "",
+    )
+
+
 def adapt_for_opencode(fm: dict, notes: list, origin: str) -> None:
+    allow_keys: list[str] = []
+    unknown_keys: list[str] = []
+    whitelist_seen = False
+
+    if "allowed-tools" in fm:
+        names = normalize_allowed_tools(fm.pop("allowed-tools"), origin)
+        keys, unknown = _allowed_tools_keys(names, origin)
+        allow_keys.extend(keys)
+        unknown_keys.extend(unknown)
+        whitelist_seen = True
+        notes.append(
+            "opencode: allowed-tools -> permission ({})".format(", ".join(sorted(keys)) or "-")
+        )
+
     if "tools" in fm:
         tools = normalize_tools(fm.pop("tools"), origin)
         if isinstance(tools, dict):
@@ -234,54 +316,86 @@ def adapt_for_opencode(fm: dict, notes: list, origin: str) -> None:
                 "opencode: 'tools' listed supported clients (metadata); dropped for this client"
             )
         else:
-            perm = fm.get("permission")
-            if isinstance(perm, str):
-                notes.append(
-                    f"opencode: dropped global permission shorthand {perm!r} (would widen); "
-                    "tools whitelist merged into per-tool permission"
-                )
-            merged = _merge_whitelist_into_permission(perm, tools, origin)
-            fm["permission"] = merged
-            denied = [k for k in OPENCODE_TOOL_KEYS if merged.get(k) == "deny"]
+            whitelist_seen = True
+            for tool in tools:
+                key = OPENCODE_TOOL_ALIASES.get(tool, tool)
+                if key in OPENCODE_TOOL_KEYS:
+                    allow_keys.append(key)
+                else:
+                    unknown_keys.append(key)
+
+    if whitelist_seen:
+        perm = fm.get("permission")
+        if isinstance(perm, str):
             notes.append(
-                "opencode: tools whitelist -> permission ({allow} allow{denied})".format(
-                    allow=", ".join(sorted(t for t, v in merged.items() if v == "allow" and t in OPENCODE_TOOL_KEYS)) or "-",
-                    denied=f"; deny {', '.join(denied)}" if denied else "",
-                )
+                f"opencode: dropped global permission shorthand {perm!r} (would widen); "
+                "whitelist merged into per-tool permission"
             )
+        merged = _merge_whitelist_into_permission(perm, allow_keys, unknown_keys)
+        fm["permission"] = merged
+        notes.append(_whitelist_note(merged))
     check_opencode_frontmatter(fm, origin)
 
 
 def adapt_for_claude(fm: dict, notes: list, origin: str) -> None:
+    allowed_present = "allowed-tools" in fm
+    mapped: list[str] = []
+    dropped: list[str] = []
+
+    if allowed_present:
+        names = normalize_allowed_tools(fm.pop("allowed-tools"), origin)
+        lowered = [n.lower() for n in names]
+        if lowered and all(n in CLIENT_LABELS for n in lowered):
+            raise PackageError(
+                f"{origin}: 'allowed-tools' listed client labels, not tool names: {names}"
+            )
+        for n in names:
+            canonical = _canonical_claude_tool(n)
+            if canonical not in mapped:
+                mapped.append(canonical)
+
     if "tools" in fm:
         tools = normalize_tools(fm["tools"], origin)
         if isinstance(tools, dict):
-            names = [str(k).strip().lower() for k, v in tools.items() if v is True]
+            tools = [str(k).strip().lower() for k, v in tools.items() if v is True]
         elif _is_client_label_list(tools):
-            names = None
             fm.pop("tools")
             notes.append("claude: 'tools' listed supported clients (metadata); dropped for this client")
-        else:
-            names = tools
-        if names is not None:
-            mapped, dropped = [], []
-            for tool in names:
+            tools = None
+        if tools is not None:
+            for tool in tools:
                 claude_name = CLAUDE_TOOL_NAMES.get(tool)
                 if claude_name:
                     if claude_name not in mapped:
                         mapped.append(claude_name)
                 else:
                     dropped.append(tool)
-            if not mapped:
-                raise PackageError(
-                    f"{origin}: claude 'tools' whitelist {names} maps to no Claude tool names; "
-                    "refusing to omit 'tools' (absent tools = ALL tools in Claude)"
-                )
-            fm["tools"] = ", ".join(mapped)
-            note = f"claude: tools whitelist -> \"{fm['tools']}\""
-            if dropped:
-                note += f" (no Claude equivalent, dropped: {', '.join(dropped)})"
-            notes.append(note)
+            if allowed_present:
+                fm.pop("tools")  # folded into allowed-tools
+            else:
+                if not mapped:
+                    raise PackageError(
+                        f"{origin}: claude 'tools' whitelist {tools} maps to no Claude tool names; "
+                        "refusing to omit 'tools' (absent tools = ALL tools in Claude)"
+                    )
+                fm["tools"] = ", ".join(mapped)
+                note = f"claude: tools whitelist -> \"{fm['tools']}\""
+                if dropped:
+                    note += f" (no Claude equivalent, dropped: {', '.join(dropped)})"
+                notes.append(note)
+
+    if allowed_present:
+        if not mapped:
+            raise PackageError(
+                f"{origin}: claude 'allowed-tools' maps to no Claude tool names "
+                "(absent = ALL tools in Claude; refusing to emit an empty whitelist)"
+            )
+        fm["allowed-tools"] = ", ".join(mapped)
+        note = f"claude: allowed-tools whitelist -> \"{fm['allowed-tools']}\""
+        if dropped:
+            note += f" (no Claude equivalent, dropped: {', '.join(dropped)})"
+        notes.append(note)
+
     check_claude_frontmatter(fm, origin)
 
 

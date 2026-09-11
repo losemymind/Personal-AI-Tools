@@ -3,12 +3,6 @@ name: skill-creator
 description: "创建、改进并验证个人工作流技能（Skills）。当用户需要从零创建技能、把反复出现的工作流沉淀为技能、修改或优化现有技能、评估技能触发与质量、或为 claude/opencode/codex/deepseek 等客户端安装与管理技能时使用。当用户提到「创建skill」「写个技能」「skill-creator」「把xx做成技能」「添加技能」等说法时，使用本技能。"
 category: productivity
 risk: safe
-source: self
-version: "0.10.0"
-date_added: "2026-09-01"
-author: losemymind
-tags: [skill-creator, skills, workflow, llm-clients]
-tools: [claude, opencode, codex, deepseek]
 ---
 
 # 技能创建器（skill-creator）
@@ -28,7 +22,7 @@ skill-creator/
 │   ├── build_index.py          ← 构建上游技能索引（tarball→SQLite）
 │   ├── search_index.py         ← 检索上游索引（FTS5 全文/分类/风险）
 │   ├── compare_skills.py       ← 自建 vs 上游对比评分（质量6维+结构4维）
-│   ├── create_skill.py         ← 交互式脚手架生成器（含 version 字段 + evals/evals.json）
+│   ├── create_skill.py         ← 交互式脚手架生成器（含 evals/evals.json）
 │   ├── package_skill.py        ← 客户端打包器（按端适配 frontmatter + 复制整目录 + post-check）
 │   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接/密钥扫描；allowlist 局部豁免）
 │   ├── run_eval.py             ← 触发评测（heuristic 默认 / cli 双模式；--concurrency 有界并行；逐查询隔离工作区；--output-dir 落盘）
@@ -161,15 +155,15 @@ name: <skill-name>                 # 必需：小写-连字符，与目录名完
 description: "..."                 # 必需：触发场景优先 + 一句能力定位（不写步骤流程摘要），≤1024 字符
 category: <category>               # 必需：见下方分类值
 risk: <none|safe|critical|offensive|unknown>  # 必需
-source: <self|community|official|URL>         # self 表示原创
-date_added: "YYYY-MM-DD"           # 必需
-author: <your-name-or-handle>      # 可选
-tags: [tag-one, tag-two]           # 可选：小写、≤5 个
-tools: [claude, opencode, codex]   # 可选：支持的客户端
+allowed-tools: [Read, Grep, Glob]  # 可选：最小权限白名单（Claude 工具名；打包时按端映射）
 ---
 
 # <技能标题>
 ```
+
+**来源/作者/日期/版本不进 frontmatter**：`author`、`date_added`、`source`、`source_repo`、`source_type`、`version` 一律不写入 `SKILL.md`——打包前技能应是**客户端中立、内容自足**的，来源与创建元数据集中记录在技能库根的**创建记录账本**（见「创建记录账本」），版本以 git 提交历史为准。
+
+**可选权限白名单 `allowed-tools`**：只有需要限制工具的技能才写；值是 Claude 工具名列表（`Read`/`Grep`/`Glob`/`Bash`/`WebFetch`/…），代表**最小权限**。不写 = 不限制（该端全部工具）。打包器按端映射：claude 保留（规范为逗号串）、opencode 反查为逐工具 `permission`（白名单 allow、其余 deny，不放大）、codex/deepseek 透传（见阶段 9）。
 
 **风险级别：**
 - `none` — 纯文本 / 推理，无命令或状态变更
@@ -179,6 +173,17 @@ tools: [claude, opencode, codex]   # 可选：支持的客户端
 - `unknown` — 遗留 / 未分类；**新技能不要用**
 
 **分类常用值：** `development` / `frontend` / `backend` / `testing` / `devops` / `architecture` / `security` / `ai` / `prompt-engineering` / `git` / `productivity` / `documentation` / `planning` / `communication` / `research` 等。
+
+### 创建记录账本
+
+frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作者/日期等创建元数据集中写入**创建记录账本**——技能库根的一个 Markdown 文件（本仓库约定 `SKILL-RECORDS.md`），由 `create_skill.py --records <文件>` 在创建/导入时追加一行：
+
+| 技能 | category | created | author | source | source_repo | method | evolutions |
+|---|---|---|---|---|---|---|---|
+
+- `create_skill.py` 传 `--records` 即自动追加一行；`--author` / `--source`（默认 `self`）/ `--source-repo` / `--method`（默认 `created`）提供各列值。不传 `--records` 则不写账本（任意目录脚手架保持干净）。
+- 导入/适配上游技能时 `method` 记 `imported`/`adapted`，`source` 记 `community`/`official`，`source_repo` 记 `OWNER/REPO`。
+- 账本是**逐条创建/来源的可查询台账**；与库的**入库审计**文件（如 `SKILLS-AUDIT.md`）互补：账本记事实，审计记合规结论。
 
 ## 内容结构与写作指南
 
@@ -263,8 +268,8 @@ python scripts/search_index.py --list-categories      # 列出全部分类
 - 按「自由度匹配脆弱性」决定结构强度（见 `references/quality-bar.md` 与正文「核心理念」节）。
 - 从最小可行开始，先让技能「跑起来」，再按反馈扩展。
 - 使用 `templates/SKILL.template.md` 作为骨架；字段与分类完整参考见 `references/skill-template.md`。
-- 可一键生成骨架：`python scripts/create_skill.py --name <技能名> --category <分类> --risk <级别>`（交互式或 `--no-interactive`）。
-- frontmatter 应声明 `version: "0.1.0"`（语义化版本，生命周期管理依赖它记账）。
+- 可一键生成骨架：`python scripts/create_skill.py --name <技能名> --category <分类> --risk <级别>`（交互式或 `--no-interactive`）。入库时用 `--records <创建记录账本>` 追加来源记录（见「创建记录账本」）。
+- frontmatter 只声明 `name`/`description`/`risk`/`category`（不含 version/tags/来源字段；版本以 git 提交历史为准）。
 
 ### 阶段 4：编写 SKILL.md
 
@@ -286,7 +291,7 @@ python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
 
 说明：不带 `--dir` 时默认扫描**技能根自身目录**（`scripts/` 的上一级，即自检，不依赖任何宿主仓库布局）；校验其他技能目录或技能库时用 `--dir <目录>`。
 
-验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致、小写 kebab-case 且 ≤100 字符、`description` ≤1024 字符、`risk` 合法、`version` 语义化格式、`tags`/`tools` 形状）、`source`/`source_repo`/`source_type`、`date_added` 格式、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、危险管道与明文密钥扫描、本地链接/反引号引用是否悬空（含 `indexes/*.db` 等数据/文本资源），`evals.json` 存在时的形状合法性（缺 `query`/`should_trigger` 即失败），以及 `references/*.md` 不互链兄弟文件（一层深纪律）。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
+验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致、小写 kebab-case 且 ≤100 字符、`description` ≤1024 字符、`risk` 合法）、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、危险管道与明文密钥扫描、本地链接/反引号引用是否悬空（含 `indexes/*.db` 等数据/文本资源），`evals.json` 存在时的形状合法性（缺 `query`/`should_trigger` 即失败），以及 `references/*.md` 不互链兄弟文件（一层深纪律）。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
 
 技能正文稳定后开始量化评估。采用「**确定性脚本打底 + SKILL.md 拉起子代理判断 + 脚本聚合收尾**」的混合编排（子代理指令在 `agents/`，移植自 Anthropic 官方；子代理负责语义判断，脚本负责可复现的确定性工作）：
 
@@ -427,7 +432,7 @@ python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技
   python scripts/package_skill.py <技能目录> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]
   ```
 
-  产物布局为 `<产物目录>/<客户端>/<技能名>/`（`--zip` 另出同名压缩包）；把该目录放到目标客户端的 skills 目录即可。关键适配：opencode 端把 `tools` 工具白名单合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；claude 端把工具白名单转成逗号分隔的 Claude 工具名；`tools: [claude, opencode, …]` 这类「支持客户端」元数据不会被误当成工具白名单。各端适配结果均过该端 post-check，不合格不出包。
+  产物布局为 `<产物目录>/<客户端>/<技能名>/`（`--zip` 另出同名压缩包）；把该目录放到目标客户端的 skills 目录即可。关键适配：技能的可选 `allowed-tools` 白名单按端映射——claude 保留并规范为逗号分隔的 Claude 工具名；opencode 把每个 Claude 工具名反查为 opencode 工具类 key、合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；codex/deepseek 透传。旧 `tools` 形式保留为回退兼容（与 `allowed-tools` 取并集）。各端适配结果均过该端 post-check，不合格不出包。不写 `allowed-tools` = 该端不限制工具。
 - 重启客户端后用真实小任务触发一次，确认技能被加载、按指令执行。
 - 经验证、可复用的技能按质量检查清单归档到宿主技能库的分类目录 `skills/<分类>/<name>/`——按功能分类入库，分类目录不存在则先创建，不得散置在库根目录。
 
@@ -444,7 +449,7 @@ python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技
 **元数据：**
 - [ ] frontmatter 是有效 YAML，`name` 小写-连字符且与目录一致
 - [ ] `description` ≤1024 字符、单行、**无 `<`/`>` 占位符**，触发场景优先 + 一句能力定位，**无步骤流程摘要**（E：说什么场景触发，不替正文写短版；description 须自足覆盖触发，不依赖正文兜底）
-- [ ] `risk` / `category` / `source` / `date_added` 已声明
+- [ ] `risk` / `category` 已声明；**无** `source`/`date_added`/`author`/`tags`/`version`（来源进创建记录账本，版本以 git 为准）
 
 **内容质量：**
 - [ ] 指令清晰、可操作（祈使句、动作动词）

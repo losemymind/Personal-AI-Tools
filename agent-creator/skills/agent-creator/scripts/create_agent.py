@@ -14,14 +14,39 @@ import io
 import json
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = SCRIPT_DIR.parent / "templates" / "AGENT.template.md"
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
 MODES = ["primary", "subagent", "all"]
+
+# Central creation-record ledger (provenance/author/date live here, not in
+# AGENT.md frontmatter — an agent is client-neutral before packaging, and
+# version/tools_clients are not carried in frontmatter either).
+RECORDS_HEADER = (
+    "# 代理创建记录（AGENTS-RECORDS）\n\n"
+    "> 由 agent-creator 在创建/导入代理时追加（`create_agent.py --records <本文件>`）。\n"
+    "> 记录各代理的来源与创建元数据；`AGENT.md` frontmatter 只保留 "
+    "`name`/`description`/`mode` 等运行时字段（**不含** `version`/`tools_clients`/`tags`）。\n\n"
+    "| 代理 | mode | created | author | source | source_repo | method | evolutions |\n"
+    "|---|---|---|---|---|---|---|---|\n"
+)
+
+
+def append_record(records_path, name, mode, author, source, source_repo, method) -> None:
+    """Append one provenance row to the creation-record ledger (create if absent)."""
+    records_path = Path(records_path)
+    records_path.parent.mkdir(parents=True, exist_ok=True)
+    if not records_path.exists():
+        records_path.write_text(RECORDS_HEADER, encoding="utf-8")
+    cells = [name, mode, date.today().isoformat(), author, source,
+             source_repo or "-", method, "-"]
+    row = "| " + " | ".join(str(c).replace("|", "\\|") for c in cells) + " |\n"
+    with records_path.open("a", encoding="utf-8") as f:
+        f.write(row)
 
 
 def _yaml_str(value: str) -> str:
@@ -78,7 +103,7 @@ def ask_name() -> str:
         return value
 
 
-def build_agent_md(name, description, mode, tools, version) -> str:
+def build_agent_md(name, description, mode, tools) -> str:
     if TEMPLATE_PATH.exists():
         content = TEMPLATE_PATH.read_text(encoding="utf-8-sig")
         content = content.replace("your-agent-name", name)
@@ -92,13 +117,6 @@ def build_agent_md(name, description, mode, tools, version) -> str:
         content = re.sub(
             r"^description: .*$",
             lambda m: f"description: {_yaml_str(description)}",
-            content,
-            count=1,
-            flags=re.MULTILINE,
-        )
-        content = re.sub(
-            r"^version: .*$",
-            lambda m: f"version: {_yaml_str(version)}",
             content,
             count=1,
             flags=re.MULTILINE,
@@ -119,8 +137,6 @@ mode: {mode}
 tools: [{tools_str}]
 permission:
   edit: deny
-version: {_yaml_str(version)}
-tools_clients: [claude, opencode, codex, deepseek]
 ---
 
 # {name.replace('-', ' ').title()}
@@ -174,7 +190,11 @@ def main() -> int:
     parser.add_argument("--description", default=None)
     parser.add_argument("--mode", default=None, choices=MODES)
     parser.add_argument("--tools", default="read,grep,glob,bash", help="逗号分隔的工具列表")
-    parser.add_argument("--version", default="0.1.0")
+    parser.add_argument("--author", default=None, help="作者标识（仅写入创建记录账本，不进 frontmatter）")
+    parser.add_argument("--source", default="self", help="来源：self/community/official/external/URL（仅记录账本）")
+    parser.add_argument("--source-repo", default="", dest="source_repo", help="上游仓库 OWNER/REPO 或本地来源名（仅记录账本）")
+    parser.add_argument("--method", default="created", help="创建方式：created/imported/migrated（仅记录账本）")
+    parser.add_argument("--records", default=None, help="创建记录账本文件；提供则在创建后追加一行")
     parser.add_argument("--out", default=None, help="输出目录（默认当前目录）")
     parser.add_argument("--no-interactive", action="store_true", help="缺省字段使用默认值，不询问")
     args = parser.parse_args()
@@ -191,10 +211,6 @@ def main() -> int:
 
     if not VALID_NAME.match(name):
         print(f"❌ 无效名称: {name}（需 kebab-case）")
-        return 1
-
-    if not VERSION_PATTERN.match(args.version):
-        print(f"❌ 无效版本: {args.version}（需 semver x.y.z，如 0.1.0）")
         return 1
 
     description = args.description
@@ -218,6 +234,7 @@ def main() -> int:
     mode = args.mode or ("subagent" if not interactive else ask("模式", "subagent", MODES))
 
     tools = [t.strip() for t in args.tools.split(",") if t.strip()]
+    author = args.author or (ask("作者标识", "losemymind") if interactive else "losemymind")
 
     out_dir = Path(args.out) if args.out else Path.cwd()
     if out_dir.exists() and not out_dir.is_dir():
@@ -233,9 +250,15 @@ def main() -> int:
         print(f"❌ 无法创建目录: {e}")
         return 1
 
-    body = build_agent_md(name, description, mode, tools, args.version)
+    body = build_agent_md(name, description, mode, tools)
     (agent_dir / "AGENT.md").write_text(body, encoding="utf-8")
     print(f"✅ 创建骨架: {agent_dir}")
+    if args.records:
+        append_record(args.records, name, mode, author,
+                      args.source, args.source_repo, args.method)
+        print(f"   已登记创建记录: {args.records}")
+    else:
+        print("   提示: 传 --records <账本文件> 可追加创建/来源记录")
     print(f"   下一步: python scripts/validate_agents.py --dir {agent_dir}")
     print("   然后按本技能 SKILL.md 阶段 4-6 完善内容与测试")
     return 0

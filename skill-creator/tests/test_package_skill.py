@@ -20,9 +20,6 @@ name: pkg-demo
 description: "打包测试技能"
 category: testing
 risk: safe
-source: self
-version: "0.1.0"
-date_added: "2026-09-11"
 {extra}
 ---
 
@@ -115,6 +112,66 @@ def test_claude_whitelist_becomes_comma_string():
 def test_claude_client_label_tools_dropped():
     fm = _adapted("tools: [claude, opencode]", "claude")
     assert "tools" not in fm
+
+
+# --- allowed-tools (canonical skill whitelist) -----------------------------
+
+
+def test_claude_allowed_tools_kept_and_normalized():
+    fm = _adapted("allowed-tools: [Read, Grep, Bash]", "claude")
+    assert fm["allowed-tools"] == "Read, Grep, Bash"
+    assert "tools" not in fm
+
+
+def test_claude_allowed_tools_lowercase_normalized_to_canonical():
+    fm = _adapted("allowed-tools: [read, webfetch]", "claude")
+    assert fm["allowed-tools"] == "Read, WebFetch"
+
+
+def test_claude_allowed_tools_string_form_accepted():
+    fm = _adapted('allowed-tools: "Read, Grep"', "claude")
+    assert fm["allowed-tools"] == "Read, Grep"
+
+
+def test_claude_allowed_tools_unions_with_legacy_tools():
+    fm = _adapted("allowed-tools: [Read]\ntools: [grep, bash]", "claude")
+    # Union, folded onto the native allowed-tools key; legacy tools removed.
+    assert "tools" not in fm
+    assert fm["allowed-tools"] == "Read, Grep, Bash"
+
+
+def test_opencode_allowed_tools_becomes_permission_map():
+    fm = _adapted("allowed-tools: [Read, Grep, Bash]", "opencode")
+    assert "allowed-tools" not in fm
+    perm = fm["permission"]
+    assert perm["read"] == "allow"
+    assert perm["grep"] == "allow"
+    assert perm["bash"] == "allow"
+    assert perm["edit"] == "deny"
+
+
+def test_opencode_allowed_tools_explicit_permission_wins():
+    fm = _adapted("allowed-tools: [Read]\npermission:\n  edit: allow", "opencode")
+    perm = fm["permission"]
+    assert perm["read"] == "allow"
+    assert perm["edit"] == "allow"   # explicit wins over the deny default
+    assert perm["bash"] == "deny"
+
+
+def test_allowed_tools_client_label_list_rejected():
+    mod = _load()
+    content = SKILL_MD.format(extra="allowed-tools: [claude, opencode]")
+    import pytest as _pytest
+    for client in ("claude", "opencode"):
+        with _pytest.raises(mod.PackageError):
+            mod.adapt_skill_markdown(content, client, origin="SKILL.md")
+
+
+def test_allowed_tools_passthrough_for_codex_deepseek():
+    fm = _adapted("allowed-tools: [Read, Grep]", "codex")
+    assert fm["allowed-tools"] == ["Read", "Grep"]
+    fm2 = _adapted("allowed-tools: [Read, Grep]", "deepseek")
+    assert fm2["allowed-tools"] == ["Read", "Grep"]
 
 
 # --- packaging (filesystem) ------------------------------------------------

@@ -13,8 +13,6 @@ model: anthropic/claude-sonnet-4-6
 tools: [read, grep, glob]   # ← 仓库规范：工具白名单清单（数组形式）
 permission:
   edit: deny
-version: "0.1.0"
-tools_clients: [claude, opencode, codex, deepseek]
 ---
 ```
 
@@ -31,10 +29,9 @@ tools_clients: [claude, opencode, codex, deepseek]
 - `model`：`provider/model-id` 格式（opencode/claude 支持）
 - `tools`：允许的工具列表（最小权限原则，越少越好）
 - `permission`：权限规则（如 `edit: deny`、`bash: ask`）
-- `version`：语义化 `x.y.z`（生命周期记账用）
-- `tools_clients`：声明适用客户端（claude/opencode/codex/deepseek）
 - `temperature` / `top_p`：采样参数（opencode 支持）
-- `tags`：≤5 个，小写-连字符
+
+**不进 frontmatter（记于代理库根 `AGENTS-RECORDS.md` 创建记录账本）**：`version`（版本以 git 提交历史为准）、`tools_clients`（多端适配由打包器/安装阶段决定）、`source`/`source_repo`/`author`/`date_added`。打包前代理客户端中立、内容自足。
 
 **代理专属字段（opencode）**：`hidden`（隐藏于 TUI 列表）、`color`、`steps`、`options`、`disable`（禁用内置代理）。
 
@@ -48,7 +45,7 @@ tools_clients: [claude, opencode, codex, deepseek]
 | `model` | ✅ | ✅ | ✅ | ⚠️ |
 | `tools` | ✅（Claude 工具名） | ✅（opencode 工具名） | ⚠️ | ⚠️ |
 | `permission` | ✅（Claude 格式） | ✅（opencode 格式） | ⚠️ | ⚠️ |
-| `version`/`tags` | 忽略（自定义） | ✅ | ⚠️ | ⚠️ |
+| `maturity` | 忽略（自定义） | ⚠️ | ⚠️ | ⚠️ |
 
 **兼容策略**：仓库内保持规范形式（`tools: [read, ...]` 数组白名单），**安装时用 `scripts/adapt_agent.py` 做 frontmatter 适配**自动转换为对应客户端的合法形态并执行 post-check：
 

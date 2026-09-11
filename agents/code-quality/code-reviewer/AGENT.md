@@ -6,9 +6,6 @@ tools: [read, grep, glob, bash]
 permission:
   edit: deny
   write: deny
-version: "0.1.0"
-tools_clients: [claude, opencode, codex, deepseek]
-tags: [code-review, quality, agent]
 maturity: runtime-verified
 ---
 

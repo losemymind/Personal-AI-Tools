@@ -46,9 +46,6 @@ EXEMPT_DIRS = {"examples", "references", "templates"}
 DEFAULTS = {
     "category": "uncategorized",
     "risk": "unknown",
-    "version": "-",
-    "source": "-",
-    "date_added": "-",
     "mode": "-",
 }
 
@@ -136,7 +133,6 @@ def discover(library: Path, kind: str, entry_file: str, verbose: bool) -> list[d
             "dir": rel_path,
             "path": path,
             "description": fm.get("description") or "",
-            "tags": fm.get("tags") or "",
             "trigger": first_when_to_use(
                 content,
                 ["When to Use This Skill", "When to Use", "Use this skill when", "何时使用此技能", "何时使用", "When to activate this skill"],
@@ -144,17 +140,16 @@ def discover(library: Path, kind: str, entry_file: str, verbose: bool) -> list[d
             or "",
         }
         if kind == "skill":
-            # Skill frontmatter schema: category/risk/source/date_added are real fields.
+            # Skill frontmatter schema: name/description/risk/category only.
+            # Provenance (source/author/date/version) lives in the library's
+            # creation-record ledger (SKILL-RECORDS.md), NOT in frontmatter.
             entry["category"] = fm.get("category") or DEFAULTS["category"]
             entry["risk"] = fm.get("risk") or DEFAULTS["risk"]
-            entry["version"] = fm.get("version") or DEFAULTS["version"]
-            entry["source"] = fm.get("source") or DEFAULTS["source"]
-            entry["date_added"] = fm.get("date_added") or DEFAULTS["date_added"]
             entry["install"] = f"复制 `{path}` → 客户端 skills/ 目录"
         else:
-            # Agent frontmatter schema: no category/source/date_added; mode + tags carry taxonomy.
+            # Agent frontmatter schema: name/description/mode + maturity (+ tools/permission).
+            # No category/source/date_added/version/tags; layer comes from the directory path.
             entry["mode"] = fm.get("mode") or DEFAULTS["mode"]
-            entry["version"] = fm.get("version") or DEFAULTS["version"]
             entry["maturity"] = fm.get("maturity") or "-"
             entry["install"] = f"复制 `{path}` → 客户端 agents/ 目录"
         entries.append(entry)
@@ -168,16 +163,11 @@ def render_entry(e: dict) -> str:
         rows = [
             ("category", e["category"]),
             ("risk", e["risk"]),
-            ("version", e["version"]),
-            ("source", e["source"]),
-            ("date_added", e["date_added"]),
         ]
     else:
-        rows = [("mode", e["mode"]), ("version", e["version"])]
+        rows = [("mode", e["mode"])]
         if e.get("maturity"):
             rows.append(("maturity", e["maturity"]))
-    if e.get("tags"):
-        rows.append(("tags", e["tags"]))
     # install already carries markdown backticks around the copy source path.
     rows.append(("install", e["install"]))
 

@@ -1266,11 +1266,15 @@ def test_create_skill_escapes_description_quotes(tmp_path):
     assert v.returncode == 0, v.stdout + v.stderr
 
 
-def test_create_skill_rejects_bad_version(tmp_path):
-    r = run_script("scripts/create_skill.py", "--name", "v-skill", "--no-interactive",
-                   "--out", str(tmp_path), "--version", "1.0")
-    assert r.returncode == 1
-    assert not (tmp_path / "v-skill").exists()
+def test_create_skill_omits_removed_frontmatter_fields(tmp_path):
+    """Scaffold frontmatter is name/description/risk/category only."""
+    r = run_script("scripts/create_skill.py", "--name", "fm-skill", "--no-interactive",
+                   "--out", str(tmp_path))
+    assert r.returncode == 0, r.stdout + r.stderr
+    md = (tmp_path / "fm-skill" / "SKILL.md").read_text(encoding="utf-8")
+    fm = md.split("---", 2)[1]
+    keys = {ln.split(":", 1)[0].strip() for ln in fm.splitlines() if ":" in ln and not ln.startswith(" ")}
+    assert keys == {"name", "description", "category", "risk"}
 
 
 # --- M5: --client-cmd must preserve Windows paths ---
@@ -1710,12 +1714,38 @@ def test_create_skill_interactive_eof_is_clean(tmp_path):
     assert "Traceback" not in r.stderr
 
 
-def test_create_skill_quotes_tool_values(tmp_path):
-    r = run_script("scripts/create_skill.py", "--name", "tooltest", "--no-interactive",
-                   "--out", str(tmp_path), "--tools", "claude]")
+def test_create_skill_records_provenance_ledger(tmp_path):
+    """--records appends a provenance row; frontmatter stays client-neutral."""
+    ledger = tmp_path / "SKILL-RECORDS.md"
+    r = run_script("scripts/create_skill.py", "--name", "rec-skill", "--no-interactive",
+                   "--out", str(tmp_path), "--records", str(ledger),
+                   "--author", "alice", "--source", "community",
+                   "--source-repo", "owner/repo", "--method", "imported")
     assert r.returncode == 0, r.stdout + r.stderr
-    v = run_script("scripts/validate_skills.py", "--strict", "--dir", str(tmp_path / "tooltest"))
+    text = ledger.read_text(encoding="utf-8")
+    assert "| rec-skill |" in text and "alice" in text and "owner/repo" in text
+    assert "imported" in text and "community" in text
+    # A second creation appends another row (header written once).
+    r2 = run_script("scripts/create_skill.py", "--name", "rec-two", "--no-interactive",
+                    "--out", str(tmp_path), "--records", str(ledger))
+    assert r2.returncode == 0, r2.stdout + r2.stderr
+    after = ledger.read_text(encoding="utf-8")
+    assert after.count("# 技能创建记录") == 1
+    assert after.count("| 技能 | category | created |") == 1
+    assert "| rec-skill |" in after and "| rec-two |" in after
+
+    skill_md = (tmp_path / "rec-skill" / "SKILL.md").read_text(encoding="utf-8")
+    for banned in ("source:", "source_repo:", "source_type:", "author:", "date_added:", "tools:", "tags:", "version:"):
+        assert f"\n{banned}" not in skill_md, f"{banned!r} must not be in frontmatter"
+    v = run_script("scripts/validate_skills.py", "--strict", "--dir", str(tmp_path / "rec-skill"))
     assert v.returncode == 0, v.stdout + v.stderr
+
+
+def test_create_skill_without_records_writes_no_ledger(tmp_path):
+    r = run_script("scripts/create_skill.py", "--name", "no-rec", "--no-interactive",
+                   "--out", str(tmp_path))
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert not (tmp_path / "SKILL-RECORDS.md").exists()
 
 
 def test_extract_text_tolerates_non_dict_part():

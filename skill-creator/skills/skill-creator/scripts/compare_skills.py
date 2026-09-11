@@ -94,7 +94,7 @@ def score_quality(s: dict) -> dict:
     else:
         q["security_guardrails"] = 0.8  # no risk content detected -> default pass
     # Metadata completeness mirrors quality-bar item 1 (required + recommended fields).
-    meta_fields = ["name", "description", "risk", "source", "version", "category", "date_added"]
+    meta_fields = ["name", "description", "risk", "category"]
     q["metadata_complete"] = sum(1 for f in meta_fields if fm.get(f)) / len(meta_fields)
     return q
 

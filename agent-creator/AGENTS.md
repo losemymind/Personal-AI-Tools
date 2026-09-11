@@ -9,7 +9,7 @@
 **负责：**
 - 改进成品各部件：`SKILL.md`（方法论，唯一入口）、`references/`（深化规范：agent-template / agent-anatomy / agent-quality-bar / agent-index / agent-comparison）、`scripts/`（确定性工具：create / validate / compare / adapt / search / build）、`templates/`、`indexes/upstream.db`（随成品分发的上游检索索引）、`evolutions/`（反馈闭环记录）。
 - 配套 dev 支撑：`tests/` 回归（含成品自包含/布局断言）、`validate_agents.py` 校验器能力（对 AGENT.md 代理库的判定纪律）、`compare_agents.py` / `search_agent_index.py` / `build_agent_index.py` 的对比择优与检索链完整性与进化。
-- 版本记账：每次实质改动按语义化 bump 成品 `SKILL.md` frontmatter `version`（默认 patch；方法论大改/行为破坏用 minor）。
+- 版本记账：技能 frontmatter 不含 `version`；每次实质改动以 **git 提交**为单位记账，并在 `evolutions/<YYYY-MM-DD>-<slug>.md` 记录原因与学习点。
 
 **不负责（除非用户明确点名）：**
 - 根能力库 `agents/`（那是库条目，不是本工作区；用本成品生成与校验，但不归演进者维护）。
@@ -40,7 +40,7 @@
 - 上游更优 → 吸收优点，把对比结论与学习点写入 `evolutions/<YYYY-MM-DD>-<slug>.md`。
 
 **Step 3 出方案再动手**
-- 列出：改哪个文件、改什么、为什么、影响哪些引用与测试、是否需要 bump 版本。
+- 列出：改哪个文件、改什么、为什么、影响哪些引用与测试、是否需要记录 evolutions。
 - 一句话方案适用于局部修复；涉及方法论、验证器语义、删除文件或跨部件改动，必须先把方案写给用户确认再实施。
 
 **Step 4 实施（遵守本文件「硬约束」）**
@@ -64,7 +64,7 @@ python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\
 - 重大升级在工作区 `README.md` 或成品 `references/` 补沿革，保持历史可追溯。
 
 **Step 7 版本与元数据**
-- bump `SKILL.md` frontmatter `version`；描述/正文保持中文；不擅动 `date_added`。
+- 记录闭环：描述/正文保持中文；来源/作者/日期/版本不进 frontmatter（版本以 git 为准）；方法论升级记 `evolutions/`。
 
 **Step 8 汇报**
 - 给用户：改了什么文件、为什么、验证命令与结果、是否可提交。不代用户提交。
@@ -87,7 +87,7 @@ python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\
 - [ ] 新增/修改脚本有 pytest 覆盖
 - [ ] 描述与正文中文一致，description 满足硬约束
 - [ ] `pytest tests/` 全绿（回归 + 成品自包含/布局断言）
-- [ ] 方法论升级已记 `evolutions/`，版本已 bump
+- [ ] 方法论升级已记 `evolutions/`
 - [ ] 汇报含改动文件、原因、验证结果
 
 ## 命令速查（在本工作区根执行）

@@ -19,8 +19,6 @@ permission:
   task: deny
   lsp: deny
   external_directory: deny
-version: "0.1.0"
-tags: [academic, ue-game-studio]
 maturity: static-verified
 ---
 

@@ -23,7 +23,7 @@
 ## 约定
 
 - 每个 Skill 一个子目录，命名 `kebab-case`，例如 `code-review/`
-- 每个 Skill 以 `SKILL.md` 为核心，含 frontmatter（含 `version: x.y.z`）与说明
+- 每个 Skill 以 `SKILL.md` 为核心，含 frontmatter（`name`/`description`/`risk`/`category`）与说明
 
 ## 结构
 
@@ -36,7 +36,7 @@ skill-creator/
     build_index.py          # 构建上游技能索引（tarball→SQLite，支持 --incremental）
     search_index.py         # 检索上游索引（FTS5 全文/分类/风险过滤）
     compare_skills.py       # 自建 vs 上游对比评分（质量6维+结构4维）
-    create_skill.py         # 交互式脚手架生成器（含 version 字段 + evals/evals.json）
+    create_skill.py         # 交互式脚手架生成器（含 evals/evals.json）
     package_skill.py        # 客户端打包器（按端适配 frontmatter + 复制整目录 + post-check）
     validate_skills.py      # 自动验证器（frontmatter/章节/安全/链接/密钥扫描）
     utils.py                # 共享：frontmatter 解析 + 章节模式 + 触发启发式 + 安全扫描 + 进程树终止客户端运行器（四端通用）
@@ -61,7 +61,7 @@ skill-creator/
     skill-comparison.md     # 对比评分维度与择优流程
     benchmark-schema.md     # 评测/基准 JSON schema（移植自 Anthropic 官方）
   templates/
-    SKILL.template.md       # 新技能骨架模板（含 version 字段）
+    SKILL.template.md       # 新技能骨架模板
     evals.json.template     # 触发测试用例模板
   examples/                 # 上游学习样本（MIT 许可，验证豁免）
     README.md               # 样本入口：来源/许可/目录清单/学习要点

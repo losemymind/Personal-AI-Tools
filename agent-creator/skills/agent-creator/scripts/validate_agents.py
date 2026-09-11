@@ -60,8 +60,6 @@ BACKTICK_REF_RE = re.compile(
 )
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
-DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 BOUNDARY_PATTERNS = [
     re.compile(r"^##\s+职责范围", re.MULTILINE),
@@ -299,17 +297,10 @@ def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> di
             if risk == "offensive" and not any(p.search(content) for p in SECURITY_DISCLAIMER_PATTERNS):
                 errors.append(f"🚨 {rel_path}: OFFENSIVE AGENT MISSING THE AUTHORIZED-USE DISCLAIMER")
 
-            if "version" in metadata:
-                v = metadata["version"]
-                if not isinstance(v, str) or not VERSION_PATTERN.match(v):
-                    errors.append(f"❌ {rel_path}: Invalid 'version' format. Must be semver x.y.z, got '{metadata['version']}'")
-            else:
-                advisories.append(f"ℹ️  {rel_path}: Missing 'version' field (recommended for lifecycle tracking)")
-
-            if "date_added" in metadata:
-                d = metadata["date_added"]
-                if not isinstance(d, str) or not DATE_PATTERN.match(d):
-                    errors.append(f"❌ {rel_path}: Invalid 'date_added' format. Must be YYYY-MM-DD.")
+            # version/date_added are NOT carried in AGENT.md frontmatter: lifecycle
+            # accounting is git-based, and provenance lives in the library's
+            # creation-record ledger (agents/AGENTS-RECORDS.md). Unknown leftover
+            # fields are simply ignored (forward-compatible).
 
             body = content.split("---", 2)[2] if content.startswith("---") else content
             if not body.strip():

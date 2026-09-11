@@ -25,7 +25,6 @@ mode: subagent
 tools: [read]
 permission:
   edit: deny
-version: "0.1.0"
 ---
 
 # {name}
@@ -286,13 +285,45 @@ def test_create_mode_not_corrupted_by_description(tmp_path):
     assert 'description: "a subagent that reviews"' in text
 
 
-def test_create_rejects_bad_version(tmp_path):
+def test_create_records_provenance_ledger(tmp_path):
+    """--records appends a provenance row; frontmatter stays client-neutral."""
+    ledger = tmp_path / "AGENTS-RECORDS.md"
     r = run_script(
-        "scripts/create_agent.py", "--no-interactive", "--name", "v-agent",
-        "--version", "x.y", "--out", str(tmp_path),
+        "scripts/create_agent.py", "--no-interactive", "--name", "rec-agent",
+        "--out", str(tmp_path), "--records", str(ledger),
+        "--author", "alice", "--source", "community",
+        "--source-repo", "owner/repo", "--method", "imported",
     )
-    assert r.returncode == 1
-    assert "semver" in r.stdout
+    assert r.returncode == 0, r.stdout + r.stderr
+    text = ledger.read_text(encoding="utf-8")
+    assert "| rec-agent |" in text and "alice" in text and "owner/repo" in text
+    assert "imported" in text and "community" in text
+    # Second creation appends another row; header written once.
+    r2 = run_script(
+        "scripts/create_agent.py", "--no-interactive", "--name", "rec-agent-2",
+        "--out", str(tmp_path), "--records", str(ledger),
+    )
+    assert r2.returncode == 0, r2.stdout + r2.stderr
+    after = ledger.read_text(encoding="utf-8")
+    assert after.count("# 代理创建记录") == 1
+    assert after.count("| 代理 | mode | created |") == 1
+    assert "| rec-agent |" in after and "| rec-agent-2 |" in after
+
+    agent_md = (tmp_path / "rec-agent" / "AGENT.md").read_text(encoding="utf-8")
+    for banned in ("version:", "tools_clients:", "source:", "author:", "date_added:"):
+        assert f"\n{banned}" not in agent_md, f"{banned!r} must not be in frontmatter"
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path / "rec-agent"))
+    assert v.returncode == 0, v.stdout + v.stderr
+
+
+def test_create_agent_omits_removed_frontmatter_fields(tmp_path):
+    r = run_script("scripts/create_agent.py", "--no-interactive", "--name", "fm-agent",
+                   "--out", str(tmp_path))
+    assert r.returncode == 0, r.stdout + r.stderr
+    md = (tmp_path / "fm-agent" / "AGENT.md").read_text(encoding="utf-8")
+    fm = md.split("---", 2)[1]
+    keys = {ln.split(":", 1)[0].strip() for ln in fm.splitlines() if ":" in ln and not ln.startswith(" ")}
+    assert "version" not in keys and "tools_clients" not in keys
 
 
 def test_create_interactive_eof_exits_cleanly(tmp_path):

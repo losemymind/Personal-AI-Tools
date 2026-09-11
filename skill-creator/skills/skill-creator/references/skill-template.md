@@ -10,11 +10,7 @@ name: react-patterns              # 必需：小写-连字符，与目录名完�
 description: "当用户要求设计 React 组件、实现 hooks 或选择状态管理方案时使用。覆盖组件模式与状态管理最佳实践。"
 category: frontend                # 必需：见下方分类列表
 risk: safe                        # 必需：见下方风险级别定义
-source: self                      # 必需：self / 社区 / 官方 / URL
-date_added: "2026-09-01"          # 必需：YYYY-MM-DD
-author: your-name-or-handle       # 可选
-tags: [react, frontend, patterns, components]  # 可选：≤5 个
-tools: [claude, opencode, codex]  # 可选：支持的客户端
+allowed-tools: [Read, Grep, Glob] # 可选：最小权限白名单（Claude 工具名）
 ---
 ```
 
@@ -25,17 +21,11 @@ tools: [claude, opencode, codex]  # 可选：支持的客户端
 - `description`：≤1024 字符（验证器上限 1024），**触发场景优先**（「何时用/Use when」开头 + 触发关键词前置）+ 一句能力定位；**不写执行步骤/流程摘要**（写法的实证原因见 SKILL.md「读取规则」中的写作规律文档 §6）；单行
 - `category`：见下方分类列表
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一（新技能避免 `unknown`）
-- `source`：`self`（原创）/ 社区 / 官方 / URL。`self` 表示你是原始作者
-- `date_added`：`YYYY-MM-DD` 格式
 
 **可选字段：**
-- `author`：作者名称或 handle
-- `tags`：小写、连字符分隔、≤5 个
-- `tools`：支持的客户端列表（claude/opencode/codex/deepseek 等）
+- `allowed-tools`：最小权限白名单（Claude 工具名列表，如 `[Read, Grep, Glob, Bash, WebFetch]`）。只有需要限制工具的技能才写；不写 = 该端不限制。打包时按端映射（claude 保留、opencode 反查为逐工具 `permission`、codex/deepseek 透传；见阶段 9）。
 
-**外部来源追加字段：**
-- `source_repo`：上游仓库（OWNER/REPO 格式，如 `sickn33/agentic-awesome-skills`）
-- `source_type`：`official` / `community` / `self`
+**来源/作者/日期/版本不进 frontmatter**：打包前技能**客户端中立、内容自足**，`source`/`source_repo`/`source_type`/`author`/`date_added`/`version` 一律不写 `SKILL.md`，来源与创建元数据集中登记在技能库根的**创建记录账本**（`create_skill.py --records` 追加；见 SKILL.md「创建记录账本」），版本以 git 提交历史为准。
 
 ## 技能分类列表
 
@@ -53,13 +43,6 @@ tools: [claude, opencode, codex]  # 可选：支持的客户端
 - `critical` — 修改状态、删除文件、推送生产环境、自动化脚本执行
 - `offensive` — 渗透测试/红队工具，**必须**含「仅限授权使用」警告与强制用户确认门
 - `unknown` — 遗留/未分类；新技能应避免，除非确需维护者分流
-
-## 标签规范
-
-- 小写字母 + 连字符分隔，避免特殊字符，最多 5 个
-- 技术标签：`react` `python` `aws` `kubernetes`
-- 概念标签：`patterns` `security` `performance` `testing`
-- 领域标签：`frontend` `backend` `mobile` `api`
 
 ## 章节要求
 
@@ -82,7 +65,7 @@ tools: [claude, opencode, codex]  # 可选：支持的客户端
 **元数据：**
 - [ ] frontmatter 是有效 YAML，`name` 小写-连字符且与目录名一致
 - [ ] `description` ≤1024 字符，触发场景优先 + 一句能力定位，无步骤流程摘要
-- [ ] `risk` / `category` / `source` / `date_added` 已声明
+- [ ] `risk` / `category` 已声明；**无** `source`/`date_added`/`author`/`tags`/`version`（来源进创建记录账本，版本以 git 为准）
 
 **内容质量：**
 - [ ] 指令清晰、可操作（祈使句、动作动词）

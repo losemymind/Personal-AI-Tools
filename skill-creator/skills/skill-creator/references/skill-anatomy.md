@@ -35,7 +35,7 @@ skills/
 
 ### 可选字段
 
-- `author`、`tags`（≤5 个）、`tools`（支持的客户端）、`category`、`date_added`、`source_repo` / `source_type`（外部来源时）
+- `category`、`risk`、`allowed-tools`（可选最小权限白名单）（来源/作者/日期/版本等元数据不进 frontmatter，见「创建记录账本」）
 
 字段细节与分类值见 `SKILL.md`「前置元数据字段规范」，完整字段参考随需读取（`SKILL.md`「读取规则」导读）。
 
