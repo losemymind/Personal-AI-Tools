@@ -4,7 +4,7 @@
 
 ## 仓库状态速览
 
-- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ `e819536` 真机评测隔离化 + 独立审计两轮修复（0.9.5-0.9.18，见 §E/§F/§G）→ `dfaf829` 交接状态修正 → 本会话五轮副agent循环审计修复（skill-creator 0.9.22 / agent-creator 0.7.4）。**origin/main 已同步；CI 在 `dfaf829` 三 job 全绿（run 34480215967），本次推送后应再跑 CI。**
+- git：`main`，origin = `losemymind/Personal-AI-Tools`。历史提交：`6824c79` 仓库结构 → `35ca36d` 双创建器工作区/适配器/CATALOG → `46830ca` evals 键名漂移 → `e20fff1` agent 评审闭环 → `79600a2` 加固验证器/评测链 → `cc0962f` 入库 mcp-builder/ue5 → `d486a26` 修复 metrics.json 契约 → `25f03f5` 补验证器缺口 → `8096810` 清四项内部债（0.9.3）→ `192c905` 打通真机无头 CLI（0.9.4）→ `e819536` 真机评测隔离化 + 独立审计两轮修复（0.9.5-0.9.18，见 §E/§F/§G）→ `dfaf829` 交接状态修正 → `232167c` 五轮副agent循环审计修复（skill-creator 0.9.22 / agent-creator 0.7.4）。**origin/main 已同步；CI 在该提交三 job 全绿（run 34550070079）。**
 - 两工作区**同构精简**（无 `build/`、成品无 `AGENTS.md`、`INSTALL.md` 在工作区根、成品 `SKILL.md` 为唯一入口）；发布检查差异只因**成品自校验能力不同**（skill-creator 有 `validate_skills.py --strict`；agent-creator 自包含扫描落在 pytest）。
 - 能力库：`skills/` = **5 技能**（development/code-review-skill、development/mcp-builder、game-development/ue5-performance-optimization、git/pr-summarizer、product-design/prd-generator）；`agents/` = 32 代理（academic×5 / code-quality×2 / ue-game-studio×25）。
 - 版本：**skill-creator 0.9.22**、**agent-creator 0.7.4**。
@@ -256,7 +256,7 @@
 - **反复被推翻的「达标」**：每次子代理判定「无可复现缺陷」后，下一轮换角度用运行期探针都能推翻并发现真实缺陷（孪生不对称、安全续行/引号绕过、隐藏目录凭据盲区、验证器 fail-open、脚手架 YAML 转义等）。合计本会话修复 **skill 13 项 + agent 33 项**。
 - **主agent独立复核（收尾时实跑全绿）**：agent pytest **64**、skill pytest **167**；agent 库 strict **32**；skill 成品 strict **1** / 能力库 strict **5**；索引 skill **4 源 2187** / agent **3 源 568**；`build_catalog.py --check` 两库 up to date。
 - **两项设计边界（经用户确认「保持现状，仅文档记录」）**：① `validate_agents.py` 不传 `--dir` 时扫 0 个仍全绿（显式 `--dir` 已 fail-loud）；② `adapt_for_opencode` 同时给 `tools` 白名单与 `permission` 字符串简写时丢弃白名单、保留全局简写（放大权限，靠 note 提示）。**不属缺陷，勿擅自收严**（收严会改变验证器/适配器语义，需再次用户确认）。
-- 已按铁律 3 收尾：发布门全绿 + 文档/evolutions/版本/CATALOG 同步 + 本 HANDOFF 更新为第 16 版，随后由主agent提交并推送。
+- 已按铁律 3 收尾：发布门全绿 + 文档/evolutions/版本/CATALOG 同步 + 本 HANDOFF 更新为第 16 版，随后由主agent提交并推送。提交 **`232167c`**（`39195da..232167c`），CI 三 job 全绿（run 34550070079）。
 
 ## 已知待办 / 潜在风险
 
