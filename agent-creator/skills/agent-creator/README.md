@@ -13,6 +13,7 @@ agent-creator/
     validate_agents.py              # 自动验证器（frontmatter/边界/权限/协作/链接/密钥与危险管道扫描）
     compare_agents.py               # 自建 vs 上游候选对比择优（质量7维+结构4维）
     adapt_agent.py                  # 安装前 frontmatter 四端转换器（claude/opencode 适配+post-check）
+    package_agent.py                # 代理目录打包器（按端适配 frontmatter + 复制整目录 + post-check）
     search_agent_index.py           # 检索上游代理索引（FTS5/CJK/分类过滤）
     build_agent_index.py           # 构建上游代理索引（三源：agency/ccgs/agency-zh）
     security_scan.py                # 密钥/危险远程执行管道扫描（被 validate_agents.py 复用）
@@ -41,7 +42,8 @@ agent-creator/
 3. 使用 `templates/AGENT.template.md` 作为骨架（或 `create_agent.py` 脚手架）
 4. 运行自动验证：`python scripts/validate_agents.py --dir <你的代理目录>`
 5. 安装到客户端：本技能自身的安装 = 把本目录放置到目标客户端 skills 目录；产出的代理**先 `scripts/adapt_agent.py <目录> --client <claude|opencode|codex|deepseek>` 转换 frontmatter，再把产物放置**到目标客户端 agents 目录（命令与落点见 SKILL.md「多客户端安装指引」/阶段 7）
-6. 经验证的代理归档到可分发位置
+6. 需要把同一代理目录一次打包给多个客户端时，用 `scripts/package_agent.py <代理目录|AGENT.md> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]`（复制整棵代理目录 + 各端适配 + post-check；用法见 SKILL.md 阶段 7）
+7. 经验证的代理归档到可分发位置
 
 ## 技能 vs 代理
 

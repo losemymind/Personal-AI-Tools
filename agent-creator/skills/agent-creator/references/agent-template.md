@@ -60,6 +60,8 @@ tools_clients: [claude, opencode, codex, deepseek]
 
 任何客户端 post-check 不通过时适配器**拒绝产出/写盘**（fail loudly）。具体转换规则由 `scripts/adapt_agent.py` 实现（移植自 personal-workflow `tools/scripts/agent_format.py`，原为 install/update launcher 的适配层；本仓库无 launcher，故作为复制前的转换步骤）。
 
+**整目录打包**：需要把同一个代理目录一次产出多端（并复制整棵目录、附同名压缩包）时，用 `scripts/package_agent.py <代理目录|AGENT.md> --client <端>… --out <产物目录> [--zip]`（用法见 SKILL.md 阶段 7）。它复用上表的适配与 post-check；注意其 opencode 转换对 `tools` 白名单与 `permission` **字符串简写**并存的情况会**丢弃简写**（保留会放大权限），把白名单物化为逐工具 `permission`——这是相对 `adapt_agent.py` 的权限放大修复。
+
 ## 章节要求（AGENT.md 主体）
 
 **必需章节**：角色定位、职责范围（必须做/拒绝做）、工具与权限

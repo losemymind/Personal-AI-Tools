@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流代理（Agents）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.7.5"
+version: "0.8.0"
 date_added: "2026-09-02"
 author: losemymind
 tags: [agent-creator, agents, workflow, llm-clients]
@@ -227,6 +227,13 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
   # codex / deepseek：无官方 frontmatter 规范，适配器仅做 YAML 校验后逐字节原样输出
   ```
 - **直接放置**：转换产物按目标客户端官方文档说明放入 agents 目录（兼容矩阵与落点见「多客户端安装指引」）。
+- **整目录打包（多端产物）**：需要把**同一个代理目录**适配给多个客户端时，用打包器一键生成各端产物（自动复制整棵代理目录 + frontmatter 适配 + 该端 post-check，避免手改漂移）：
+
+  ```bash
+  python scripts/package_agent.py <代理目录|AGENT.md> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]
+  ```
+
+  产物布局为 `<产物目录>/<客户端>/<代理名>/`（`--zip` 另出同名压缩包，代理名取 frontmatter `name`，缺失时回退目录名/文件名），把该目录放到目标客户端的 agents 目录即可。与单文件适配器 `scripts/adapt_agent.py` 的关系：`adapt_agent.py` 只转换**一个** AGENT.md（写文件/标准输出），`package_agent.py` 则转换**并复制整棵代理目录**、一次产出多端并做同名压缩。关键适配：opencode 端把 `tools` 工具白名单合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；claude 端把工具白名单转成逗号分隔的 Claude 工具名、把 provider 前缀 `model` 简化为 alias（无法映射则丢弃）；`tools: [claude, opencode, …]` 这类「支持客户端」元数据不会被误当成工具白名单。各端适配结果均过该端 post-check，不合格不出包。
 
 ### 阶段 8：沉淀稳定代理
 

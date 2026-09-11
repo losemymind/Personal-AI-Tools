@@ -38,7 +38,7 @@ python scripts/validate_agents.py --strict --dir ./install-check-tmp
 python scripts/search_agent_index.py --stats
 ```
 
-完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（5 个脚本）、`indexes/upstream.db`、`references/`、`templates/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db`）都会导致方法论不完整。
+完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（9 个脚本，含 `package_agent.py`）、`indexes/upstream.db`、`references/`、`templates/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db`）都会导致方法论不完整。
 
 ## 2. 安装（放置目录）
 

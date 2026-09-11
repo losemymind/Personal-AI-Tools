@@ -32,6 +32,18 @@ agent-creator/                     ← 开发工作区（本目录）
 python -m pytest tests/ -q        # 含成品自包含自检（引用不悬空、无 AGENTS.md/INSTALL.md 残留）
 ```
 
+## 打包代理（成品脚本）
+
+把成品 `skills/agent-creator/` 产出的**代理目录**一次适配给多个客户端时，用成品内 `scripts/package_agent.py`（用法与适配规则见成品 `SKILL.md` 阶段 7）：
+
+```bash
+python skills/agent-creator/scripts/package_agent.py <代理目录|AGENT.md> \
+  --client claude --client opencode --client codex --client deepseek \
+  --out <产物目录> [--zip]
+```
+
+产物布局 `<产物目录>/<客户端>/<代理名>/`，各端先适配 frontmatter 再做 post-check，不合格不出包。它是单文件适配器 `scripts/adapt_agent.py` 的整目录/多端对应物，并修复了 opencode 端 permission 字符串简写放大权限的缺陷。
+
 ## 提交说明
 
 本目录改动技能后，跑通上方命令即可 commit/push。
