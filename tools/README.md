@@ -19,7 +19,7 @@
 | 产物 | 打包器（宿主成品） | 前言关键字段 | 备注 |
 |---|---|---|---|
 | 库技能 `skills/<分类>/<name>/`（含 `SKILL.md`） | `skill-creator/.../scripts/package_skill.py` | `allowed-tools`=白名单（技能无 `tools`/`tags`/`version`/来源字段：打包前客户端中立） | 5 个：code-review-skill / mcp-builder / ue5-performance-optimization / pr-summarizer / prd-generator |
-| 库代理 `agents/<分类>/<name>/`（含 `AGENT.md`） | `agent-creator/.../scripts/package_agent.py` | `tools`=**真白名单**、`permission`=权限图（`tools_clients` 已移除——打包前客户端中立） | 32 个 |
+| 库代理 `agents/<分类>/<name>/`（含 `AGENT.md`） | `agent-creator/.../scripts/package_agent.py` | `tools`=**真白名单**、`permission`=权限图（`tools_clients` 已移除——打包前客户端中立） | 7 个 |
 | `skill-creator` 成品 | `package_skill.py`（它自己就是 skill） | 技能 schema（无 `tools`/`tags`/`version`/来源字段） | `skill-creator/skills/skill-creator/` |
 | `agent-creator` 成品 | `package_skill.py`（它自己就是 skill，**不是** agent） | 技能 schema（无 `tools`/`tags`/`version`/来源字段） | `agent-creator/skills/agent-creator/` |
 

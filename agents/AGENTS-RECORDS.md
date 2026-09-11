@@ -8,35 +8,10 @@
 |---|---|---|---|---|---|---|---|
 | code-reviewer | subagent | 2026-09-02 | losemymind | self | - | created | - |
 | code-simplifier | subagent | 2026-09-03 | anthropics | community | anthropics/claude-plugins-official | imported | 2026-09-03-import-code-simplifier.md |
-| anthropologist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| geographer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| historian | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| narratologist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| psychologist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| lead-game-balance-designer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| lead-game-economy-designer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| level-mission-designer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| audiovisual-director | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| game-director | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| game-producer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| technical-director | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| orchestration-director | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| game-asset-production-manager | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| game-visual-asset-artist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| localization-lqa-specialist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| asset-compliance-auditor | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| qa-test-specialist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| security-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| character-animation-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| game-ai-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| game-audio-technical-specialist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| performance-profiler | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-build-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-core-systems-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-gameplay-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-technical-art-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-tools-pipeline-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-ui-engineer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
-| ue-world-builder | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | 2026-09-03-compare-migrated-ue-agents.md |
+| anthropologist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | - |
+| geographer | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | - |
+| historian | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | - |
+| narratologist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | - |
+| psychologist | subagent | 2026-09-03 | UEGameStudio | external | UEGameStudio/UEGameStudio | migrated | - |
 
 > `evolutions` 列对应创建器成品 `agent-creator/skills/agent-creator/evolutions/` 中的对比/导入记录文件名。

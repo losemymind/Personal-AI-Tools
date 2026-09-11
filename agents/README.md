@@ -17,39 +17,28 @@
 
 ## 目录结构约定
 
-代理按 **类别 + layer 分层目录**组织。`academic/` 是**公共/通用代理**（不随 UE 包移动）；`ue-game-studio/` 是 **UE 游戏开发专用安装包**（6 个 layer 子目录，含安装清单 README 与协作规则 AGENTS.md）；`code-quality/` 为通用代码质量代理分类。分层由目录结构承载，不再使用 frontmatter `tags`。
+代理按 **类别 + layer 分层目录**组织。`academic/` 是**公共/通用代理**（学术研究层）；`code-quality/` 为通用代码质量代理分类。分层由目录结构承载，不再使用 frontmatter `tags`。
 
 ```
 agents/
 ├── README.md
 ├── CATALOG.md             # 能力目录（自动生成：tools/scripts/build_catalog.py，禁止手改）
-├── academic/              # 公共通用代理（学术研究层，不随 UE 包移动）
+├── academic/              # 公共通用代理（学术研究层）
 │   └── anthropologist/    #   人类学家/地理学家/历史学家/叙事学家/心理学家…
 ├── code-quality/          # 通用代码质量代理
 │   ├── code-reviewer/     #   常驻代码审查（PR/diff 多轴审查）
 │   └── code-simplifier/   #   简化重构最近改动
-├── ue-game-studio/        # UE 游戏开发专用安装包
-│   ├── AGENTS.md          #   UEGameStudio 项目级协作规则（源 AGENTS.md）
-│   ├── README.md          #   安装清单：要装哪些 agent + 冲突处理策略
-│   ├── design/            #   设计层（数值/经济/关卡与任务设计）
-│   ├── directors/         #   决策层（游戏总设计师/技术总监/制作人/视听总监）
-│   ├── orchestration/     #   总控编排层（orchestration-director）
-│   ├── production/        #   生产层（资产管理/视觉资产/本地化 LQA）
-│   ├── qa/                #   QA 层（合规审计/测试/安全）
-│   └── technical/         #   技术层（UE 核心系统/Gameplay/AI/动画/UI/工具管线等）
 └── <顶层分类>/<agent-name>/   # 其他通用分类代理（kebab-case，与 frontmatter 的 name 一致）
 ```
-
-> `ue-game-studio/README.md` 是安装时的**权威清单**：列出该包在 UE 游戏项目中要安装的全部 agent，并引用 `academic/` 公共代理；**安装冲突时必须让用户选择保留哪一个**（本包版本/目标已有/并存改名/跳过），确认前不覆盖目标文件。
 
 ## 领域分层（目录约定）
 
 代理的领域分层由**目录结构**表达（不写 frontmatter `tags`）：
 
-- `layer`：代理在协作体中的分层 = `agents/` 下的第一层分类目录（academic / design / directors / orchestration / production / qa / technical / code-quality）
-- `domain`：适用域由顶层包目录表达（如 `ue-game-studio/` 标识源自 UEGameStudio 项目组）
+- `layer`：代理在协作体中的分层 = `agents/` 下的第一层分类目录（academic / code-quality）
+- `domain`：适用域由顶层分类目录表达
 
-示例：`ue-gameplay-engineer` 位于 `agents/ue-game-studio/technical/`；`game-director` 位于 `agents/ue-game-studio/directors/`；`anthropologist` 位于 `agents/academic/`。目录放置即分类，无需 `tags` 字段。
+示例：`anthropologist` 位于 `agents/academic/`；`code-reviewer` 位于 `agents/code-quality/`。目录放置即分类，无需 `tags` 字段。
 
 ## 与 agent-creator 的关系
 
@@ -59,7 +48,7 @@ agents/
   python tools/scripts/install.py agents/<分类>/<name> --client claude --scope workspace --dest <目标仓库根>
   ```
   落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`（**单数**）；工作区版本放 `<项目根>/.<客户端>/<agents|agent>/`。纯复制仅作无该脚本时的回退（先 `adapt_agent.py` 转换再复制）。
-- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` + `ue-game-studio/` 30 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。`install.py`/`package_agent.py` 会按目标端适配并 post-check，无需手工转换。
+- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` 5 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。`install.py`/`package_agent.py` 会按目标端适配并 post-check，无需手工转换。
 - 代理更新/卸载 → 更新即重装覆盖（`--force`）；卸载即删除目标副本（本仓库无独立 manifest 生命周期工具）。
 
 ## 能力目录（CATALOG.md）

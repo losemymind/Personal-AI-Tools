@@ -3,7 +3,7 @@
 ## 基本信息
 - 日期：2026-09-03
 - 需求：创建 `code-simplifier` 代理，数据来源为用户指定的 `https://github.com/anthropics/claude-plugins-official/blob/main/plugins/code-simplifier/agents/code-simplifier.md`
-- 本地候选 A：`agents/CATALOG.md` 无 code-simplifier（仅有 code-reviewer/academic/ue-game-studio）→ **A 为空**
+- 本地候选 A：`agents/CATALOG.md` 无 code-simplifier（仅有 code-reviewer/academic）→ **A 为空**
 - 上游索引检索：`search_agent_index.py "simplify code refactor"` → 0 命中（三源 agency/ccgs/agency-zh 均无）→ 上游索引无候选
 - 上游 B：官方 Anthropic `anthropics/claude-plugins-official` 的 `plugins/code-simplifier/agents/code-simplifier.md`（52 行，单文件，`model: opus`，无模式/权限/协作/完成标准章节）
 

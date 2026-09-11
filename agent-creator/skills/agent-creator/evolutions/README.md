@@ -4,7 +4,7 @@
 
 | 类型 | 文件名 | 场景 | 真实示例 |
 |---|---|---|---|
-| 择优对比 | `<YYYY-MM-DD>-compare-<代理名>.md` | 自建代理 vs 上游候选对比择优 | `2026-09-03-compare-migrated-ue-agents.md` |
+| 择优对比 | `<YYYY-MM-DD>-compare-<代理名>.md` | 自建代理 vs 上游候选对比择优 | （暂无真实记录） |
 | 上游导入 | `<YYYY-MM-DD>-import-<代理名>.md` | 本地无候选（A 空），按用户指定直接导入上游并适配 | `2026-09-03-import-code-simplifier.md` |
 | 采纳升级 | `<YYYY-MM-DD>-adopt-<主题>.md` | 采纳上游/孪生的纪律、工具或方法论的升级记录 | `2026-09-09-adopt-ref-description-release-discipline.md` |
 | 审计复查 | `<YYYY-MM-DD>-audit-<主题>.md` | 独立审计发现的缺陷/债务及其修复复查 | `2026-09-10-audit-round4.md` |
