@@ -21,6 +21,7 @@ import re
 import sys
 
 from _project_paths import find_skill_root
+from package_skill import CLIENT_LABELS, PackageError, normalize_allowed_tools
 from utils import (
     fenced_ranges,
     find_dangerous_pipes,
@@ -103,9 +104,8 @@ TEXT_SCAN_EXTS = {
 }
 
 # Credential-bearing files with no (or a misleading) extension, matched by exact
-# name. Kept in sync with the agent-side scanner (`security_scan.py`). Includes
-# extensionless files common inside hidden dirs (`.aws/credentials`) and shell rc
-# files that frequently export tokens.
+# name. Includes extensionless files common inside hidden dirs (`.aws/credentials`)
+# and shell rc files that frequently export tokens.
 SENSITIVE_DOTFILES = {
     ".netrc", ".git-credentials", ".npmrc", ".pgpass", ".htpasswd",
     ".dockercfg", ".envrc", "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519",
@@ -192,6 +192,34 @@ def check_evals_file(evals_path: str, rel_path: str) -> list[str]:
         if not isinstance(item.get("should_trigger"), bool):
             errs.append(f"❌ {rel_path}: evals[{i}].should_trigger must be a boolean.")
     return errs
+
+
+def check_allowed_tools(metadata: dict, rel_path: str) -> list[str]:
+    """Statically enforce the optional `allowed-tools` whitelist shape.
+
+    Packaging (`package_skill.py`) is otherwise the only stage that rejects a
+    malformed whitelist, so `allowed-tools: {Read: true}` or a client-label list
+    could pass the release gate and only fail (or silently degrade) at package
+    time. Reuse the packager's canonicalizer so the validator and the packager
+    can never disagree on what a valid whitelist is.
+    """
+    if "allowed-tools" not in metadata:
+        return []
+    try:
+        names = normalize_allowed_tools(metadata["allowed-tools"], rel_path)
+    except PackageError as e:
+        return [f"❌ {e}"]
+    if not names:
+        return [
+            f"❌ {rel_path}: 'allowed-tools' whitelist is empty — omit the key or list "
+            "at least one tool name."
+        ]
+    if all(n.lower() in CLIENT_LABELS for n in names):
+        return [
+            f"❌ {rel_path}: 'allowed-tools' listed client labels ({', '.join(names)}), "
+            "not tool names — a whitelist must use Claude tool names (e.g. Read, Grep)."
+        ]
+    return []
 
 
 def check_references_cross_links(root: str, rel_path: str) -> list[str]:
@@ -375,6 +403,10 @@ def collect_validation_results(skills_dir: str, strict_mode: bool = False) -> di
 
         if "category" not in metadata:
             advisories.append(f"ℹ️  {rel_path}: Missing 'category' field (recommended)")
+
+        # 2b. allowed-tools whitelist shape (optional key; enforced here so a
+        # malformed whitelist fails the release gate instead of only the packager).
+        errors.extend(check_allowed_tools(metadata, rel_path))
 
         # 3. Content checks (triggers)
         if not has_when_to_use_section(content):

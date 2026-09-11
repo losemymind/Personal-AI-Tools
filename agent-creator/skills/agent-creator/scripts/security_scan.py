@@ -1,9 +1,8 @@
 """Security scanning for agent-creator release gates (self-contained).
 
 Sweeps AGENT.md and the text/code files bundled with an agent directory for
-inline credentials and dangerous remote-execution pipelines. Mirrors the
-security discipline already enforced for skills by skill-creator's validator,
-adapted to this skill's self-contained layout (no shared utils module).
+inline credentials and dangerous remote-execution pipelines, adapted to this
+skill's self-contained layout (no shared utils module).
 
 Design (same guarantees as the skill-side scanner):
   - A `<!-- security-allowlist -->` marker is a LOCAL exception: it excuses only
@@ -261,7 +260,7 @@ def _normalize_shell_text(segment: str) -> str:
     `_normalize_token`) so `ba"sh"` is the same invocation as `bash`. This
     defeats the *common* evasions without turning the scanner into a shell
     parser: exotic indirection (variable expansion/`eval`/base64) stays outside
-    a static scanner's remit. Kept in sync with skill-creator's `utils.py`.
+    a static scanner's remit.
     """
     s = re.sub(r"\$\{IFS(?::-[^}]*)?\}|\$IFS", " ", segment)
     s = re.sub(r"\\(.)", r"\1", s)

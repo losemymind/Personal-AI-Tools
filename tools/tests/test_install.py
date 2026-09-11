@@ -121,6 +121,39 @@ def test_install_creator_product(tmp_path):
     assert (target / "scripts" / "validate_skills.py").is_file()
 
 
+def test_install_agent_creator_product(tmp_path):
+    # agent-creator is a skill-shaped creator that BUNDLES validate_agents.py
+    # (for AGENT libraries) but has no AGENT.md itself. Install must not run the
+    # agent validator against the creator dir (regression: it used to fail with
+    # "no agent definitions found" and roll back).
+    r = run_install("--creator", "agent-creator", "--client", "opencode",
+                    "--scope", "workspace", "--dest", str(tmp_path))
+    assert r.returncode == 0, r.stdout + r.stderr
+    target = tmp_path / ".opencode" / "skills" / "agent-creator"
+    assert (target / "SKILL.md").is_file()
+    assert (target / "scripts" / "validate_agents.py").is_file()
+    assert not (target / "AGENT.md").exists()
+
+
+def test_creators_install_independently(tmp_path):
+    # Each creator installs on its own without the other present in the landing.
+    a = tmp_path / "a"
+    b = tmp_path / "b"
+    a.mkdir()
+    b.mkdir()
+    r1 = run_install("--creator", "skill-creator", "--client", "claude",
+                     "--scope", "workspace", "--dest", str(a))
+    assert r1.returncode == 0, r1.stdout + r1.stderr
+    assert (a / ".claude" / "skills" / "skill-creator" / "SKILL.md").is_file()
+    assert not (a / ".claude" / "skills" / "agent-creator").exists()
+
+    r2 = run_install("--creator", "agent-creator", "--client", "claude",
+                     "--scope", "workspace", "--dest", str(b))
+    assert r2.returncode == 0, r2.stdout + r2.stderr
+    assert (b / ".claude" / "skills" / "agent-creator" / "SKILL.md").is_file()
+    assert not (b / ".claude" / "skills" / "skill-creator").exists()
+
+
 def test_unknown_creator_is_arg_error(tmp_path):
     r = run_install("--creator", "nope", "--client", "claude",
                     "--scope", "workspace", "--dest", str(tmp_path))

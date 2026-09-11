@@ -7,7 +7,7 @@
 > ```bash
 > python tools/scripts/install.py --creator agent-creator --client <claude|opencode|codex> --scope <global|workspace> --dest <目标仓库根>
 > ```
-> 下方「复制」流程是**无该脚本时的回退**。
+> 下方「复制」流程是**无该脚本时的回退**；LLM 客户端也可按成品 `SKILL.md`「多客户端安装指引 → 自安装」直接执行（不使用本仓库工具）。
 
 ## 0. 安装作用域（执行前必须询问用户）
 

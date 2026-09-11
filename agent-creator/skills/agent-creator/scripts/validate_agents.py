@@ -2,7 +2,7 @@
 
 Part of the agent-creator skill (see SKILL.md).
 Checks frontmatter schema, identity/boundary/permission/collaboration
-sections, and dangling local references. Parallel to validate_skills.py.
+sections, and dangling local references.
 
 Usage:
     python scripts/validate_agents.py [--dir <agents_dir>] [--strict]
@@ -278,7 +278,7 @@ def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> di
                 elif len(desc) > 300:
                     errors.append(f"❌ {rel_path}: Description is oversized ({len(desc)} chars). Must be concise.")
                 else:
-                    # Trigger-surface discipline (mirror of validate_skills.py):
+                    # Trigger-surface discipline:
                     # description is the only always-loaded field — keep it single-line
                     # and free of angle-bracket placeholders so trigger matching stays
                     # reliable. Advisory only, never a failure.

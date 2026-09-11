@@ -12,7 +12,7 @@
 - `description`：≤1024 字符（验证器上限 1024），**单行、无 `<`/`>` 占位符、触发场景优先 + 一句能力定位**，不写执行步骤/流程阶段摘要；`description` 是唯一无条件加载的触发面，须**自足**覆盖触发场景（触发面规律见 SKILL.md「读取规则」中的写作规律文档 §6）
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一
 - `category`：推荐（验证器给出提示）
-- `allowed-tools`：可选最小权限白名单（Claude 工具名；打包时按端映射，见阶段 9）
+- `allowed-tools`：可选最小权限白名单（Claude 工具名；形状由验证器自动校验，打包时按端映射，见阶段 9）
 - 来源/作者/日期/版本（`source`/`source_repo`/`source_type`/`author`/`date_added`/`version`）**不进 frontmatter**，来源登记在技能库根的创建记录账本（见 SKILL.md「创建记录账本」），版本以 git 提交历史为准
 
 ### 2. 清晰的触发条件（自动）

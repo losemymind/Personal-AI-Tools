@@ -266,12 +266,22 @@ def _run_validator(script: Path, *args: str) -> subprocess.CompletedProcess:
     )
 
 
+# A bundled validator only applies when the installed unit is the kind it
+# validates. A skill-shaped creator product can carry validate_agents.py (the
+# agent-creator ships it to validate AGENT libraries) while itself having no
+# AGENT.md — running it there would fail with "no agent definitions found".
+_VALIDATOR_ENTRY = {
+    "validate_skills.py": "SKILL.md",
+    "validate_agents.py": "AGENT.md",
+}
+
+
 def validate_install(kind: str, final: Path) -> None:
     _generic_frontmatter_ok(kind, final)
     scripts = final / "scripts"
-    for validator in ("validate_skills.py", "validate_agents.py"):
+    for validator, entry in _VALIDATOR_ENTRY.items():
         v = scripts / validator
-        if v.is_file():
+        if v.is_file() and (final / entry).is_file():
             r = _run_validator(v, "--strict", "--dir", str(final))
             if r.returncode != 0:
                 raise UnitError(f"self-validation failed ({validator}):\n{r.stdout}{r.stderr}")

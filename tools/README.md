@@ -99,7 +99,7 @@ target 解析
 ### 5.4 验证关卡
 
 - **通用**：适配后的 SKILL.md/AGENT.md 能被 YAML 解析、`name`/`description` 就位。
-- **自带验证器者**：若产物含 `scripts/validate_skills.py`/`validate_agents.py`（两创建器成品），放置后跑 `--strict --dir <安装目录>`；失败即**回滚**（删新、还原备份）。
+- **自带验证器者**：若产物含 `scripts/validate_skills.py`/`validate_agents.py`，放置后跑 `--strict --dir <安装目录>`；失败即**回滚**（删新、还原备份）。**验证器只在产物根部存在其所校验的入口文件时才运行**（`validate_skills.py`→`SKILL.md`、`validate_agents.py`→`AGENT.md`）：`agent-creator` 是技能形态的创建器，虽分发 `validate_agents.py`（用于校验 AGENT 库）但自身无 `AGENT.md`，不得拿它校验创建器目录（见 2026-09-11 沿革）。
 - **索引**：若含 `indexes/upstream.db`，跑对应 `search_*_index.py --stats` 核对（创建器成品）。
 - 任一项失败 → 该单元不落（回滚），退出码 1；不带病交付。
 
@@ -205,6 +205,7 @@ target 解析
 
 ## 设计沿革
 
+- **2026-09-11（独立性门 + 修复 `--creator agent-creator`）**：新增 `tools/tests/test_creators_independent.py`（零交叉引用扫描：两成品互不出现对端名称与脚本名；无跨成品 import）与两工作区 `tests/test_independence.py`（成品复制到仓库外仍可自校验/自跑工具链）。修复 `install.py` 的 `validate_install`——验证器仅在产物含对应入口文件时运行，`--creator agent-creator` 由此恢复 rc=0（此前误用其分发的 `validate_agents.py` 校验技能形态创建器目录而回滚）；`tools/tests` 补两例。自安装（不依赖 `install.py`）改为**纯文档流程**写进两成品 `SKILL.md`「多客户端安装指引」（LLM 直接执行：定位→落点→复制→自检→清缓存），`INSTALL.md` 仍是 dev-only 手册。
 - **2026-09-11（P3/P4 完成）**：文档收敛（根 `AGENTS.md`/`README.md`、两份 `INSTALL.md`、两库 README、CI 新增 tools job）；两创建器 `evolutions/` 各记 `2026-09-11-install-orchestrator.md`。**P1–P4 全部完成。**
 - **2026-09-11（P2 实现）**：新增 `tools/scripts/install.py`（完整编排：自动检测客户端 / 派发 / 落点 / staging / 放置 / `--force` 备份 / 自检回滚 / 缓存清理）与 `tools/tests/`（18 例）；§12 五项待决定案。真实库技能/代理/创建器安装冒烟通过。
 - **2026-09-11（P1 实现）**：`package_skill.py` 支持 `allowed-tools` 按端映射（claude 规范化逗号串；opencode 经 `CLAUDE_TO_OPENCODE` 反查并入逐工具 `permission`；codex/deepseek 透传）；与旧 `tools` 白名单并集；客户端标签输入报错。补 8 例 pytest；真实库技能四端打包冒烟通过。技能 frontmatter 文档补记 `allowed-tools` 为可选字段。

@@ -22,6 +22,9 @@ TEMPLATE_PATH = SCRIPT_DIR.parent / "templates" / "AGENT.template.md"
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 MODES = ["primary", "subagent", "all"]
+# Tool names that grant state-changing edits. The scaffold's default safety
+# posture (`permission: edit: deny`) must not contradict an explicit whitelist.
+EDIT_TOOL_ALIASES = {"edit", "write", "patch"}
 
 # Central creation-record ledger (provenance/author/date live here, not in
 # AGENT.md frontmatter — an agent is client-neutral before packaging, and
@@ -103,7 +106,25 @@ def ask_name() -> str:
         return value
 
 
+def _render_body_tools(tools) -> tuple[str, str, bool]:
+    """Derive the body's allowed/forbidden tool prose from the whitelist.
+
+    Returns (allowed, forbidden, editing_allowed). The body must never show a
+    hard-coded tool list: it previously said ``read grep bash`` regardless of
+    ``--tools``, so a scaffold could list a tool it was not granted (or omit one
+    it was) — a contradiction between frontmatter and body.
+    """
+    editing_allowed = any(t in EDIT_TOOL_ALIASES for t in tools)
+    allowed = " ".join(f"`{t}`" for t in tools) if tools else "（无）"
+    if editing_allowed:
+        forbidden = "（无——编辑类工具已显式列入白名单，请自行界定边界）"
+    else:
+        forbidden = "`edit`（除非职责需要，否则默认拒绝）"
+    return allowed, forbidden, editing_allowed
+
+
 def build_agent_md(name, description, mode, tools) -> str:
+    allowed, forbidden, editing_allowed = _render_body_tools(tools)
     if TEMPLATE_PATH.exists():
         content = TEMPLATE_PATH.read_text(encoding="utf-8-sig")
         content = content.replace("your-agent-name", name)
@@ -128,16 +149,27 @@ def build_agent_md(name, description, mode, tools) -> str:
             count=1,
             flags=re.MULTILINE,
         )
+        # An explicit edit-family whitelist must not be silently denied by the
+        # boilerplate `permission: edit: deny` (the packaged permission graph
+        # would let the explicit deny win, contradicting `tools`).
+        if editing_allowed:
+            content = re.sub(
+                r"^permission:[^\n]*\n(?:[ \t]+[^\n]*\n)*",
+                "",
+                content,
+                count=1,
+                flags=re.MULTILINE,
+            )
+        content = content.replace("{{ALLOWED_TOOLS}}", allowed)
+        content = content.replace("{{FORBIDDEN_TOOLS}}", forbidden)
         return content
-    tools_str = ", ".join(tools)
+    perm_block = "" if editing_allowed else "permission:\n  edit: deny\n"
     return f"""---
 name: {name}
 description: {_yaml_str(description)}
 mode: {mode}
-tools: [{tools_str}]
-permission:
-  edit: deny
----
+tools: [{', '.join(tools)}]
+{perm_block}---
 
 # {name.replace('-', ' ').title()}
 
@@ -161,8 +193,8 @@ permission:
 
 ## 工具与权限
 
-- 允许：{tools_str}
-- 禁止：edit（默认拒绝，除非职责明确要求）
+- 允许：{allowed}
+- 禁止：{forbidden}
 
 ## 协作协议
 
@@ -222,8 +254,7 @@ def main() -> int:
 
     # validate_agents.py rejects an empty/whitespace-only description and one
     # longer than 300 chars; the scaffold promises its output validates, so refuse
-    # up front instead of emitting a file that immediately fails its own gate
-    # (mirrors create_skill.py).
+    # up front instead of emitting a file that immediately fails its own gate.
     if not description.strip():
         print("❌ 描述不能为空白（validate_agents.py 会拒绝）")
         return 1

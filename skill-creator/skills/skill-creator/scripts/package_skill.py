@@ -3,8 +3,7 @@
 Part of the skill-creator skill (see SKILL.md stage 9). Packaging = adapt the
 SKILL.md frontmatter to the client's schema, copy the whole skill tree (minus
 caches), and run a per-client post-check so a package that would not load is
-never emitted. This is the skill-side counterpart of agent-creator's
-`adapt_agent.py` (same "transform + post-check" discipline).
+never emitted (transform + post-check discipline).
 
 Frontmatter handling (the skill-side twist):
   - `allowed-tools` is the repo's canonical least-privilege whitelist (Claude tool
@@ -59,7 +58,7 @@ TRANSFORM_CLIENTS = ("claude", "opencode")
 CLIENT_LABELS = {"claude", "opencode", "codex", "deepseek"}
 
 # opencode permission keys that gate plain tools. Mechanism keys are never
-# rewritten automatically (mirrors agent-creator's adapt_agent.py).
+# rewritten automatically.
 OPENCODE_TOOL_KEYS = (
     "read", "edit", "glob", "grep", "list", "bash", "task",
     "webfetch", "websearch", "todowrite", "question", "skill",

@@ -30,12 +30,12 @@ skills/
 
 - `name`：小写-连字符，**必须与文件夹名称完全一致**。示例：`stripe-integration`
 - `description`：触发场景优先 + 一句能力定位，≤1024 字符（验证器上限 1024），前端加载触发关键词，**不写步骤/流程摘要**（实证原因见 `SKILL.md`「读取规则」中写作规律文档）
+- `category`：分类值（见 `SKILL.md`「前置元数据字段规范」；验证器给出提示）
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown`
-- `source`：来源归属，`self` 表示原创
 
 ### 可选字段
 
-- `category`、`risk`、`allowed-tools`（可选最小权限白名单）（来源/作者/日期/版本等元数据不进 frontmatter，见「创建记录账本」）
+- `allowed-tools`：可选最小权限白名单（Claude 工具名，形状由验证器自动校验；来源/作者/日期/版本等元数据不进 frontmatter，见「创建记录账本」）
 
 字段细节与分类值见 `SKILL.md`「前置元数据字段规范」，完整字段参考随需读取（`SKILL.md`「读取规则」导读）。
 

@@ -3,11 +3,10 @@
 Part of the agent-creator skill (see SKILL.md stage 7). Packaging = adapt the
 AGENT.md frontmatter to the client's schema, copy the whole agent tree (minus
 caches), and run a per-client post-check so a package that would not load is
-never emitted. This is the agent-side counterpart of skill-creator's
-`package_skill.py` (same "transform + post-check" discipline), and it reuses the
-schema checks/constants of `adapt_agent.py`.
+never emitted (transform + post-check discipline), reusing the schema
+checks/constants of `adapt_agent.py`.
 
-Frontmatter handling (mirrors package_skill.py, agent-specific):
+Frontmatter handling (agent-specific):
   - A `tools` list whose entries are client labels (`claude`/`opencode`/...) is
     "supported-clients" metadata, NOT a tool whitelist. It is dropped for
     claude/opencode and left as-is for codex/deepseek (best-effort passthrough).

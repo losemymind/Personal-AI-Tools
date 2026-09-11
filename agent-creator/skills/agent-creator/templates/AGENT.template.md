@@ -29,8 +29,8 @@ permission:
 
 ## 工具与权限
 
-- 允许：`read` `grep` `bash`（仅完成职责所需，最小权限）
-- 禁止：`edit`（除非职责需要，否则默认拒绝）
+- 允许：{{ALLOWED_TOOLS}}（仅完成职责所需，最小权限）
+- 禁止：{{FORBIDDEN_TOOLS}}
 
 ## 协作协议
 

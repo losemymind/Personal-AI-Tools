@@ -29,7 +29,7 @@ skill-creator/                     同上（把工作流蒸馏为 SKILL.md 技�
   python tools/scripts/build_catalog.py --check    # 目录过期校验（发布门）
   python tools/scripts/install.py --all skills --client claude --scope workspace --dest <目标仓库根>
   ```
-- **安装 = 经 `tools/scripts/install.py` 打包放置**：把 `skills/<name>` / `agents/<name>`（或 `--creator` / `--all`）按各端 frontmatter 适配后放到客户端落点，并做自检/回滚；跨产物编排与落点矩阵见 `tools/README.md`（权威）。纯复制仅作无该脚本时的**回退**（落点见各库 `README.md`）。
+- **安装 = 经 `tools/scripts/install.py` 打包放置**：把 `skills/<name>` / `agents/<name>`（或 `--creator` / `--all`）按各端 frontmatter 适配后放到客户端落点，并做自检/回滚；跨产物编排与落点矩阵见 `tools/README.md`（权威）。另有两条路径：**LLM 客户端自安装**（按成品 `SKILL.md`「多客户端安装指引 → 自安装」直接放置，不使用本仓库工具）、以及无任何工具时的**纯复制回退**（落点见各库 `README.md`）。
 - `skills/CATALOG.md` 与 `agents/CATALOG.md` 由 `tools/scripts/build_catalog.py` **自动生成**（源自 frontmatter，禁止手改）：LLM 读目录匹配需求 → 命中给复制提示，人类确认后执行；新增/删除/改进能力后**重跑生成器刷新**（发布门校验用 `python tools/scripts/build_catalog.py --check`）。
 - **能力库准入与审计**（新增能力入库须同时满足；与两审计文件 `agents/AGENTS-AUDIT.md` / `skills/SKILLS-AUDIT.md` 对应）：
   1. 入库 `agents/` 的代理**必经 agent-creator**（创建/改进 → 验证 → 对比择优），并在 `agents/AGENTS-AUDIT.md` 登记

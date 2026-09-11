@@ -46,7 +46,7 @@ risk: safe
 
 代理的工具权限遵循**最小权限原则**：只授予完成职责必需的工具。审查代理不该有编辑权限，规划代理不该有执行权限。权限声明清晰可审计（高风险动作显式声明并默认拒绝，必要时请求用户确认）。
 
-### 渐进式披露（与 skill-creator 同构）
+### 渐进式披露
 
 代理定义同样遵循三层加载：frontmatter（元数据，始终在上下文）→ AGENT.md 主体（身份/边界/协作）→ 捆绑资源（references/，按需加载）。主体保持克制（理想 <500 行），细节下沉到 `references/`。
 
@@ -289,7 +289,20 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 
 ## 多客户端安装指引
 
-本技能自身是**技能形态**（SKILL.md + scripts/ + references/…）：安装 = 把本技能目录复制到目标客户端的 **skills** 目录，重启客户端生效（落点：claude `~/.claude/skills/`、opencode `~/.config/opencode/skills/`、codex `~/.agents/skills/`；工作区对应 `<项目根>/.claude/skills/` 等）。安装后用一个真实代理请求触发一次验证。
+本技能自身是**技能形态**（SKILL.md + scripts/ + references/…）：安装 = 把本技能目录复制到目标客户端的 **skills** 目录，重启客户端生效（落点：claude `~/.claude/skills/`、opencode `~/.config/opencode/skills/`、codex `~/.agents/skills/`；工作区对应 `<项目根>/.claude/skills/` 等）。
+
+### 自安装（本技能自身；LLM 客户端直接执行，无需外部工具）
+
+被要求把本技能安装到某客户端时，按序执行，不依赖任何仓库级工具：
+
+1. **定位本技能目录**：按「资源路径基准」的探测顺序定位（codex 用技能列表自带路径）。
+2. **选定作用域与端**（先问用户）：全局（默认）或工作区（**必须落到 git 仓库根**）。
+3. **放置**：把本技能目录**整体**复制到目标客户端的 **skills** 目录（矩阵见上一段），排除 `__pycache__/` 等缓存。
+4. **安装后自检**（本技能工具链自包含，逐项确认可用）：`python scripts/search_agent_index.py --stats`（索引来源与条数）；再跑一次脚手架→验证往返：`python scripts/create_agent.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp`，随后 `python scripts/validate_agents.py --strict --dir ./install-check-tmp`，通过后删除临时目录。
+5. **清理缓存**：删除安装目录内的 `__pycache__/`。
+6. **交付**：提示重启客户端，用真实代理请求触发一次，并输出确切安装路径。
+
+> 覆盖更新：备份已装目录 → 新版本整目录覆盖（目录名不变）→ 重跑第 4 步；卸载 = 删除安装目录（只删本技能副本）。
 
 产出的**代理**本体是单文件 `AGENT.md`（或含 references 的目录 `agents/<name>/`）。安装 = 用 `scripts/adapt_agent.py` 按目标客户端转换 frontmatter → 放到目标客户端的 agents 目录 → 重启客户端生效：
 
@@ -301,10 +314,6 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 | deepseek | 随版本，`DEEPSEEK_HARNESS_ROOT` 兜底 | 同左 |
 
 不同客户端对代理的字段支持不同（兼容矩阵见 `references/agent-template.md`）；仓库规范形 → 目标客户端形的前置转换由 `scripts/adapt_agent.py` 完成（转换失败即退出、不产出无法加载的文件）。
-
-## 相关技能
-
-- `skill-creator` — 创建技能（代理职责内的「怎么做」环节用技能承载）
 
 ## 常见问题
 
