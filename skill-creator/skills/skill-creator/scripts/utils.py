@@ -254,6 +254,12 @@ def keyword_tokens(text: str) -> list[str]:
 def classify(prompt: str, description: str) -> bool:
     """Deterministic heuristic: does the prompt share >=2 distinct meaningful tokens?
 
+    This is a *lexical-coverage proxy metric* (词面覆盖代理指标): it measures shared
+    wording only, never real trigger behaviour. It backs the offline
+    `run_eval --mode heuristic` path; the authoritative signal is `--mode cli`
+    (real client skill dispatch). Its overlap-driven false positives/negatives are
+    inherent to the proxy and are not treated as defects.
+
     Meaningful tokens are latin words (len >= 2) and CJK bigrams (len == 2);
     CJK unigrams are intentionally excluded to avoid single-common-character
     false positives. Tokens are compared as *sets*: a term repeated in the
@@ -455,9 +461,21 @@ def _normalize_token(tok: str) -> str:
 
     `"bash"` (quoted), `(bash)` (subshell), and `$(bash)` (command substitution)
     all invoke bash; a plain token comparison would miss them. Only balanced
-    leading `(` / `$(`, trailing `)`, and surrounding quotes are peeled.
+    leading `(` / `$(`, trailing `)`, and quotes are peeled.
+
+    Quote/backtick characters *inside* a token are removed only when they are
+    balanced within it (`ba"sh"` -> `bash`). A lone trailing backtick — the
+    closer of an inline Markdown code span such as `` `curl x | iex` `` in a
+    docstring — is left intact, so it cannot turn a benign reference into a
+    detected shell.
     """
-    t = tok.strip("\"'")
+    t = tok
+    # Balanced removal must run before stripping the outer quotes: stripping
+    # `ba"sh"` first would remove one dangling quote and hide the pair.
+    for q in ('"', "'", "`"):
+        if t.count(q) >= 2 and t.count(q) % 2 == 0:
+            t = t.replace(q, "")
+    t = t.strip("\"'")
     for _ in range(3):
         if t.startswith("$("):
             t = t[2:]
@@ -468,14 +486,35 @@ def _normalize_token(tok: str) -> str:
     return t.strip("\"'")
 
 
+def _normalize_shell_text(segment: str) -> str:
+    """Bounded normalization of common shell obfuscation before token judging.
+
+    A fixed, non-recursive set of rewrites only: `${IFS}`/`$IFS` (argument
+    separator), backslash escapes, a stray `$`, and brace/subshell grouping
+    (`{ bash; }`, `(bash)`, `$(bash)`). Tokens are then de-quoted (see
+    `_normalize_token`) so `ba"sh"` is the same invocation as `bash`. This
+    defeats the *common* evasions without turning the scanner into a shell
+    parser: exotic indirection (variable expansion/`eval`/base64) stays outside
+    a static scanner's remit.
+    """
+    s = re.sub(r"\$\{IFS(?::-[^}]*)?\}|\$IFS", " ", segment)
+    s = re.sub(r"\\(.)", r"\1", s)
+    # A stray `$` is a shell metachar here, never a command char (`$(bash)`).
+    s = re.sub(r"\$", "", s)
+    s = re.sub(r"[{}()]", " ", s)
+    return s
+
+
 def _segment_runs_shell(segment: str, shells: set[str]) -> bool:
     """True if a pipe segment invokes a shell/exec binary.
 
     Token-wise so wrappers and their flags are covered: `sudo -u root bash`,
     `env bash`, `/bin/bash`, `busybox sh`, `timeout 30 bash` all match, while a
-    benign `grep bash` (first token is a non-launcher) does not.
+    benign `grep bash` (first token is a non-launcher) does not. The segment is
+    first passed through bounded de-obfuscation so `ba"sh"`, `{ bash; }` and
+    `bash${IFS}` are recognized as the same invocation.
     """
-    tokens = [_normalize_token(t) for t in segment.split()]
+    tokens = [_normalize_token(t) for t in _normalize_shell_text(segment).split()]
     i = 0
     while i < len(tokens):
         base = tokens[i].rsplit("/", 1)[-1].lower()

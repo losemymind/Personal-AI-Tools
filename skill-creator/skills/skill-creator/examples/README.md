@@ -17,7 +17,9 @@
 | `git-pushing/` | 单文件 + `scripts/` | 高风险操作的安全门（Safety Gates）、辅助脚本化、保护区规则 |
 | `systematic-debugging/` | 单文件 + `references/` | 阶段强制序（4 相）、红旗清单、合理化借口对照表、量化影响数据 |
 | `react-best-practices/` | 多文件 · 渐进式披露范本 | 规则前缀分类、Quick Reference 决策表、`rules/` 按需加载 |
-| `loki-mode/` | 综合 · 复杂工作流范本 | 决策树首屏、`references/` 大拆分（16 个子文件）、状态目录结构、模型路由 |
+| `loki-mode/` | 综合 · 复杂工作流范本 | 决策树首屏、`references/` 大拆分（15 个子文件）、状态目录结构、模型路由 |
+
+> 注：`loki-mode/` 为上游该技能目录的**精选快照**（保留技能内容 `SKILL.md`/`references/`/`scripts/`/`docs/`/`tests/`/`autonomy/`/`integrations/`/`examples/`，共 91 个文件）；上游的 `benchmarks/` 基准结果、`demo/` 大体积资源与上游 `.github/` CI 配置属非技能产物，未纳入。其余 5 个样本为其最小目录。
 
 ## 使用方式
 

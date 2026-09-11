@@ -207,9 +207,7 @@ def check_dir_security(agent_dir: str, agent_file: str, rel_path: str) -> list[s
     return errs
 
 
-def collect_validation_results(
-    agents_dir: str, strict_mode: bool = False, explicit_dir: bool = False
-) -> dict:
+def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> dict:
     agents_dir = os.path.abspath(agents_dir)
     errors = []
     if not os.path.isdir(agents_dir):
@@ -409,12 +407,15 @@ def collect_validation_results(
             if fname == "AGENT.md":
                 errors.extend(check_dir_security(base, agent_path, rel_path))
 
-    if agent_count == 0 and explicit_dir:
-        # An explicit --dir that exists but holds no agent definitions is almost
-        # always a wrong path; fail loudly instead of a green, empty release gate.
+    if agent_count == 0:
+        # Scanning zero agent definitions is almost always a wrong target (typo'd
+        # --dir, or run from a directory that holds no AGENT.md). Fail loudly
+        # instead of a green, empty release gate. This holds whether the target
+        # came from --dir or from the default (current working directory).
         errors.append(
             f"❌ No agent definitions found under: {agents_dir} "
-            "(wrong --dir? point it at a directory containing AGENT.md)"
+            "(wrong --dir? point it at a directory containing AGENT.md; the default "
+            "target is the current working directory)"
         )
 
     return {
@@ -426,12 +427,12 @@ def collect_validation_results(
     }
 
 
-def validate_agents(agents_dir: str, strict_mode: bool = False, explicit_dir: bool = False) -> bool:
+def validate_agents(agents_dir: str, strict_mode: bool = False) -> bool:
     configure_utf8_output()
     print(f"🔍 Validating agents in: {agents_dir}")
     print(f"⚙️  Mode: {'STRICT (CI)' if strict_mode else 'Standard (Dev)'}")
 
-    results = collect_validation_results(agents_dir, strict_mode=strict_mode, explicit_dir=explicit_dir)
+    results = collect_validation_results(agents_dir, strict_mode=strict_mode)
     warnings = results["warnings"]
     advisories = results["advisories"]
     errors = results["errors"]
@@ -463,11 +464,14 @@ def validate_agents(agents_dir: str, strict_mode: bool = False, explicit_dir: bo
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Validate agent definitions (AGENT.md)")
     parser.add_argument("--strict", action="store_true", help="Fail on warnings (for CI)")
-    parser.add_argument("--dir", default=None, help="Agents directory to validate (default: this skill's root directory)")
+    parser.add_argument("--dir", default=None,
+                        help="Agents directory to validate (default: the current working directory)")
     args = parser.parse_args()
 
-    agents_dir = args.dir or str(SKILL_ROOT)
+    # Default to CWD so running from an agents library root (where AGENT.md files
+    # live) works out of the box; scanning 0 definitions fails loudly regardless.
+    agents_dir = args.dir or os.getcwd()
 
-    success = validate_agents(agents_dir, strict_mode=args.strict, explicit_dir=args.dir is not None)
+    success = validate_agents(agents_dir, strict_mode=args.strict)
     if not success:
         sys.exit(1)

@@ -21,6 +21,11 @@ Usage:
     python scripts/build_index.py --from-extracted <dir>   # use an already-checked-out repo
     python scripts/build_index.py --no-dl                  # scan <repo>/skills locally
 
+Offline behavior: if a source cannot be fetched/unpacked and an existing
+`indexes/upstream.db` is present, that source is skipped and the committed rows
+are preserved (reachable sources still sync incrementally); the command exits 0.
+It only fails when it is both offline and has no usable DB to fall back on.
+
 Exit code 0 = success.
 """
 
@@ -29,10 +34,12 @@ import io
 import json
 import os
 import re
+import socket
 import sqlite3
 import sys
 import tarfile
 import tempfile
+import urllib.error
 import urllib.request
 from datetime import datetime
 from pathlib import Path
@@ -41,6 +48,16 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 INDEX_DIR = SCRIPT_DIR.parent / "indexes"
 DB_PATH = INDEX_DIR / "upstream.db"
 INDEX_VERSION = 4
+
+
+class SourceUnavailable(RuntimeError):
+    """A source's checkout could not be obtained (offline / download / unpack failure).
+
+    Raised by ``load_source_checkout`` so ``main`` can degrade per source: with an
+    existing ``upstream.db`` an offline run keeps the committed rows instead of
+    failing the build (see ``main``).
+    """
+
 
 # ---------------------------------------------------------------------------
 # Source registry
@@ -123,7 +140,7 @@ def download_tarball(source: dict, dest: Path) -> Path:
             print(f"⚠️  attempt {attempt} failed: {e}")
             time.sleep(3 * attempt)
     else:
-        raise RuntimeError(f"download failed after 3 attempts: {last_err}")
+        raise SourceUnavailable(f"download failed after 3 attempts: {last_err}")
     size_mb = tmp.stat().st_size / (1024 * 1024)
     print(f"✅ Downloaded {size_mb:.1f} MB -> {tmp}")
     return tmp
@@ -529,13 +546,47 @@ def load_source_checkout(source: dict, args, tmp: Path) -> tuple[Path, list[dict
         root = Path.cwd()
         print(f"🗂️  {source['repo']}: using local repo root {root}")
     else:
-        tar_path = download_tarball(source, tmp)
-        root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
+        try:
+            tar_path = download_tarball(source, tmp)
+            root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
+        except (
+            SourceUnavailable,
+            urllib.error.URLError,
+            socket.timeout,
+            TimeoutError,
+            OSError,
+            tarfile.TarError,
+        ) as e:
+            # Offline / transient network / bad archive: let main decide whether to
+            # keep the committed index (graceful) or fail (no DB to fall back on).
+            raise SourceUnavailable(f"could not fetch/unpack checkout: {e}") from e
     entries = extract_entries(root, source)
     if not entries:
         print(f"❌ {source['repo']}: no entries found; aborting this source.")
         return root, []
     return root, entries
+
+
+def sync_incremental(all_entries: list[dict], fallback_root: Path) -> dict:
+    """Diff each source's fresh entries against the existing DB, scoped per source.
+
+    Used both for `--incremental` and for the degraded (some source offline) path:
+    rows of sources that were not re-synced are left untouched, so a committed
+    index survives an offline rebuild.
+    """
+    # group entries by source so the diff is scoped per (source_repo, path)
+    by_source: dict[str, list[dict]] = {}
+    for e in all_entries:
+        by_source.setdefault(e.get("source_repo") or "?", []).append(e)
+    totals = {"added": 0, "updated": 0, "removed": 0}
+    for repo, group in by_source.items():
+        root = Path(group[0].get("_root") or fallback_root)
+        print(f"🔍 Incremental sync: {len(group)} entries from {repo} vs existing {DB_PATH}")
+        result = update_db_incremental(group, root, DB_PATH)
+        totals = {k: totals[k] + result[k] for k in totals}
+        print(f"✅   [{repo}] +{result['added']} added, ~{result['updated']} updated, -{result['removed']} removed")
+    print(f"✅ Incremental total: +{totals['added']} added, ~{totals['updated']} updated, -{totals['removed']} removed")
+    return totals
 
 
 def main() -> int:
@@ -555,30 +606,42 @@ def main() -> int:
     selected = SOURCES.keys() if args.source == "all" else [args.source]
     all_entries = []
     all_roots = []
+    unavailable = []
     for name in selected:
         source = SOURCES[name]
-        root, entries = load_source_checkout(source, args, tmp)
+        try:
+            root, entries = load_source_checkout(source, args, tmp)
+        except SourceUnavailable as e:
+            # Offline per source: remember it and keep going (multi-source degrade).
+            print(f"⚠️  {source['repo']}: unavailable ({e})")
+            unavailable.append(name)
+            continue
         if entries:
             all_entries.extend(entries)
             all_roots.append(root)
 
     if not all_entries:
+        if unavailable and DB_PATH.exists():
+            print(
+                "ℹ️  No source could be fetched, but an existing index is present at "
+                f"{DB_PATH}; keeping it unchanged (offline graceful mode)."
+            )
+            return 0
         print("❌ No entries loaded from any source.")
         return 1
 
     # structure enrichment happens against each source's own root — pass per-entry root
-    if args.incremental:
-        # group entries by source so incremental diff is scoped per (source_repo, path)
-        by_source: dict[str, list[dict]] = {}
-        for e in all_entries:
-            by_source.setdefault(e.get("source_repo") or "?", []).append(e)
-        totals = {"added": 0, "updated": 0, "removed": 0}
-        for repo, group in by_source.items():
-            print(f"🔍 Incremental sync: {len(group)} entries from {repo} vs existing {DB_PATH}")
-            result = update_db_incremental(group, Path(by_source and (group[0].get('_root') or all_roots[0])), DB_PATH)
-            totals = {k: totals[k] + result[k] for k in totals}
-            print(f"✅   [{repo}] +{result['added']} added, ~{result['updated']} updated, -{result['removed']} removed")
-        print(f"✅ Incremental total: +{totals['added']} added, ~{totals['updated']} updated, -{totals['removed']} removed")
+    if unavailable:
+        # At least one source is offline. Do NOT full-rebuild (that would drop the
+        # offline source's committed rows); diff only the reachable sources, scoped
+        # per source_repo, so the rest of the committed index is preserved.
+        print(
+            f"⚠️  {len(unavailable)} source(s) unavailable ({', '.join(unavailable)}); "
+            f"syncing the reachable source(s) incrementally so their rows in {DB_PATH} are preserved."
+        )
+        sync_incremental(all_entries, all_roots[0])
+    elif args.incremental:
+        sync_incremental(all_entries, all_roots[0])
     else:
         print(f"🔍 Enriching structure for {len(all_entries)} skills (dir scan)...")
         count = build_db(all_entries, all_roots[0], DB_PATH)

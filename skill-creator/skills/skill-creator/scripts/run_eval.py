@@ -5,9 +5,17 @@ Port from Anthropic's official anthropics/skills skill-creator (run_eval.py),
 generalized for the four-client skill-creator:
 
   --mode cli        headless client CLI (`claude -p`, `opencode run`) — same
-                    mechanism as upstream; requires the client CLI binary.
+                    mechanism as upstream; requires the client CLI binary. This is
+                    the authoritative signal: opencode triggers are read from the
+                    real skill-dispatch event, not from text.
   --mode heuristic  deterministic keyword-overlap classifier (default, no
                     external CLI needed) — CJK-aware, see utils.keyword_tokens.
+                    This is explicitly a *lexical-coverage proxy metric* (词面覆盖
+                    代理指标), NOT a measurement of real trigger behaviour: it only
+                    reports how much wording the query and the description share.
+                    It runs offline when no client CLI is available; use `cli` mode
+                    for real dispatch. Its false positives/negatives are inherent to
+                    overlap and are not regressions.
 
 Reads an eval set (evals.json: query + should_trigger), runs each query, and
 reports per-query trigger rate plus summary (passed/total, precision, recall).
@@ -344,7 +352,8 @@ def main() -> int:
     parser.add_argument("--eval-set", required=True, help="Path to evals.json")
     parser.add_argument("--skill-dir", required=True, help="Path to skill directory containing SKILL.md")
     parser.add_argument("--mode", choices=["heuristic", "cli"], default="heuristic",
-                        help="heuristic=keyword classifier (default), cli=headless client CLI")
+                        help="heuristic=offline lexical-coverage proxy (词面覆盖代理指标, "
+                             "default), cli=headless client CLI real-dispatch signal")
     parser.add_argument("--client", default="claude", choices=sorted(CLI_COMMANDS),
                         help="CLI client for --mode cli")
     parser.add_argument("--model", default="",

@@ -33,7 +33,7 @@ python -c "import yaml; print('PyYAML OK')"
 python scripts/validate_skills.py --strict --dir .
 ```
 
-完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（9 个脚本）、`agents/`（grader/comparator/analyzer 三个子代理指令）、`indexes/upstream.db`、`references/`、`templates/`、`examples/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db` 与 `examples/`）都会导致安装后方法论不完整。
+完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（12 个脚本）、`agents/`（grader/comparator/analyzer 三个子代理指令）、`indexes/upstream.db`、`references/`、`templates/`、`examples/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db` 与 `examples/`）都会导致安装后方法论不完整。
 
 ## 2. 安装（放置目录）
 

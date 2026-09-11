@@ -7,6 +7,7 @@ temp cleanup.
 
 import importlib.util
 import sqlite3
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -137,3 +138,76 @@ def test_cleanup_tmp_keep_is_noop():
         (tmp / "f.txt").write_text("x", encoding="utf-8")
         mod.cleanup_tmp(tmp, keep=True)
         assert (tmp / "f.txt").exists()
+
+
+def test_offline_keeps_existing_db_and_exits_zero(monkeypatch, tmp_path):
+    """Download failure + existing DB => keep committed rows, exit 0 (no fail)."""
+    mod = _load_module()
+    db = tmp_path / "upstream.db"
+    mod.build_db([_entry("keep-me", "sickn33/agentic-awesome-skills")], tmp_path, db)
+    before = db.read_bytes()
+
+    monkeypatch.setattr(mod, "DB_PATH", db)
+
+    def boom(source, dest):
+        raise mod.SourceUnavailable("simulated offline")
+
+    monkeypatch.setattr(mod, "download_tarball", boom)
+    monkeypatch.setattr(sys, "argv", ["build_index.py", "--source", "aas"])
+
+    rc = mod.main()
+    assert rc == 0
+    conn = sqlite3.connect(db)
+    names = {r[0] for r in conn.execute("SELECT name FROM skills")}
+    conn.close()
+    assert names == {"keep-me"}  # untouched
+    assert db.read_bytes() == before
+
+
+def test_offline_without_db_fails(monkeypatch, tmp_path):
+    """Download failure + no DB => hard failure (nothing to fall back on)."""
+    mod = _load_module()
+    db = tmp_path / "upstream.db"
+    monkeypatch.setattr(mod, "DB_PATH", db)
+
+    def boom(source, dest):
+        raise mod.SourceUnavailable("simulated offline")
+
+    monkeypatch.setattr(mod, "download_tarball", boom)
+    monkeypatch.setattr(sys, "argv", ["build_index.py", "--source", "aas"])
+
+    rc = mod.main()
+    assert rc == 1
+    assert not db.exists()
+
+
+def test_multi_source_degrade_preserves_offline_rows(monkeypatch, tmp_path):
+    """One offline source degrades per source: its rows survive while others sync."""
+    mod = _load_module()
+    db = tmp_path / "upstream.db"
+    mod.build_db(
+        [
+            _entry("aas-skill", "sickn33/agentic-awesome-skills"),
+            _entry("addy-old", "addyosmani/agent-skills"),
+        ],
+        tmp_path,
+        db,
+    )
+    monkeypatch.setattr(mod, "DB_PATH", db)
+
+    def fake_load(source, args, tmp):
+        if source["name"] == "aas":
+            raise mod.SourceUnavailable("simulated offline")
+        return tmp_path, [_entry(source["name"] + "-new", source["repo"])]
+
+    monkeypatch.setattr(mod, "load_source_checkout", fake_load)
+    monkeypatch.setattr(sys, "argv", ["build_index.py", "--source", "all"])
+
+    rc = mod.main()
+    assert rc == 0
+    conn = sqlite3.connect(db)
+    names = {r[0] for r in conn.execute("SELECT name FROM skills")}
+    conn.close()
+    assert "aas-skill" in names      # offline source rows preserved
+    assert "addy-new" in names       # reachable source re-synced
+    assert "addy-old" not in names   # vanished row removed for the reachable source

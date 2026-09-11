@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流代理（Agents）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.7.4"
+version: "0.7.5"
 date_added: "2026-09-02"
 author: losemymind
 tags: [agent-creator, agents, workflow, llm-clients]
@@ -182,6 +182,8 @@ python scripts/search_agent_index.py --list-categories     # 分类（division�
 ```bash
 python scripts/validate_agents.py [--dir <agents目录>] [--strict]
 ```
+
+不带 `--dir` 时默认扫描**当前工作目录（CWD）**——在代理库/代理目录根运行即可自然生效；`--dir` 指定其他目录。**无论目标来自哪里，扫到 0 个代理定义都会 fail-loud（退出码 1）**，避免空跑全绿。
 
 验证器检查：frontmatter 有效性（YAML、`name` 格式、`description` 存在且 ≤300 字符、可选 `version` semver）、「职责边界」章节、工具/权限声明、正文非空、引用不悬空（fenced 代码块豁免）、**安全扫描**（明文密钥/凭据、危险远程执行管道，`<!-- security-allowlist -->` 可按行/块豁免）。offensive 类代理（渗透等）同样要求授权声明。
 

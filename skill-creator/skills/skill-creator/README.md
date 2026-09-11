@@ -16,6 +16,7 @@
 - 检索全库：`python scripts/search_index.py "<关键词>"`（默认查所有源）
 - 按源检索：加 `--source anthropics`（或 `aas` / `addy` / `composiohq`）
 - 重建/增量：`python scripts/build_index.py [--source all|aas|addy|anthropics|composiohq] [--incremental]`
+- 离线优雅降级：某源下载/解包失败且已有 `indexes/upstream.db` 时，跳过该源并保留其已提交数据（可达源仍增量同步），退出码 0；仅当既无网络又无可用 DB 时才失败
 - 许可以各上游仓库 LICENSE 为准（aas/addy 为 MIT；anthropics 多数 Apache-2.0、文档类技能为 source-available；composiohq 未声明），入库技能需保留来源归属
 - 索引细节见 `references/skill-index.md`；新建技能时先在多源中「先查后建」
 
@@ -36,6 +37,7 @@ skill-creator/
     search_index.py         # 检索上游索引（FTS5 全文/分类/风险过滤）
     compare_skills.py       # 自建 vs 上游对比评分（质量6维+结构4维）
     create_skill.py         # 交互式脚手架生成器（含 version 字段 + evals/evals.json）
+    package_skill.py        # 客户端打包器（按端适配 frontmatter + 复制整目录 + post-check）
     validate_skills.py      # 自动验证器（frontmatter/章节/安全/链接/密钥扫描）
     utils.py                # 共享：frontmatter 解析 + 章节模式 + 触发启发式 + 安全扫描 + 进程树终止客户端运行器（四端通用）
     run_eval.py             # 触发评测（heuristic 默认 / cli 双模式；--concurrency 有界并行；逐查询隔离工作区；--output-dir 落盘）
@@ -79,5 +81,6 @@ skill-creator/
 1. 参考本目录 `SKILL.md` 的技能创建方法（10 阶段工作流）
 2. 使用 `scripts/create_skill.py` 脚手架或 `templates/SKILL.template.md` 作为骨架创建你的 Skill
 3. 运行自动验证：`python scripts/validate_skills.py --strict --dir <技能目录>`（失败必须修复）
-4. 将产出的技能安装到目标客户端的 skills/ 目录（落点见 SKILL.md「多客户端安装指引」），按客户端文档完成后续配置
-5. 经验证的技能归档到可分发位置
+4. 多客户端打包：`python scripts/package_skill.py <技能目录> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]`（按端适配 frontmatter + post-check，产物在 `<产物目录>/<客户端>/<技能名>/`）
+5. 将产出的技能安装到目标客户端的 skills/ 目录（落点见 SKILL.md「多客户端安装指引」），按客户端文档完成后续配置
+6. 经验证的技能归档到可分发位置

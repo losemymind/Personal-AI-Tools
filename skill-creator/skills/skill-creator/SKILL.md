@@ -4,7 +4,7 @@ description: "创建、改进并验证个人工作流技能（Skills）。当用
 category: productivity
 risk: safe
 source: self
-version: "0.9.22"
+version: "0.10.0"
 date_added: "2026-09-01"
 author: losemymind
 tags: [skill-creator, skills, workflow, llm-clients]
@@ -29,6 +29,7 @@ skill-creator/
 │   ├── search_index.py         ← 检索上游索引（FTS5 全文/分类/风险）
 │   ├── compare_skills.py       ← 自建 vs 上游对比评分（质量6维+结构4维）
 │   ├── create_skill.py         ← 交互式脚手架生成器（含 version 字段 + evals/evals.json）
+│   ├── package_skill.py        ← 客户端打包器（按端适配 frontmatter + 复制整目录 + post-check）
 │   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接/密钥扫描；allowlist 局部豁免）
 │   ├── run_eval.py             ← 触发评测（heuristic 默认 / cli 双模式；--concurrency 有界并行；逐查询隔离工作区；--output-dir 落盘）
 │   ├── run_loop.py             ← description 自动优化循环（train/test 60/40；cli 隔离运行）
@@ -291,6 +292,8 @@ python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
 
 **第 1 步：触发评测（确定性脚本，先跑）**——`templates/evals.json.template` 为 evals 模板：
 
+> 默认的 `--mode heuristic` 是**词面覆盖代理指标**（只度量查询与 `description` 共享的措辞，用 CJK 二元组 + 拉丁词集合求交），**不代表真实触发行为**；真实触发以 `--mode cli` 读到的客户端技能派发信号为准（见下）。该代理指标固有的假阴/假阳不是缺陷、不再作为缺陷上报——它只是无客户端 CLI 时的离线参考。
+
 ```bash
 # 1) 确定性触发启发式（无外部 CLI，默认；CJK 感知）
 python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录>
@@ -418,6 +421,13 @@ python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技
 ### 阶段 9：安装与验证
 
 - 按「多客户端安装指引」把技能复制到目标客户端的 skills 目录。
+- 需要把同一技能适配给多个客户端时，用打包器生成各端产物（自动做 frontmatter 适配 + post-check，避免手改漂移）：
+
+  ```bash
+  python scripts/package_skill.py <技能目录> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]
+  ```
+
+  产物布局为 `<产物目录>/<客户端>/<技能名>/`（`--zip` 另出同名压缩包）；把该目录放到目标客户端的 skills 目录即可。关键适配：opencode 端把 `tools` 工具白名单合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；claude 端把工具白名单转成逗号分隔的 Claude 工具名；`tools: [claude, opencode, …]` 这类「支持客户端」元数据不会被误当成工具白名单。各端适配结果均过该端 post-check，不合格不出包。
 - 重启客户端后用真实小任务触发一次，确认技能被加载、按指令执行。
 - 经验证、可复用的技能按质量检查清单归档到宿主技能库的分类目录 `skills/<分类>/<name>/`——按功能分类入库，分类目录不存在则先创建，不得散置在库根目录。
 

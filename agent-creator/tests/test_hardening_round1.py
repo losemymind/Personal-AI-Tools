@@ -166,11 +166,20 @@ def test_bundled_script_secret_detected(tmp_path):
 
 # --- validator default dir / empty dir -------------------------------------
 
-def test_no_dir_scan_of_product_does_not_error():
-    """The documented default --dir (the skill root) must not blame the product's
-    own evolutions records / reviewer prompt for missing frontmatter."""
-    r = run_script("scripts/validate_agents.py", "--strict")
+def test_default_dir_is_cwd_and_fails_loud_when_empty(temp_agent, tmp_path):
+    """No --dir => scan CWD: works from an agents dir, fails loud when empty.
+
+    The old default (the skill root) scanned 0 agents and exited 0 — a fail-open
+    release gate. The default is now CWD, and scanning 0 definitions always fails.
+    """
+    r = run_script("scripts/validate_agents.py", "--strict", cwd=temp_agent)
     assert r.returncode == 0, r.stdout + r.stderr
+
+    empty = tmp_path / "empty-cwd"
+    empty.mkdir()
+    r2 = run_script("scripts/validate_agents.py", "--strict", cwd=empty)
+    assert r2.returncode == 1, r2.stdout + r2.stderr
+    assert "No agent definitions found" in r2.stdout
 
 
 def test_empty_explicit_dir_fails(tmp_path):
