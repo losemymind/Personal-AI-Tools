@@ -49,6 +49,13 @@ def test_scaffold_write_alias_also_drops_default_deny(tmp_path):
     assert "edit: deny" not in md
 
 
+def test_scaffold_edit_alias_case_insensitive(tmp_path):
+    md = _scaffold(tmp_path, "--tools", "read,Edit")
+    assert "tools: [read, edit]" in md
+    assert "permission:" not in md
+    assert "edit: deny" not in md
+
+
 def test_scaffold_output_still_validates(tmp_path):
     _ = _scaffold(tmp_path, "--tools", "read,grep,glob")
     v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path / "probe"))

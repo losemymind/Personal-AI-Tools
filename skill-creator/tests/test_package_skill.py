@@ -264,3 +264,13 @@ def test_out_inside_skill_rejected(tmp_path):
                    "--out", str(src / "dist"))
     assert r.returncode == 1
     assert "must not be inside" in r.stderr
+
+
+def test_package_out_existing_file_fails_cleanly(tmp_path):
+    skill = _make_skill(tmp_path)
+    out_file = tmp_path / "not_a_dir"
+    out_file.write_text("x", encoding="utf-8")
+    r = run_script("scripts/package_skill.py", str(skill), "--client", "claude", "--out", str(out_file))
+    assert r.returncode == 1
+    assert "Traceback" not in r.stderr
+    assert "expected a directory" in (r.stdout + r.stderr)

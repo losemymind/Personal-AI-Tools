@@ -455,6 +455,8 @@ def package_skill(skill_dir, clients, out_dir, make_zip: bool = False) -> list[P
     origin = f"{skill_dir.name}/SKILL.md"
 
     out_dir = Path(out_dir)
+    if out_dir.exists() and not out_dir.is_dir():
+        raise PackageError(f"--out is an existing file, expected a directory: {out_dir}")
     out_resolved = out_dir.resolve()
     if out_resolved == skill_dir.resolve() or skill_dir.resolve() in out_resolved.parents:
         raise PackageError(f"--out must not be inside the skill directory: {out_dir}")

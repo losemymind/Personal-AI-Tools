@@ -50,7 +50,7 @@ def extract_path_token(cand: str) -> str:
     """Pull the artifact-internal path token out of a command-like ref
     (`python scripts/validate_agents.py ...` -> `scripts/validate_agents.py`)."""
     for token in cand.split():
-        for known in KNOWN_TOP:
+        for known in (*KNOWN_TOP, *DEV_ONLY_MARKERS):
             if token == known or token.startswith(known + "/"):
                 return token
     return cand
@@ -58,6 +58,7 @@ def extract_path_token(cand: str) -> str:
 
 def check_dir(artifact: Path) -> list[str]:
     problems: list[str] = []
+    tops = (*KNOWN_TOP, *DEV_ONLY_MARKERS)
 
     for md in sorted(artifact.rglob("*.md")):
         rel_parts = md.relative_to(artifact).parts
@@ -78,7 +79,7 @@ def check_dir(artifact: Path) -> list[str]:
             token = extract_path_token(cand)
             if "." in token and "/" not in token:
                 continue
-            if not any(token == k or token.startswith(k + "/") for k in KNOWN_TOP):
+            if not any(token == k or token.startswith(k + "/") for k in tops):
                 continue  # client path / field name, not artifact-internal
             candidates.add(token)
         for link in links:
@@ -90,7 +91,7 @@ def check_dir(artifact: Path) -> list[str]:
             if Path(link_clean).is_absolute():
                 continue
             token = link_clean.rstrip("/")
-            if any(token == k or token.startswith(k + "/") for k in KNOWN_TOP):
+            if any(token == k or token.startswith(k + "/") for k in tops):
                 candidates.add(token)
 
         rel_md = md.relative_to(artifact).parent
@@ -126,3 +127,15 @@ def test_product_layout_is_slim():
     assert (ARTIFACT / "README.md").is_file()
     assert not (ARTIFACT / "AGENTS.md").exists(), "product AGENTS.md must be removed (SKILL.md single entry)"
     assert not (ARTIFACT / "INSTALL.md").exists(), "product INSTALL.md must live at the workspace root, not ship"
+
+
+def test_check_dir_flags_dev_only_command_ref(tmp_path):
+    """The dev-only branch must stay reachable (regression: it was dead code)."""
+    artifact = tmp_path / "art"
+    (artifact / "references").mkdir(parents=True)
+    (artifact / "SKILL.md").write_text(
+        "# probe\n\nRun `python tests/foo.py` before shipping.\n", encoding="utf-8"
+    )
+    problems = check_dir(artifact)
+    assert problems, "a dev-only command reference must be flagged"
+    assert any("tests" in p for p in problems)

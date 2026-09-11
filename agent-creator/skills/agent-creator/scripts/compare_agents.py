@@ -11,7 +11,7 @@ Scores are computed on the AGENT.md files themselves (no index required), using:
 
 Usage:
     python scripts/compare_agents.py <local-agent-dir> <upstream-agent-dir> [--json]
-    python scripts/compare_agents.py <local-agent-dir> --all-candidates
+    python scripts/compare_agents.py <local-agent-dir> <upstream-dir> --all-candidates
 
 Exit code 0 = success (report printed; verdict included).
 """
@@ -118,6 +118,20 @@ def read_agent(agent_dir: Path) -> dict:
     }
 
 
+def _looks_like_agent_md(path: Path) -> bool:
+    """True when a standalone .md carries a frontmatter block.
+
+    Upstream agent repos store agents as flat <division>/<name>.md files (the
+    indexed agency/agency-zh layout); a leading frontmatter block distinguishes
+    those from prose docs (README/CATALOG/AGENTS-AUDIT …) at any depth.
+    """
+    try:
+        text = path.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        return False
+    return re.match(r"^---\s*\n.*?\n?---(?:\s*\n|$)", text, re.DOTALL) is not None
+
+
 def score_quality(a: dict) -> dict:
     content = a["content"]
     fm = a["frontmatter"]
@@ -208,10 +222,14 @@ def main() -> int:
     parser.add_argument("--all-candidates", action="store_true", help="Compare against every AGENT.md under upstream_dir")
     args = parser.parse_args()
 
+    def _err(msg: str) -> None:
+        # Keep stdout machine-parseable when --json is requested.
+        print(msg, file=sys.stderr if args.json else sys.stdout)
+
     local = Path(args.local_dir)
     local_repr = read_agent(local)
     if "error" in local_repr:
-        print(f"❌ {local_repr['error']}")
+        _err(f"❌ {local_repr['error']}")
         return 1
     ls = score_agent(local_repr)
 
@@ -220,26 +238,39 @@ def main() -> int:
          "readme.md", "readme", "changelog.md", "development-plan.md",
          "agents.md", "skill.md", "catalog.md",
     }
+
     candidates = []
     if args.all_candidates and args.upstream_dir:
         base = Path(args.upstream_dir)
         if base.is_dir():
-            candidates = [
-                d
-                for d in base.iterdir()
-                if (d / "AGENT.md").exists() or (d.is_file() and d.suffix.lower() == ".md" and d.name.lower() not in NON_AGENT_DOCS)
-             ]
+            # Recurse so both layouts are found at any depth: the canonical
+            # <dir>/AGENT.md and upstream's flat <division>/<name>.md (the norm
+            # in the indexed upstream repos). Prose docs lack frontmatter and
+            # are excluded; .md files inside an AGENT.md dir (references etc.) too.
+            agent_dirs = {p.parent for p in base.rglob("AGENT.md")}
+            md_files = {
+                p
+                for p in base.rglob("*.md")
+                if p.name != "AGENT.md"
+                and p.name.lower() not in NON_AGENT_DOCS
+                and not any(d in p.parents for d in agent_dirs)
+                and _looks_like_agent_md(p)
+            }
+            candidates = sorted(agent_dirs | md_files)
+        if not candidates:
+            _err(f"❌ No candidate agents found under {base}")
+            return 1
     elif args.upstream_dir:
         candidates = [Path(args.upstream_dir)]
     if not candidates:
-        print("❌ No upstream candidate given. Pass <upstream_dir> or --all-candidates <dir>.")
+        _err("❌ No upstream candidate given. Pass <upstream_dir> or --all-candidates <dir>.")
         return 1
 
     results = []
     for u in candidates:
         sc = read_agent(u)
         if "error" in sc:
-            print(f"❌ {sc['error']}")
+            _err(f"❌ {sc['error']}")
             return 1
         results.append((u, score_agent(sc)))
 

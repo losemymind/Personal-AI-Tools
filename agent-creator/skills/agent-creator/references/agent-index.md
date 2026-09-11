@@ -26,7 +26,7 @@
 每条记录包含：`name` / `path`（仓库内相对路径）/ `description` / `category`（division 或分类，agency 系）/ `tools` / `model` / `source_repo` / `body_lines`。
 
 - 三源命名与字段体系不同：`agency` 英文名 + description + emoji/color/vibe；`ccgs` 用 kebab-case name + description + tools/model/maxTurns；`agency-zh` 中文名+中文描述。索引统一收敛到上述公共字段。
-- `path` 在单个源内唯一（增量同步按 `source_repo + path` 定位）。
+- `path` 在单个源内唯一（行按 `source_repo + path` 识别）。
 - 内含 FTS5 全文检索表 `agents_fts`，匹配 name/description/category/tools。
 
 FTS5 的 `unicode61` 分词器不切分中文，因此**含中文（CJK）的查询**由 `search_agent_index.py` 自动降级为对 name/description/category/tools 的子串 `LIKE` 匹配（按空格分词 AND；`%`/`_` 已转义），可直接用中文检索 `agency-zh` 的中文代理。英文/ASCII 查询仍走 FTS5。

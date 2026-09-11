@@ -9,13 +9,11 @@ Sources (agent definitions, all scanned from on-disk frontmatter):
 
 Unlike skills, upstream agent repos have no unified official index file, so every
 source is discovered by scanning its layout for frontmatter agent definitions.
-Each row carries `source_repo`; `path` is unique per source so incremental sync
-scopes by (source_repo, path).
+Each row carries `source_repo`; `path` is unique per source, so rows are identified by (source_repo, path).
 
 Usage:
     python scripts/build_agent_index.py                       # all sources, full rebuild
     python scripts/build_agent_index.py --source agency       # only one source
-    python scripts/build_agent_index.py --incremental         # reuse upstream.db
     python scripts/build_agent_index.py --from-extracted <dir> # use an already-checked-out repo (single source)
     python scripts/build_agent_index.py --no-dl               # scan cwd (single --source)
 

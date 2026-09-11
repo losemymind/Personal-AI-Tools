@@ -31,7 +31,7 @@
 - 引用组织层：渐进披露失衡、references 散乱 → 拆分 / 纪律。
 - 脚本/工具层：确定性工作缺工具或工具残缺 → `scripts/` + pytest。
 - 验证器层：纪律未被自动 enforce → `validate_agents.py`（校验对象是 AGENT.md 代理库）+ tests。
-- 对比择优层：自建 vs 上游好坏无法量化 → `compare_agents.py`（质量 6 维 + 结构 4 维）。
+- 对比择优层：自建 vs 上游好坏无法量化 → `compare_agents.py`（质量 7 维 + 结构 4 维）。
 - 索引层：上游覆盖不全/检索失效/源更新 → `build_agent_index.py` / `search_agent_index.py`。
 - 文档层：安装/结构/来源/用法失准 → `references/` 或成品 `README.md`。
 
@@ -64,7 +64,7 @@ python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\
 - 重大升级在工作区 `README.md` 或成品 `references/` 补沿革，保持历史可追溯。
 
 **Step 7 版本与元数据**
-- 记录闭环：描述/正文保持中文；来源/作者/日期/版本不进 frontmatter（版本以 git 为准）；方法论升级记 `evolutions/`。
+- 记录闭环：描述/正文保持中文；来源/作者/日期/版本不进 frontmatter（来源记入代理库根创建记录台账 `agents/AGENTS-RECORDS.md`，版本以 git 为准）；方法论升级记 `evolutions/`。
 
 **Step 8 汇报**
 - 给用户：改了什么文件、为什么、验证命令与结果、是否可提交。不代用户提交。
@@ -93,7 +93,7 @@ python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\
 ## 命令速查（在本工作区根执行）
 
 ```bash
-python -m pytest tests/ -q                                     # 回归 + 成品自包含/布局断言（18 例）
+python -m pytest tests/ -q                                     # 回归 + 成品自包含/布局断言（计数随测试增长，不在此硬编码）
 python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents   # 能力库校验
 python skills/agent-creator/scripts/search_agent_index.py --stats    # 索引完整性（3 源 568 条）
 ```

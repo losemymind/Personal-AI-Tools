@@ -232,32 +232,31 @@ def adapt_for_opencode(fm: dict, notes: list, origin: str) -> None:
             perm = fm.get("permission")
             if isinstance(perm, str):
                 notes.append(
-                    f"opencode: dropped tools whitelist ({', '.join(tools)}); permission shorthand "
-                    f"{perm!r} kept as-is (per-tool rules not merged into a shorthand)"
+                    f"opencode: dropped global permission shorthand {perm!r} (would widen); "
+                    "tools whitelist merged into per-tool permission"
                 )
-            else:
-                allowed = set()
-                extra = []
-                for tool in tools:
-                    key = OPENCODE_TOOL_ALIASES.get(tool, tool)
-                    if key in OPENCODE_TOOL_KEYS:
-                        allowed.add(key)
-                    else:
-                        extra.append(key)
-                merged = dict(perm) if isinstance(perm, dict) else {}
-                for key in OPENCODE_TOOL_KEYS:
-                    if key not in merged:
-                        merged[key] = "allow" if key in allowed else "deny"
-                for key in extra:
-                    merged.setdefault(key, "allow")
-                fm["permission"] = merged
-                denied = [k for k in OPENCODE_TOOL_KEYS if merged.get(k) == "deny"]
-                notes.append(
-                    "opencode: tools whitelist -> permission ({allow} allow{denied})".format(
-                        allow=", ".join(sorted(allowed)) or "-",
-                        denied=f"; deny {', '.join(denied)}" if denied else "",
-                    )
+            allowed = set()
+            extra = []
+            for tool in tools:
+                key = OPENCODE_TOOL_ALIASES.get(tool, tool)
+                if key in OPENCODE_TOOL_KEYS:
+                    allowed.add(key)
+                else:
+                    extra.append(key)
+            merged = dict(perm) if isinstance(perm, dict) else {}
+            for key in OPENCODE_TOOL_KEYS:
+                if key not in merged:
+                    merged[key] = "allow" if key in allowed else "deny"
+            for key in extra:
+                merged.setdefault(key, "allow")
+            fm["permission"] = merged
+            denied = [k for k in OPENCODE_TOOL_KEYS if merged.get(k) == "deny"]
+            notes.append(
+                "opencode: tools whitelist -> permission ({allow} allow{denied})".format(
+                    allow=", ".join(sorted(allowed)) or "-",
+                    denied=f"; deny {', '.join(denied)}" if denied else "",
                 )
+            )
     check_opencode_frontmatter(fm, origin)
 
 

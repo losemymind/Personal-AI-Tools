@@ -1,12 +1,14 @@
 # evolutions/ — 对比与采纳记录
 
-本目录保存 agent-creator 的**反馈闭环**记录，分两类：
+本目录保存 agent-creator 的**反馈闭环**记录，按下表命名约定分类型：
 
 | 类型 | 文件名 | 场景 | 真实示例 |
 |---|---|---|---|
 | 择优对比 | `<YYYY-MM-DD>-compare-<代理名>.md` | 自建代理 vs 上游候选对比择优 | `2026-09-03-compare-migrated-ue-agents.md` |
 | 上游导入 | `<YYYY-MM-DD>-import-<代理名>.md` | 本地无候选（A 空），按用户指定直接导入上游并适配 | `2026-09-03-import-code-simplifier.md` |
 | 采纳升级 | `<YYYY-MM-DD>-adopt-<主题>.md` | 采纳上游/孪生的纪律、工具或方法论的升级记录 | `2026-09-09-adopt-ref-description-release-discipline.md` |
+| 审计复查 | `<YYYY-MM-DD>-audit-<主题>.md` | 独立审计发现的缺陷/债务及其修复复查 | `2026-09-10-audit-round4.md` |
+| 缺陷修复 | `<YYYY-MM-DD>-fix-<主题>.md` | 缺陷修复的闭环记录（可含一批审计发现） | `2026-09-11-fix-create-agent-tool-body.md` |
 
 ## 记录规范
 

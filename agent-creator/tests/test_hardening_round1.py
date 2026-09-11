@@ -256,6 +256,35 @@ def test_compare_resource_organization_ignores_junk_dirs(tmp_path):
     assert data["candidates"][0]["structure"]["resource_organization"] == 0.0
 
 
+def test_compare_all_candidates_recurses(tmp_path):
+    local = _write_agent(tmp_path, _agent_md(), name="loc")
+    up = tmp_path / "up"
+    nested = up / "cat" / "cand"
+    nested.mkdir(parents=True)
+    (nested / "AGENT.md").write_text(_agent_md(name="cand"), encoding="utf-8")
+    r = run_script("scripts/compare_agents.py", str(local), str(up), "--all-candidates", "--json")
+    assert r.returncode == 0, r.stdout + r.stderr
+    data = json.loads(r.stdout)
+    assert len(data["candidates"]) == 1
+
+
+def test_compare_all_candidates_finds_flat_md(tmp_path):
+    """Upstream agents live as flat <division>/<name>.md (agency layout)."""
+    local = _write_agent(tmp_path, _agent_md(), name="loc")
+    up = tmp_path / "up"
+    division = up / "academic"
+    division.mkdir(parents=True)
+    agent_file = division / "academic-anthropologist.md"
+    agent_file.write_text(_agent_md(name="academic-anthropologist"), encoding="utf-8")
+    (division / "README.md").write_text("# docs, not an agent\n", encoding="utf-8")
+    (division / "notes.md").write_text("# prose without frontmatter\n", encoding="utf-8")
+    r = run_script("scripts/compare_agents.py", str(local), str(up), "--all-candidates", "--json")
+    assert r.returncode == 0, r.stdout + r.stderr
+    data = json.loads(r.stdout)
+    assert len(data["candidates"]) == 1  # the flat agent only
+    assert data["candidates"][0]["dir"].endswith("academic-anthropologist.md")
+
+
 # --- create_agent ----------------------------------------------------------
 
 def test_create_quote_description_yields_valid_agent(tmp_path):

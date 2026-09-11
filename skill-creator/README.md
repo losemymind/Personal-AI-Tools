@@ -67,6 +67,8 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 
 **2026-09-10 跟进（版本 0.7.0）**：评审改为 **agent 评审闭环（无人工）**——新增评审子代理 `agents/reviewer.md`，阶段 6 由 agent1↔agent2 自动迭代；阶段 7 查询集审阅改由评审子代理执行；阶段 8 `VERIFICATION.md` 降为可选留痕；`run_loop.py` 落地 gold-standard 先例注入。孪生 agent-creator 同步（0.7.0）。
 
+**2026-09-11 跟进（版本 0.7.1）**：一轮创建器审计修复（不扩功能，仅纠缺陷/对齐文档）。成品侧：`scripts/package_skill.py` 补 `--out` 指向已存在文件的显式守卫（不再泄漏 traceback）；`evolutions/README.md` 记录类型表补全、去掉硬编码类数。孪生 agent-creator 同批修复（`compare_agents` 递归候选发现同时覆盖带 `AGENT.md` 的目录与上游扁平 `<division>/<name>.md`、`adapt_agent` opencode 权限放大、`create_agent` 工具名大小写归一、`build_agent_index` 过期文档、发布门死分支）。记录见两成品 `evolutions/2026-09-11-fix-*`。
+
 ## 提交说明
 
 本目录改动技能后，跑通上方命令即可 commit/push。

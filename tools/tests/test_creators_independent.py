@@ -13,9 +13,12 @@ Scan rules:
   - the forbidden set is the sibling's repo-facing name in both languages
 """
 
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+IMPORT_MODULE_RE = re.compile(r"^\s*(?:import|from)\s+([A-Za-z_][\w.]*)")
 
 CREATORS = {
     "skill-creator": REPO_ROOT / "skill-creator" / "skills" / "skill-creator",
@@ -81,19 +84,34 @@ def test_no_cross_references_between_creators():
 
 
 def test_no_cross_artifact_imports():
-    """No script may import a module that lives in the other creator.
+    """No script may import a module that lives in the other creator's scripts/.
 
-    Each artifact's local modules are its own scripts/*.py; an import of a sibling
-    module (or a sibling name) would be a runtime dependency.
+    A real cross-artifact import cannot spell the sibling's hyphenated name
+    (invalid Python identifier), so the previous substring test was vacuously
+    true. This checks imported top-level module names against the sibling's
+    script module stems instead (excluding modules the checks' own creator also
+    ships, so importing one's local _project_paths.py is not a false positive).
     """
     problems = []
     for name, artifact in CREATORS.items():
         sibling = "agent-creator" if name == "skill-creator" else "skill-creator"
+        own_modules = {p.stem for p in (artifact / "scripts").glob("*.py")}
+        sibling_modules = (
+            {p.stem for p in (CREATORS[sibling] / "scripts").glob("*.py")} - own_modules
+        )
         for f in _authored_files(artifact):
             if f.suffix != ".py":
                 continue
-            for lineno, line in enumerate(f.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-                stripped = line.strip()
-                if stripped.startswith(("import ", "from ")) and sibling in stripped:
-                    problems.append(f"{name}/{f.relative_to(artifact).as_posix()}:{lineno}: {stripped}")
+            for lineno, line in enumerate(
+                f.read_text(encoding="utf-8", errors="replace").splitlines(), 1
+            ):
+                m = IMPORT_MODULE_RE.match(line)
+                if not m:
+                    continue
+                mod = m.group(1).split(".")[0]
+                if mod in sibling_modules:
+                    problems.append(
+                        f"{name}/{f.relative_to(artifact).as_posix()}:{lineno}: "
+                        f"imports sibling module {mod!r}"
+                    )
     assert not problems, "cross-artifact imports detected:\n" + "\n".join(problems)

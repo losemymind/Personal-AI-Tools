@@ -264,7 +264,7 @@ def main() -> int:
 
     mode = args.mode or ("subagent" if not interactive else ask("模式", "subagent", MODES))
 
-    tools = [t.strip() for t in args.tools.split(",") if t.strip()]
+    tools = [t.strip().lower() for t in args.tools.split(",") if t.strip()]
     author = args.author or (ask("作者标识", "losemymind") if interactive else "losemymind")
 
     out_dir = Path(args.out) if args.out else Path.cwd()

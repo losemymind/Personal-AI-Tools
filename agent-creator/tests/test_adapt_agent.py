@@ -116,3 +116,13 @@ def test_out_writes_adapted_file(tmp_path):
     written = out.read_text(encoding="utf-8")
     assert "read: allow" in written
     assert "tools: [read" not in written
+
+
+def test_opencode_drops_permission_shorthand_and_materializes(tmp_path):
+    content = CANONICAL.replace("permission:\n  edit: ask\n", "permission: allow\n")
+    d = _write_agent(tmp_path, content)
+    r = run_script("scripts/adapt_agent.py", d, "--client", "opencode")
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "permission: allow" not in r.stdout  # global allow must not survive
+    assert "read: allow" in r.stdout
+    assert "webfetch: deny" in r.stdout          # un-whitelisted tool denied
