@@ -4,7 +4,7 @@
 
 ## 仓库状态速览
 
-- git：`main` @ `92eff88`（第 17 版交接提交；`33141f1` 之后）。**本会话改动未提交**（见下「未完成项」），`git status` 有 6 改 3 新增，全部为本会话产物。工作区可提交（发布门全绿，已由主agent独立复核）。
+- git：`main` @ `e017773`（已推送，与 `origin/main` 同步；CI 三 job 全绿 run 34553850653）。本会话改动已提交 `e017773`（前序交接提交 `92eff88`）。
 - 版本：**agent-creator 0.8.0**（本会话 0.7.5 → 0.8.0，新增 `package_agent.py` = minor）、**skill-creator 0.10.0**（未变）。
 - 能力库：`skills/` = **5 技能**、`agents/` = **32 代理**（本会话**未增删**，审计与两份 `CATALOG.md` 无需变动；已复核 `build_catalog.py --check` up to date）。
 - 两工作区同构：成品即源；成品自包含（agent-creator 自包含扫描落在 dev-only pytest，本会话通过）。agent-creator 无 `.opencode` 安装镜像。
@@ -49,7 +49,7 @@ skill-creator（在 skill-creator/ 根）
 
 ## 未完成项 / 风险 / 下一副 agent 精确待办
 
-1. **本会话改动未提交**：8 个文件（5 改 3 新增，见上）已收尾、发布门全绿，**可提交/推送**；按铁律 3 提交前本 HANDOFF 已更新为第 18 版、交接提示已给出。**提交/推送由用户确认**。
+1. **本会话改动已提交/推送**：提交 **`e017773`**（`92eff88..e017773`），CI 三 job 全绿（run 34553850653）。无待提交项。提交前本 HANDOFF 已更新为第 18 版；主agent已独立复核发布门并把修复项的**运行期冒烟**（真实库代理四端打包 + opencode 放大权限修复）纳入验证。
 2. **agent-creator 版本 0.8.0 已 bump**（`SKILL.md` frontmatter）；`evolutions/` 已记录（`2026-09-11-add-package-agent.md`）。
 3. **已知未改（低，观察记录）**：`adapt_agent.py` 在 `tools` 白名单 + `permission` 字符串简写并存时仍会丢弃白名单并保留全局简写（放大权限）。`package_agent.py` 已修复；若要对齐，需单独评审并同步其 7 例既有测试语义（历史行为），**不在本会话范围**。
 4. **能力库未变**：`skills/` 5、`agents/` 32；未动审计与 CATALOG。任何后续增删仍须走创建器 + 登记审计 + 重跑 `build_catalog.py`。
