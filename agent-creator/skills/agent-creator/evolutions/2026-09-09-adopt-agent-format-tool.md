@@ -2,8 +2,8 @@
 
 ## 基本信息
 - 日期：2026-09-09
-- 需求：用户确认把 CATALOG 生成器所在来源（`E:\GitHub\personal-workflow`）的另一工具 `tools/scripts/agent_format.py` 移植为本成品工具——把「安装到四端」从文档承诺兑现为确定性工具。
-- 上游候选：`E:\GitHub\personal-workflow\tools\scripts\agent_format.py`（claude/opencode 的 frontmatter 转换 + post-check 适配层；原为 install_agent.py / update_agent.py 的共享库）。
+- 需求：用户确认把 CATALOG 生成器所在来源（外部仓库 `personal-workflow`）的另一工具 `tools/scripts/agent_format.py` 移植为本成品工具——把「安装到四端」从文档承诺兑现为确定性工具。
+- 上游候选：外部仓库 `personal-workflow` 的 `tools/scripts/agent_format.py`（claude/opencode 的 frontmatter 转换 + post-check 适配层；原为 install_agent.py / update_agent.py 的共享库）。
 - 本成品缺口证据：`references/agent-template.md` 整段描述该转换语义却推给**不存在的「宿主安装器」**（与上次清掉的 `install_agent.py` 幽灵引用同源悬空）；`agents/` 库以 `tools: [...]` 数组规范形存文件，直接复制到 opencode/claude 可能无法加载，仓库无任何工具保证「复制即能装」。
 
 ## 对比分析

@@ -20,7 +20,7 @@ Every transform ends with a per-client post-check derived from the client's
 published schema; violations exit 1 (fail loudly, never emit a file that would
 not load).
 
-Adapted from E:\\GitHub\\personal-workflow\\tools\\scripts\\agent_format.py
+Adapted from tools/scripts/agent_format.py (external personal-workflow repo).
 (the frontmatter adapter of that repo's install/update launchers). This repo
 installs agents by copying into the client agents dir (no install launcher),
 so this script is the conversion step you run BEFORE the copy.

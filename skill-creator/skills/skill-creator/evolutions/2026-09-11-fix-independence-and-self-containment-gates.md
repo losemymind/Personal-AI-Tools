@@ -24,7 +24,7 @@ python -m pytest tools/tests -q                                   # 25 passed
 python -m pytest tests/ -q                                        # skill-creator
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 python -m pytest tests/ -q                                        # agent-creator
-python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents
+python skills/agent-creator/scripts/validate_agents.py --strict --dir <仓库根>/agents
 python tools/scripts/build_catalog.py --check
 ```
 

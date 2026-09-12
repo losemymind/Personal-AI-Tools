@@ -59,7 +59,7 @@
 ## 验证结果
 
 - `python -m pytest tests/ -q`：**42 passed**。
-- `validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents`：Checked 32，全绿（能力库无密钥/危险管道）。
+- `validate_agents.py --strict --dir <仓库根>/agents`：Checked 32，全绿（能力库无密钥/危险管道）。
 - `search_agent_index.py --stats`：3 源 568 条，完整性 OK。
 - `build_catalog.py --check`：skills / agents 目录均 up to date。
 

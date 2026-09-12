@@ -5,8 +5,9 @@ CATALOG.md files are derived artifacts that must never be edited by hand. AI
 agents (claude/opencode/codex/deepseek) read these files to match a natural
 language need to an installable local capability.
 
-Adapted from the implementation that originally produced this repository's
-CATALOG.md files: E:\\GitHub\\personal-workflow\\tools\\scripts\\build_catalog.py.
+Adapted from the external personal-workflow repo's
+tools/scripts/build_catalog.py, which originally produced this repository's
+CATALOG.md files.
 Two deliberate deviations for this repo's conventions:
   - install semantics are "copy dir into the target client's skills/agents
     directory" (this repo has no install_*.py launcher, unlike the upstream);

@@ -25,7 +25,7 @@
 ## 验证结果
 
 - `python -m pytest tests/ -q`：**58 passed**（原 53 + 新 5）。
-- `validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents`：Checked 32，全绿（移除回退后库 32 代理无悬空引用）。
+- `validate_agents.py --strict --dir <仓库根>/agents`：Checked 32，全绿（移除回退后库 32 代理无悬空引用）。
 - `search_agent_index.py --stats`：3 源 568 条，完整性 OK。
 - `build_catalog.py --check`：skills / agents 目录均 up to date。
 - 运行期探针：续行/引号/子壳绕过由漏检变检出；隐藏目录凭据 0 → 2 命中；假通过变为明确报错；benign 用例零误报。

@@ -28,7 +28,7 @@
 
 | 来源类型 | 来源详情 | 涉及代理 |
 |---|---|---|
-| 外部本地仓库 | `E:\GitHub\UEGameStudio\UEGameStudio\agents\academic`（UEGameStudio 项目组，5 代理） | academic×5 |
+| 外部本地仓库 | `UEGameStudio 仓库的 agents/academic`（UEGameStudio 项目组，5 代理） | academic×5 |
 | 远程仓库（官方导入） | `anthropics/claude-plugins-official` → `plugins/code-simplifier/agents/code-simplifier.md`（2026-09-03 按用户指定导入并适配） | code-simplifier |
 | 自建 | 本仓库创建（agent-creator 流程） | code-reviewer |
 
@@ -45,7 +45,7 @@
 
 ## 4. 分组：academic（公共研究代理，5 个）
 
-> 数据来源（全部）：外部本地仓库 `E:\GitHub\UEGameStudio\UEGameStudio\agents\academic`（随迁移保留为公共代理）。
+> 数据来源（全部）：外部本地仓库 `UEGameStudio 的 agents/academic`（随迁移保留为公共代理）。
 > 审计期已逐一执行 agent-creator 对比择优（上游：agency-agents / agency-agents-zh 同名 academic 代理），结论自建更优 → ✅ 合规（规则 1）。
 
 | 代理名 | 位置 | layer（目录） | maturity | 数据来源 | 经 agent-creator | 结论 |

@@ -1,6 +1,6 @@
 # AGENTS.md — skill-creator 成品演进维护者
 
-本文件是 skill-creator **开发工作区**（`E:\GitHub\Personal-AI-Tools\skill-creator`）的角色守则：把在本工作区运行的代理塑造成 **skill-creator 技能的常驻演进维护者**。职责 = 持续完善并进化成品 `skills/skill-creator/`，把真实使用暴露的短板、上游新进展、评审与评测反馈，转化为对成品方法论 / 脚本 / 资源 / 验证器的改进并保证回归——即**元技能的自举改进**。
+本文件是 skill-creator **开发工作区**（`skill-creator/`，即本文件所在目录）的角色守则：把在本工作区运行的代理塑造成 **skill-creator 技能的常驻演进维护者**。职责 = 持续完善并进化成品 `skills/skill-creator/`，把真实使用暴露的短板、上游新进展、评审与评测反馈，转化为对成品方法论 / 脚本 / 资源 / 验证器的改进并保证回归——即**元技能的自举改进**。
 
 > 本文件是 dev-only 角色守则，**不随成品分发**，与仓库根 `AGENTS.md`（全局布局/铁律）、成品 `SKILL.md`（方法论入口）、工作区 `README.md`（布局与沿革权威）互补。它不是成品的一部分；成品内文档**不得引用本文件**。
 
@@ -53,9 +53,9 @@ python -m pytest tests/ -q
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
 ```
 - `pytest tests/` 内含 `tests/test_product_self_containment.py`：成品**全 md**（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用扫描——补 `validate_skills.py`（仅 SKILL.md 反引号引用）的覆盖盲区；新增/改动成品文档后此测试是自包含的硬门。
-- 若改动 `validate_skills.py` 且可能影响库判定，加跑能力库 strict（用绝对路径，相对路径会漏扫）：
+- 若改动 `validate_skills.py` 且可能影响库判定，加跑能力库 strict（指向能力库的绝对路径，相对路径会漏扫；把 `<仓库根>` 换成克隆仓库的实际路径）：
 ```bash
-python skills/skill-creator/scripts/validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills
+python skills/skill-creator/scripts/validate_skills.py --strict --dir <仓库根>/skills
 ```
 - 全绿才可宣布完成；失败必须修到绿。
 

@@ -21,7 +21,7 @@
 ## 验证结果
 - `python -m pytest tests/ -q`：**167 passed**（原 166 + 新 1）。
 - `validate_skills.py --strict --dir skills/skill-creator`：Checked 1，全绿。
-- `validate_skills.py --strict --dir E:\GitHub\Personal-AI-Tools\skills`：Checked 5，全绿。
+- `validate_skills.py --strict --dir <仓库根>/skills`：Checked 5，全绿。
 - `search_index.py --stats`：4 源 2187 条。
 - `build_catalog.py --check`：up to date。
 - 运行期探针：空白描述由「写入并被验证器拒绝」变「前置拒绝、不落盘」。

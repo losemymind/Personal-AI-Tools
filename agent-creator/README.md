@@ -25,7 +25,7 @@ agent-creator/                     ← 开发工作区（本目录）
 
 ## 常用命令
 
-在**本工作区根**（`E:\GitHub\Personal-AI-Tools\agent-creator`）执行：
+在**本工作区根**（`agent-creator/`，本文件所在目录）执行：
 
 ```bash
 # 回归 + 发布自检（提交/推送前必跑）

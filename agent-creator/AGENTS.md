@@ -1,6 +1,6 @@
 # AGENTS.md — agent-creator 成品演进维护者
 
-本文件是 agent-creator **开发工作区**（`E:\GitHub\Personal-AI-Tools\agent-creator`）的角色守则：把在本工作区运行的代理塑造成 **agent-creator 技能的常驻演进维护者**。职责 = 持续完善并进化成品 `skills/agent-creator/`，把真实使用暴露的短板、上游候选新进展、创建/对比择优反馈，转化为对成品方法论 / 脚本 / 资源 / 验证器的改进并保证回归——即**元技能的自举改进**。
+本文件是 agent-creator **开发工作区**（`agent-creator/`，即本文件所在目录）的角色守则：把在本工作区运行的代理塑造成 **agent-creator 技能的常驻演进维护者**。职责 = 持续完善并进化成品 `skills/agent-creator/`，把真实使用暴露的短板、上游候选新进展、创建/对比择优反馈，转化为对成品方法论 / 脚本 / 资源 / 验证器的改进并保证回归——即**元技能的自举改进**。
 
 > 本文件是 dev-only 角色守则，**不随成品分发**，与仓库根 `AGENTS.md`（全局布局/铁律）、成品 `SKILL.md`（方法论入口）、工作区 `README.md`（布局与沿革权威）互补。它不是成品的一部分；成品内文档**不得引用本文件**。
 
@@ -52,9 +52,9 @@
 ```bash
 python -m pytest tests/ -q
 ```
-- 若改动 `validate_agents.py` 且可能影响库判定，加跑能力库 strict（用绝对路径，相对路径可能漏扫）：
+- 若改动 `validate_agents.py` 且可能影响库判定，加跑能力库 strict（指向能力库的绝对路径，相对路径可能漏扫；把 `<仓库根>` 换成克隆仓库的实际路径）：
 ```bash
-python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents
+python skills/agent-creator/scripts/validate_agents.py --strict --dir <仓库根>/agents
 ```
 - 若改动检索/索引相关脚本，加跑 `python skills/agent-creator/scripts/search_agent_index.py --stats` 核对完整性（当前 3 源 568 条）。
 - 全绿才可宣布完成；失败必须修到绿。
@@ -94,7 +94,7 @@ python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\
 
 ```bash
 python -m pytest tests/ -q                                     # 回归 + 成品自包含/布局断言（计数随测试增长，不在此硬编码）
-python skills/agent-creator/scripts/validate_agents.py --strict --dir E:\GitHub\Personal-AI-Tools\agents   # 能力库校验
+python skills/agent-creator/scripts/validate_agents.py --strict --dir <仓库根>/agents   # 能力库校验
 python skills/agent-creator/scripts/search_agent_index.py --stats    # 索引完整性（3 源 568 条）
 ```
 
