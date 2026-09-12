@@ -403,10 +403,28 @@ def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> di
         # --dir, or run from a directory that holds no AGENT.md). Fail loudly
         # instead of a green, empty release gate. This holds whether the target
         # came from --dir or from the default (current working directory).
+        #
+        # A skill-form product root (SKILL.md present, e.g. agent-creator itself
+        # installed into a client's skills/ dir) legitimately holds no AGENT.md —
+        # validate_agents only applies to agent LIBRARIES. Pointing it there is a
+        # usage error, so still fail, but say so explicitly instead of letting the
+        # user suspect the source tree is incomplete.
+        hint = ""
+        if os.path.isfile(os.path.join(agents_dir, "SKILL.md")):
+            hint = (
+                " The target is a skill-form product root (SKILL.md present, no "
+                "AGENT.md), not an agent library: agent-creator is a skill installed "
+                "into the client's skills/ dir, and validate_agents.py only validates "
+                "agent definitions. To self-check an installed agent-creator, run the "
+                "roundtrip from SKILL.md 自安装 step 4 (create_agent.py → "
+                "validate_agents.py --dir <生成的 install-check 目录>), or point --dir "
+                "at an agents/ library."
+            )
         errors.append(
             f"❌ No agent definitions found under: {agents_dir} "
             "(wrong --dir? point it at a directory containing AGENT.md; the default "
             "target is the current working directory)"
+            f"{hint}"
         )
 
     return {

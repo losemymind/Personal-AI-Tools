@@ -298,7 +298,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 1. **定位本技能目录**：按「资源路径基准」的探测顺序定位（codex 用技能列表自带路径）。
 2. **选定作用域与端**（先问用户）：全局（默认）或工作区（**必须落到 git 仓库根**）。
 3. **放置**：把本技能目录**整体**复制到目标客户端的 **skills** 目录（矩阵见上一段），排除 `__pycache__/` 等缓存。
-4. **安装后自检**（本技能工具链自包含，逐项确认可用）：`python scripts/search_agent_index.py --stats`（索引来源与条数）；再跑一次脚手架→验证往返：`python scripts/create_agent.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp`，随后 `python scripts/validate_agents.py --strict --dir ./install-check-tmp`，通过后删除临时目录。
+4. **安装后自检**（本技能工具链自包含，逐项确认可用）：`python scripts/search_agent_index.py --stats`（索引来源与条数）；再跑一次脚手架→验证往返：`python scripts/create_agent.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp`，随后 `python scripts/validate_agents.py --strict --dir ./install-check-tmp`，通过后删除临时目录。注意：**不要对技能根目录直接跑 `validate_agents.py`**——它是技能形态（无 AGENT.md），会 fail-loud 报「No agent definitions found」，与源目录是否完整无关；代理验证只针对 `create_agent` 产物或代理库目录。
 5. **清理缓存**：删除安装目录内的 `__pycache__/`。
 6. **交付**：提示重启客户端，用真实代理请求触发一次，并输出确切安装路径。
 

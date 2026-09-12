@@ -111,3 +111,23 @@ def test_zero_definitions_fails_without_explicit_dir(tmp_path):
     assert results["agent_count"] == 0
     assert any("No agent definitions found" in e for e in results["errors"])
     assert va.validate_agents(str(empty)) is False
+
+
+def test_zero_definitions_on_skill_form_root_guides_user(tmp_path):
+    """Scanning the agent-creator skill root (SKILL.md present, no AGENT.md)
+    still fails loudly but explains it is not an agent library, instead of
+    hinting at an incomplete source tree."""
+    va = _load("validate_agents.py")
+    sk = tmp_path / "agent-creator"
+    (sk / "scripts").mkdir(parents=True)
+    (sk / "SKILL.md").write_text("---\nname: agent-creator\ndescription: creator skill\n---\n# x\n", encoding="utf-8")
+    results = va.collect_validation_results(str(sk))
+    assert results["agent_count"] == 0
+    err = "\n".join(results["errors"])
+    assert any("No agent definitions found" in e for e in results["errors"])
+    assert "skill-form product root" in err
+    assert "agent-creator is a skill installed" in err
+
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(sk))
+    assert r.returncode == 1
+    assert "skill-form product root" in r.stdout
