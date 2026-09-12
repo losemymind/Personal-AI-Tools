@@ -114,3 +114,67 @@ def test_description_multiline_advisory(temp_agent):
     r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr
     assert "multi-line" in r.stdout
+
+
+def _with_color(temp_agent, color_line: str):
+    content = (temp_agent / "AGENT.md").read_text(encoding="utf-8")
+    content = content.replace("mode: subagent\n", f"mode: subagent\n{color_line}", 1)
+    (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
+
+
+def test_hex_color_passes(temp_agent):
+    """A quoted #RRGGBB color is a valid optional UI-display field."""
+    from conftest import run_script
+
+    _with_color(temp_agent, 'color: "#DC2626"\n')
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_theme_color_passes(temp_agent):
+    """An opencode theme name is a valid color value."""
+    from conftest import run_script
+
+    _with_color(temp_agent, "color: accent\n")
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_invalid_color_fails(temp_agent):
+    """A non-hex, non-theme color is a frontmatter error."""
+    from conftest import run_script
+
+    _with_color(temp_agent, 'color: "red"\n')
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 1
+    assert "color" in r.stdout
+
+
+def test_unquoted_hex_color_fails(temp_agent):
+    """An unquoted hex color parses as a YAML comment (value None) and must be
+    rejected, enforcing the `color: "#DC2626"` quoting discipline."""
+    from conftest import run_script
+
+    _with_color(temp_agent, color_line="color: #DC2626\n")
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 1
+    assert "color" in r.stdout
+
+
+def test_sparse_permission_advises_full_matrix(temp_agent):
+    """A permission map without the `"*": deny` default-reject is an advisory
+    (never a failure), nudging toward the full permission matrix."""
+    from conftest import run_script
+
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "默认拒绝" in r.stdout
+
+
+def test_no_color_is_fine(temp_agent):
+    """color is optional: an agent without a color field must pass. Only the
+    field's value is validated when present."""
+    from conftest import run_script
+
+    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    assert r.returncode == 0, r.stdout + r.stderr

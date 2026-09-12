@@ -2,9 +2,23 @@
 name: your-agent-name
 description: "一句话：这个代理是谁、负责什么、何时被调用（≤200 字符）。前端加载「做什么+何时用」。"
 mode: subagent
-tools: [read, grep, glob, bash]
-permission:
+# color: "#DC2626"   # ← 可选：UI 显示色（#RRGGBB 或主题名；hex 值在 YAML 中需加引号）；create_agent.py 创建时始终启用
+tools: [read, grep, glob, bash]      # ← 工具白名单；permission 按它生成全量矩阵
+permission:                          # ← 默认拒绝("*") + 逐键显式 allow/deny（尽量全）
+  "*": deny
+  read: allow
+  glob: allow
+  grep: allow
+  list: deny
+  skill: deny
+  webfetch: deny
+  websearch: deny
+  question: deny
   edit: deny
+  bash: allow
+  task: deny
+  lsp: deny
+  external_directory: deny
 ---
 
 # 代理名称

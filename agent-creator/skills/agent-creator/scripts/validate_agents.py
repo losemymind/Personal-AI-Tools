@@ -61,6 +61,13 @@ BACKTICK_REF_RE = re.compile(
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
+# Optional UI display color. Mirrors adapt_agent.py's opencode post-check:
+# a #RRGGBB hex value or one of the opencode theme names. In YAML a `#` starts
+# a comment, so a hex color MUST be quoted (`color: "#DC2626"`); an unquoted
+# value parses as None and is rejected here (which also catches copy-paste slips).
+VALID_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+COLOR_THEMES = ("primary", "secondary", "accent", "success", "warning", "error", "info")
+
 BOUNDARY_PATTERNS = [
     re.compile(r"^##\s+职责范围", re.MULTILINE),
     re.compile(r"^##\s+Responsibilities?", re.MULTILINE | re.IGNORECASE),
@@ -293,6 +300,15 @@ def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> di
                             "(description is the only unconditionally loaded trigger surface)."
                         )
 
+            if "color" in metadata:
+                color = metadata["color"]
+                if not isinstance(color, str) or not (VALID_COLOR.match(color) or color in COLOR_THEMES):
+                    themes = "/".join(COLOR_THEMES)
+                    errors.append(
+                        f"❌ {rel_path}: 'color' must be a hex color (#RRGGBB, quoted as "
+                        f'"#DC2626") or one of {themes}, got {color!r}'
+                    )
+
             risk = metadata.get("risk")
             if risk == "offensive" and not any(p.search(content) for p in SECURITY_DISCLAIMER_PATTERNS):
                 errors.append(f"🚨 {rel_path}: OFFENSIVE AGENT MISSING THE AUTHORIZED-USE DISCLAIMER")
@@ -318,6 +334,16 @@ def collect_validation_results(agents_dir: str, strict_mode: bool = False) -> di
             ):
                 msg = f"⚠️  {rel_path}: No tools/permission declaration (least-privilege principle)"
                 (errors if strict_mode else warnings).append(msg.replace("⚠️", "❌") if strict_mode else msg)
+
+            perm_map = metadata.get("permission")
+            if isinstance(perm_map, dict) and "*" not in perm_map:
+                # Full-matrix discipline (advisory, never a failure): prefer the
+                # `"*": deny` default-reject + explicit per-key allow/deny shape
+                # (UEGameStudio security-engineer example) over a sparse map.
+                advisories.append(
+                    f"ℹ️  {rel_path}: permission 缺默认拒绝 `\"*\": deny`——建议用全量矩阵 "
+                    "(默认拒绝 + 逐键显式 allow/deny，见 references/agent-template.md)"
+                )
 
             if not any(p.search(content) for p in COLLAB_PATTERNS):
                 msg = f"⚠️  {rel_path}: Missing '## 协作协议' section (when called / how to report)"

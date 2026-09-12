@@ -2,10 +2,23 @@
 name: code-reviewer
 description: "常驻代码审查代理：对 PR/diff 做多轴质量审查（正确性/可维护性/性能/安全），分级输出问题清单与修改建议。当用户要求「审查代码」「review 我的改动」「合并前把关」时被调用。只读角色，无编辑权限。"
 mode: subagent
+color: "#DC2626"
 tools: [read, grep, glob, bash]
 permission:
+  "*": deny
+  read: allow
+  glob: allow
+  grep: allow
+  list: deny
+  skill: deny
+  webfetch: deny
+  websearch: deny
+  question: deny
   edit: deny
-  write: deny
+  bash: allow
+  task: deny
+  lsp: deny
+  external_directory: deny
 maturity: runtime-verified
 ---
 

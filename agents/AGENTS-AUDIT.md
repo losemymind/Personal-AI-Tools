@@ -6,6 +6,8 @@
 > 本次审计日期：2026-09-03
 > 2026-09-03 更新：academic×5 已逐一执行 agent-creator 对比择优（上游同名 academic 代理比对），结论为「自建（迁移版）更优/持平」→ **已转合规**。
 > 2026-09-09 更新：agent-creator 已在**本仓库** `agent-creator/skills/agent-creator/`；`agents/` 库校验用其 `scripts/validate_agents.py`。
+> 2026-09-12 更新：全部 7 代理 frontmatter 增加 `color`（UI 显示色，`color: "#RRGGBB"` 引号形态）：code-quality 二代理补齐（code-reviewer `#DC2626` / code-simplifier `#2563EB`），academic×5 迁入时已自带；`validate_agents.py --strict` 对颜色做格式校验（hex 或主题名，缺省不报错），并对缺 `"*": deny` 的稀疏 permission 给 advisory 提示。
+> 2026-09-12 更新：code-quality 二代理 permission 升级为**全量矩阵**（`"*": deny` 默认拒绝 + 逐键显式 allow/deny，按各自 `tools` 白名单生成，与 academic×5 既有形态一致）。
 
 ## 1. 审计结论摘要
 

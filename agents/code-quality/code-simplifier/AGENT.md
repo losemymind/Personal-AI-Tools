@@ -2,10 +2,23 @@
 name: code-simplifier
 description: "简化重构最近修改的代码：提升清晰度、一致性、可维护性，保持功能完全不变、聚焦本次会话刚改动的代码（除非用户指定更广范围）。当用户要求简化代码、重构、清理冗余、改善可读性，或代码改动后希望自动精炼时被调用。"
 mode: subagent
+color: "#2563EB"
 tools: [read, grep, glob, edit, write]
 permission:
+  "*": deny
+  read: allow
+  glob: allow
+  grep: allow
+  list: deny
+  skill: deny
+  webfetch: deny
+  websearch: deny
+  question: deny
   edit: allow
-  write: allow
+  bash: deny
+  task: deny
+  lsp: deny
+  external_directory: deny
 maturity: static-verified
 source_repo: anthropics/claude-plugins-official
 ---

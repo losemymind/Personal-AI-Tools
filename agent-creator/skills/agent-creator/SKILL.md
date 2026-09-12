@@ -79,8 +79,18 @@ name: <agent-name>              # 必需：kebab-case
 description: "..."              # 必需：做什么 + 何时使用/被调用，≤200 字符（触发依据）
 mode: subagent                  # 客户端相关（opencode: primary/subagent/all）；其他客户端可忽略
 model: <provider/model-id>      # 可选：指定模型
+color: "#DC2626"                # 可选：UI 显示色（#RRGGBB 带引号或主题名；agent-creator 创建时始终包含）
 tools: [read, grep, bash]       # 可选：允许的工具列表（最小权限）
-permission: { "edit": "deny" }  # 可选：权限规则
+permission:                     # 可选：权限尽量全——默认拒绝 + 逐键显式 allow/deny
+  "*": deny
+  read: allow
+  grep: allow
+  bash: allow
+  edit: deny
+  task: deny
+  lsp: deny
+  external_directory: deny
+  # 其余键（list/skill/webfetch/websearch/question 等）按需显式补全；全量键见 references/agent-template.md
 temperature: 0.2                # 可选
 ---
 
@@ -255,6 +265,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 **边界与权限：**
 - [ ] 「职责范围」章节同时列出 必须做 / 拒绝做
 - [ ] 工具列表最小权限（无无关工具）
+- [ ] permission 尽量全：`"*": deny` 默认拒绝 + 逐键显式 `allow`/`deny`（稀疏矩阵会被验证器 advisory 提示）
 - [ ] 权限有风险的动作（删除/推送/生产）显式声明或拒绝
 - [ ] 有清晰的升级路径（何时交还人类）
 

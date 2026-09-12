@@ -10,9 +10,23 @@ name: my-reviewer
 description: "PR 审查代理：负责代码风格与架构审查，当用户要求审查 PR 或合并请求时被调用。"
 mode: subagent
 model: anthropic/claude-sonnet-4-6
-tools: [read, grep, glob]   # ← 仓库规范：工具白名单清单（数组形式）
-permission:
+color: "#DC2626"              # 可选：UI 显示色（#RRGGBB 带引号，或主题名）
+tools: [read, grep, glob]     # ← 仓库规范：工具白名单清单（数组形式）
+permission:                   # ← permission 尽量全：默认拒绝("*") + 逐键显式 allow/deny
+  "*": deny
+  read: allow
+  glob: allow
+  grep: allow
+  list: deny
+  skill: deny
+  webfetch: deny
+  websearch: deny
+  question: deny
   edit: deny
+  bash: deny
+  task: deny
+  lsp: deny
+  external_directory: deny
 ---
 ```
 
@@ -28,12 +42,13 @@ permission:
 - `mode`：`primary` / `subagent` / `all`（opencode 语义）
 - `model`：`provider/model-id` 格式（opencode/claude 支持）
 - `tools`：允许的工具列表（最小权限原则，越少越好）
-- `permission`：权限规则（如 `edit: deny`、`bash: ask`）
+- `permission`：权限规则。**尽量全**——用全量矩阵：`"*": deny` 默认拒绝 + 逐键显式 `allow`/`deny`（模板键见下方示例，按 `tools` 白名单生成，`write`/`patch` 折叠到 `edit`）；稀疏矩阵也可加载但会被验证器提示建议补全
 - `temperature` / `top_p`：采样参数（opencode 支持）
+- `color`：UI 显示色（TUI/列表卡片样式）。`#RRGGBB` 十六进制（YAML 中 `#` 开头是注释，**必须加引号**，如 `color: "#DC2626"`）或 opencode 主题名（`primary`/`secondary`/`accent`/`success`/`warning`/`error`/`info`）；**可选字段，缺少时不报错**，仅 agent-creator 创建时应包含
 
 **不进 frontmatter（记于代理库根 `AGENTS-RECORDS.md` 创建记录账本）**：`version`（版本以 git 提交历史为准）、`tools_clients`（多端适配由打包器/安装阶段决定）、`source`/`source_repo`/`author`/`date_added`。打包前代理客户端中立、内容自足。
 
-**代理专属字段（opencode）**：`hidden`（隐藏于 TUI 列表）、`color`、`steps`、`options`、`disable`（禁用内置代理）。
+**代理专属字段（opencode）**：`hidden`（隐藏于 TUI 列表）、`steps`、`options`、`disable`（禁用内置代理）。
 
 ## 四端兼容矩阵
 
@@ -45,6 +60,7 @@ permission:
 | `model` | ✅ | ✅ | ✅ | ⚠️ |
 | `tools` | ✅（Claude 工具名） | ✅（opencode 工具名） | ⚠️ | ⚠️ |
 | `permission` | ✅（Claude 格式） | ✅（opencode 格式） | ⚠️ | ⚠️ |
+| `color` | ⚠️ 透传（无原生样式） | ✅（hex/主题名，样式化） | ⚠️ 透传 | ⚠️ 透传 |
 | `maturity` | 忽略（自定义） | ⚠️ | ⚠️ | ⚠️ |
 
 **兼容策略**：仓库内保持规范形式（`tools: [read, ...]` 数组白名单），**安装时用 `scripts/adapt_agent.py` 做 frontmatter 适配**自动转换为对应客户端的合法形态并执行 post-check：
@@ -72,4 +88,5 @@ permission:
 - [ ] 工具最小权限，破坏性动作显式声明或拒绝
 - [ ] 有升级路径（何时交还人类）
 - [ ] 完成标准可验证
+- [ ] `color` 若存在须为 `#RRGGBB`（带引号，如 `"#DC2626"`）或主题名
 - [ ] 通过 `validate_agents.py --strict`

@@ -7,6 +7,7 @@ validate_agents.py.
 Usage:
     python scripts/create_agent.py                          # interactive
     python scripts/create_agent.py --name my-reviewer --mode subagent --out ./agents  # non-interactive
+    python scripts/create_agent.py --name my-reviewer --mode subagent --color "#DC2626" --out ./agents  # 可选 UI 色
 """
 
 import argparse
@@ -22,9 +23,25 @@ TEMPLATE_PATH = SCRIPT_DIR.parent / "templates" / "AGENT.template.md"
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 MODES = ["primary", "subagent", "all"]
-# Tool names that grant state-changing edits. The scaffold's default safety
-# posture (`permission: edit: deny`) must not contradict an explicit whitelist.
+# Optional UI display color; mirrors validate_agents.py / adapt_agent.py. In YAML
+# a `#` starts a comment, so hex values MUST be quoted (`--color "#DC2626"`).
+DEFAULT_COLOR = "#DC2626"
+VALID_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+COLOR_THEMES = ("primary", "secondary", "accent", "success", "warning", "error", "info")
+# Tool names that grant state-changing edits. The scaffold's permission matrix
+# derives from the whitelist via TOOL_TO_PERMISSION_KEY (write/patch fold to edit).
 EDIT_TOOL_ALIASES = {"edit", "write", "patch"}
+TOOL_TO_PERMISSION_KEY = {"edit": "edit", "write": "edit", "patch": "edit"}
+
+# Canonical FULL permission matrix keys (opencode permission model, the shape used
+# by this repo's academic agents and the UEGameStudio qa/security-engineer example):
+# `"*": deny` default-rejects everything, then every concrete key is declared
+# explicitly (allow for whitelisted tools, deny otherwise) so the face is always
+# complete — least privilege with never a silent gap.
+PERMISSION_ORDER = [
+    "read", "glob", "grep", "list", "skill", "webfetch", "websearch",
+    "question", "edit", "bash", "task", "lsp", "external_directory",
+]
 
 # Central creation-record ledger (provenance/author/date live here, not in
 # AGENT.md frontmatter — an agent is client-neutral before packaging, and
@@ -123,7 +140,19 @@ def _render_body_tools(tools) -> tuple[str, str, bool]:
     return allowed, forbidden, editing_allowed
 
 
-def build_agent_md(name, description, mode, tools) -> str:
+def _render_permission(tools) -> str:
+    """Render the full permission matrix: `"*": deny` default + explicit per-key
+    allow/deny derived from the whitelist (write/patch fold to edit)."""
+    allowed = {TOOL_TO_PERMISSION_KEY.get(t, t) for t in tools}
+    lines = ["permission:", '  "*": deny']
+    for key in PERMISSION_ORDER:
+        lines.append(f"  {key}: {'allow' if key in allowed else 'deny'}")
+    for key in sorted(allowed - set(PERMISSION_ORDER)):
+        lines.append(f"  {key}: allow")
+    return "\n".join(lines) + "\n"
+
+
+def build_agent_md(name, description, mode, tools, color=DEFAULT_COLOR) -> str:
     allowed, forbidden, editing_allowed = _render_body_tools(tools)
     if TEMPLATE_PATH.exists():
         content = TEMPLATE_PATH.read_text(encoding="utf-8-sig")
@@ -143,33 +172,40 @@ def build_agent_md(name, description, mode, tools) -> str:
             flags=re.MULTILINE,
         )
         content = re.sub(
-            r"^tools: \[.*?\]$",
+            r"^tools: \[.*?\]",
             lambda m: f"tools: [{', '.join(tools)}]",
             content,
             count=1,
             flags=re.MULTILINE,
         )
-        # An explicit edit-family whitelist must not be silently denied by the
-        # boilerplate `permission: edit: deny` (the packaged permission graph
-        # would let the explicit deny win, contradicting `tools`).
-        if editing_allowed:
-            content = re.sub(
-                r"^permission:[^\n]*\n(?:[ \t]+[^\n]*\n)*",
-                "",
-                content,
-                count=1,
-                flags=re.MULTILINE,
-            )
+        # The scaffold always carries a color (UEGameStudio-style UI display);
+        # un-comment the template's optional line with the picked value.
+        content = re.sub(
+            r"^#?\s*color:.*$",
+            lambda m: f"color: {_yaml_str(color)}",
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+        # Replace the template's permission block with the full matrix derived
+        # from the whitelist (`"*": deny` + explicit allow/deny per key).
+        content = re.sub(
+            r"^permission:[^\n]*\n(?:[ \t]+[^\n]*\n)*",
+            _render_permission(tools),
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
         content = content.replace("{{ALLOWED_TOOLS}}", allowed)
         content = content.replace("{{FORBIDDEN_TOOLS}}", forbidden)
         return content
-    perm_block = "" if editing_allowed else "permission:\n  edit: deny\n"
     return f"""---
 name: {name}
 description: {_yaml_str(description)}
 mode: {mode}
+color: {_yaml_str(color)}
 tools: [{', '.join(tools)}]
-{perm_block}---
+{_render_permission(tools)}---
 
 # {name.replace('-', ' ').title()}
 
@@ -222,6 +258,8 @@ def main() -> int:
     parser.add_argument("--description", default=None)
     parser.add_argument("--mode", default=None, choices=MODES)
     parser.add_argument("--tools", default="read,grep,glob,bash", help="逗号分隔的工具列表")
+    parser.add_argument("--color", default=None,
+                        help="可选：UI 显示色（如 \"#DC2626\" 或主题名；脚本自动加引号）")
     parser.add_argument("--author", default=None, help="作者标识（仅写入创建记录账本，不进 frontmatter）")
     parser.add_argument("--source", default="self", help="来源：self/community/official/external/URL（仅记录账本）")
     parser.add_argument("--source-repo", default="", dest="source_repo", help="上游仓库 OWNER/REPO 或本地来源名（仅记录账本）")
@@ -265,6 +303,17 @@ def main() -> int:
     mode = args.mode or ("subagent" if not interactive else ask("模式", "subagent", MODES))
 
     tools = [t.strip().lower() for t in args.tools.split(",") if t.strip()]
+
+    # The scaffold always carries a UI display color (the field is optional in
+    # general, but agents created via agent-creator include it). Interactive mode
+    # asks with a default; non-interactive uses the default unless --color given.
+    color = (args.color or "").strip() or (
+        ask("UI 显示色（#RRGGBB 或主题名）", DEFAULT_COLOR) if interactive else DEFAULT_COLOR
+    )
+    if not (VALID_COLOR.match(color) or color in COLOR_THEMES):
+        print(f"❌ 无效 color: {color}（需 #RRGGBB 十六进制或主题名 {'/'.join(COLOR_THEMES)}）")
+        return 1
+
     author = args.author or (ask("作者标识", "losemymind") if interactive else "losemymind")
 
     out_dir = Path(args.out) if args.out else Path.cwd()
@@ -281,7 +330,7 @@ def main() -> int:
         print(f"❌ 无法创建目录: {e}")
         return 1
 
-    body = build_agent_md(name, description, mode, tools)
+    body = build_agent_md(name, description, mode, tools, color)
     (agent_dir / "AGENT.md").write_text(body, encoding="utf-8")
     print(f"✅ 创建骨架: {agent_dir}")
     if args.records:
