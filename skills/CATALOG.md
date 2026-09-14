@@ -17,6 +17,16 @@
 
 **触发器**：Reviewing pull requests and code changes
 
+## coding-discipline
+
+| category | development |
+| risk | safe |
+| install | 复制 `skills/development/coding-discipline` → 客户端 skills/ 目录 |
+
+**用途**：当用户要求编写、新增、修改、修复、重构或调试代码，或新增/调整某个功能时使用（任何非 trivial 的编码任务）。也用于纠正 AI 常见的编码毛病：默默替用户做假设、把简单问题过度工程化、顺手改动无关代码、用模糊标准代替可验证目标。当用户抱怨「代码太复杂 / 抽象太多 / 过度设计」或要求「简化 / 精简 / 只改必要的部分」时同样适用。英文场景：write / add / fix / refactor / debug / simplify code。
+
+**触发器**：用户要求编写新功能、修改现有代码、重构或调试（任何非 trivial 的编码任务）
+
 ## mcp-builder
 
 | category | development |

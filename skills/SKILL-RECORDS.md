@@ -13,3 +13,4 @@
 | ue5-performance-optimization | game-development | 2026-09-10 | personal-ai-tools | self | - | created | 2026-09-10-compare-ue5-performance-optimization.md |
 
 > `evolutions` 列对应创建器成品 `skill-creator/skills/skill-creator/evolutions/` 中的对比/导入记录文件名。
+| coding-discipline | development | 2026-09-14 | losemymind | community | multica-ai/andrej-karpathy-skills | adapted | 2026-09-14-compare-coding-discipline.md |

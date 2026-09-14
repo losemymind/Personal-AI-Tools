@@ -1,0 +1,83 @@
+{
+  "skill_name": "coding-discipline",
+  "evals": [
+    {
+      "id": 1,
+      "query": "帮我写一个用户注册功能，要支持邮箱、手机号和第三方登录",
+      "should_trigger": true,
+      "expected_output": "先列出假设并澄清范围/字段，再给最小实现"
+    },
+    {
+      "id": 2,
+      "query": "add rate limiting to our API endpoints",
+      "should_trigger": true,
+      "expected_output": "定义可验证成功标准，分步增量实现，不一次性上 Redis+监控"
+    },
+    {
+      "id": 3,
+      "query": "帮我重构这段代码让它更简单",
+      "should_trigger": true,
+      "expected_output": "先看清问题点，输出更精简版本，不引入新抽象"
+    },
+    {
+      "id": 4,
+      "query": "write a function to sort users by name alphabetically",
+      "should_trigger": true,
+      "expected_output": "直接给简短实现（sorted），不做策略模式"
+    },
+    {
+      "id": 5,
+      "query": "fix the typo in README.md",
+      "should_trigger": false,
+      "expected_output": "trivial 任务，不需要本技能"
+    },
+    {
+      "id": 6,
+      "query": "帮我写一个电商平台的商品搜索功能，支持关键词、价格区间和分类筛选",
+      "should_trigger": true,
+      "expected_output": "先澄清范围与性能目标，再给最小可行方案"
+    },
+    {
+      "id": 7,
+      "query": "what is the difference between async and await in Python?",
+      "should_trigger": false,
+      "expected_output": "知识问答，不需要本技能"
+    },
+    {
+      "id": 8,
+      "query": "程序在上传大于 10MB 的文件时总是失败，帮我调试一下",
+      "should_trigger": true,
+      "expected_output": "先写复现测试定义成功标准，再修"
+    },
+    {
+      "id": 9,
+      "query": "implement a microservices architecture with service discovery",
+      "should_trigger": true,
+      "expected_output": "大型实现任务，先列假设与可验证目标，再分步实现"
+    },
+    {
+      "id": 10,
+      "query": "写个用户权限管理系统，要支持 RBAC 和 ACL",
+      "should_trigger": true,
+      "expected_output": "先列假设并提问，再给简洁基础实现"
+    },
+    {
+      "id": 11,
+      "query": "help me fix my regex pattern for validating email addresses",
+      "should_trigger": false,
+      "expected_output": "调试单个表达式，trivial，不需要本技能"
+    },
+    {
+      "id": 12,
+      "query": "这段代码太复杂了，帮我精简掉不必要的抽象",
+      "should_trigger": true,
+      "expected_output": "识别过度抽象，给出精简版本"
+    },
+    {
+      "id": 13,
+      "query": "帮我写一份这周的周报，总结一下项目进展",
+      "should_trigger": false,
+      "expected_output": "写作任务，非编码，不需要本技能"
+    }
+  ]
+}
