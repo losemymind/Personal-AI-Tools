@@ -1,0 +1,65 @@
+{
+  "skill_name": "ue-editor-lifecycle",
+  "evals": [
+    {
+      "id": 1,
+      "query": "重新启动 UE 编辑器，项目卡死了",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：检查并结束已运行实例 → 异步启动编辑器的完整流程"
+    },
+    {
+      "id": 2,
+      "query": "源码构建的引擎，重建项目编辑器",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：创建 InstalledBuild.txt → 构建项目编辑器 → 启动编辑器"
+    },
+    {
+      "id": 3,
+      "query": "启动 PIE（Play In Editor）模式",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：异步启动编辑器并传入 -play 参数"
+    },
+    {
+      "id": 4,
+      "query": "UnrealEditor.exe 卡死了，MCP 服务器无响应",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：强制结束进程 → 重新启动"
+    },
+    {
+      "id": 5,
+      "query": "Build.bat 失败，DLL 被占用",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：结束已运行实例 → 检查 DLL 占用原因 → 重新构建"
+    },
+    {
+      "id": 6,
+      "query": "如何优化 UE5 性能",
+      "should_trigger": false,
+      "expected_output": "不触发本技能，应使用 ue5-performance-optimization 技能"
+    },
+    {
+      "id": 7,
+      "query": "打开 Unreal Engine 编辑器",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：检查并结束旧实例 → 异步启动编辑器"
+    },
+    {
+      "id": 8,
+      "query": "怎么写 C++ 代码",
+      "should_trigger": false,
+      "expected_output": "不触发本技能，应使用 coding-discipline 或 code-review-skill 技能"
+    },
+    {
+      "id": 9,
+      "query": "GenerateProjectFiles.bat 执行失败",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：检查项目文件生成问题，可能需要先结束编辑器实例"
+    },
+    {
+      "id": 10,
+      "query": "LaunchUE.bat 启动编辑器失败",
+      "should_trigger": true,
+      "expected_output": "UE 编辑器生命周期管理技能输出：检查并结束旧实例 → 异步启动编辑器"
+    }
+  ]
+}
