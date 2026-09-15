@@ -44,6 +44,21 @@ python skills/agent-creator/scripts/package_agent.py <代理目录|AGENT.md> \
 
 产物布局 `<产物目录>/<客户端>/<代理名>/`，各端先适配 frontmatter 再做 post-check，不合格不出包。它是单文件适配器 `scripts/adapt_agent.py` 的整目录/多端对应物，并修复了 opencode 端 permission 字符串简写放大权限的缺陷。
 
+## 来源与沿革
+
+本技能（成品 `skills/agent-creator/`）参考的数据来源（上游仓库）如下，与成品 `README.md`「上游外部仓库（索引来源）」及 `references/agent-index.md` 保持一致：
+
+**「先查后建」的上游代理索引**（成品 `indexes/upstream.db`，三源共 568 条）：
+- **[msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents)**（别名 `agency`，258 条）：扫描顶层 division 目录下的 `*.md` 代理定义。
+- **[Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)**（别名 `ccgs`，49 条）：扫描 `.claude/agents/*.md`（Claude Code 子代理）。
+- **[jnMetaCode/agency-agents-zh](https://github.com/jnMetaCode/agency-agents-zh)**（别名 `agency-zh`，261 条）：同 agency 布局的中文版（含 company/hr/legal 等特有 division）。
+
+**代理导入与工具移植来源**：
+- **[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)**：`plugins/code-simplifier/agents/code-simplifier.md` 为 `code-simplifier` 代理（现库中 `agents/code-quality/code-simplifier`）的导入源，见 `evolutions/2026-09-03-import-code-simplifier.md`。
+- **外部仓库 `personal-workflow`**：其 `tools/scripts/agent_format.py` 是成品 `scripts/adapt_agent.py` 的移植来源（CATALOG 生成器亦出自该仓库），见 `evolutions/2026-09-09-adopt-agent-format-tool.md`。
+
+具体吸收点、对比择优与学习点见成品 `references/` 文档头与 `evolutions/`。
+
 ## 提交说明
 
 本目录改动技能后，跑通上方命令即可 commit/push。

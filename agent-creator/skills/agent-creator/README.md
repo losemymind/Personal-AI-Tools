@@ -2,6 +2,22 @@
 
 创建自定义 Agent（代理）的目录。技能回答「怎么做」，代理回答「谁来做」——本目录专注后者。
 
+## 上游外部仓库（索引来源）
+
+「先查后建」检索的上游代理目录已内置为多源索引（`indexes/upstream.db`，随技能分发）：
+
+| 源 | 仓库 | 代理数 | 索引方式 | 检索 `--source` |
+|---|---|---|---|---|
+| **agency** | [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents) | 258 | 扫描顶层 division 目录下的 `*.md` 代理定义 | `agency` |
+| **ccgs** | [Donchitos/Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) | 49 | 扫描 `.claude/agents/*.md`（Claude Code 子代理） | `ccgs` |
+| **agency-zh** | [jnMetaCode/agency-agents-zh](https://github.com/jnMetaCode/agency-agents-zh) | 261 | 同 agency 布局的中文版（含 company/hr/legal 等特有 division） | `agency-zh` |
+
+- 检索全库：`python scripts/search_agent_index.py "<关键词>"`（默认查所有源）
+- 按源检索：加 `--source agency`（或 `ccgs` / `agency-zh`）
+- 重建：`python scripts/build_agent_index.py [--source all|agency|ccgs|agency-zh]`
+- 许可以各上游仓库 LICENSE 为准，入库代理需保留来源归属
+- 索引细节见 `references/agent-index.md`；新建代理时先在多源中「先查后建」
+
 ## 结构
 
 ```
