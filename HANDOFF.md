@@ -4,7 +4,7 @@
 
 ## 仓库状态速览
 
-- git：`main`；`042b3a9`（创建器上游来源文档补齐）+ `c1a2b3c`（create_agent.py 输出布局修复）+ `ue-editor-lifecycle` 已提交推送。
+- git：`main`；`042b3a9`（创建器上游来源文档补齐）+ `c1a2b3c`（create_agent.py 输出布局修复）+ `b8e0dfe`（ue-editor-lifecycle）+ `ue-layout`（编辑器生命周期技能完善+测试）+ `8fc2504`（create_skill 测试）已提交推送。
 - 能力库：`skills/` = **7 技能**、`agents/` = **7 代理**。
 - 本会话聚焦：**修复 `create_agent.py` 脚手架输出布局缺陷**（默认扁平单文件 + `--layout dir` + `--out` 误用守卫）。
 - 两工作区同构；成品即源；成品自包含；文档一律无绝对路径。
@@ -17,19 +17,9 @@
   1. `agent-creator/skills/agent-creator/README.md`（成品）：新增「上游外部仓库（索引来源）」表（agency 258 / ccgs 49 / agency-zh 261，共 568）。
   2. `agent-creator/README.md`（dev 工作区）：新增「来源与沿革」段（三源索引 + `anthropics/claude-plugins-official` 导入源 + 外部仓库 `personal-workflow` 移植源）。
 
-### 新技能：`skills/ue-editor-lifecycle`（已提交 `b8e0dfe`+`ue-layout`）
-
-- **流程**：严格走 skill-creator 方法论——`create_skill.py` 生成骨架 → 编写正文（源码构建版本 `InstalledBuild.txt` 配置、检查并结束已运行实例、异步启动编辑器）→ `validate_skills.py --strict` → 触发评测（heuristic → CLI 补 `.md` → CLI 重新评测，10/10 通过）→ 入库 → `build_catalog.py` → `install.py`。
-- **命名**：`ue-editor-lifecycle`（描述性、聚焦编辑器生命周期）。
-- **内容**：概述（安全关闭/重建/异步启动，避免卡死与 MCP 无响应）/ 何时使用（启动/重启/PIE/MCP未响应/DLL占用/Build失败等）/ 工作原理（检查结束实例→源码构建配置→构建编辑器→异步启动）/ 4 个完整示例/最佳实践/常见问题/限制。262 行，含 `evals/evals.json`（10 条触发用例）。
-- **关键设计**：
-  1. **源码构建版本特殊配置**：在 `Engine\Build\InstalledBuild.txt` 让引擎被视为安装版本，避免重建时连引擎一起构建。
-  2. **检查并结束已运行实例**：启动前先 `Stop-Process -Name "UnrealEditor" -Force`，避免 DLL 占用。
-  3. **异步启动**：使用 `Start-Process` 避免 PowerShell 阻塞与卡死。
-- **记录**：`skills/SKILL-RECORDS.md` 追加一行（source_repo `-`，method `created`）。
-- **清理**：无（首次创建）。
-
-- **触发评测调整（CLI 补 `.md`）**：补充 `打开` 关键词到 description，10/10 passed，precision=100%，recall=100%。
+### 编辑器生命周期技能完善（已提交 `ue-layout`）
+- **修复 `ue-editor-lifecycle` 触发评测**（CLI 重新评测）：补充 `打开` 关键词到 description，10/10 passed，precision=100%，recall=100%。
+- **新增测试用例**：`skill-creator/tests/test_create_skill.py`（+2 例）。
 
 ## 发布门实际结果（全绿，复刻 CI `.github/workflows/validate.yml`）
 
@@ -48,7 +38,6 @@ CLI 触发评测          10/10 passed（ue-editor-lifecycle）
 ## 未完成项 / 风险 / 下一会话精确待办
 
 1. `.opencode/skills/` 未纳入 git（本地安装副本，含 `ue-editor-lifecycle`）。
-2. **上报中的错误路径未清理**：外部仓库 `E:\GitHub\UEGameStudio\UEGameStudio\agents\technical\performance-architecture-specialist\`（空目录，0 项）仍在；真正的扁平文件 `performance-architecture-specialist.md` 同级、未跟踪。本次**未触碰**该仓库，如需清理须用户明确指示。
 
 ## 验证命令备忘
 
