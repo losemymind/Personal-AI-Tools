@@ -57,7 +57,7 @@ agents/
 
 ## 记录与审计
 
-- `AGENTS-RECORDS.md`：**创建/来源台账**（逐条事实，agent-creator 自动追加）。入库代理用 `python agent-creator/skills/agent-creator/scripts/create_agent.py ... --records agents/AGENTS-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `AGENT.md` frontmatter（`version`/`tools_clients` 也不写，版本以 git 提交历史为准）。
+- `AGENTS-RECORDS.md`：**创建/来源台账**（逐条事实，agent-creator 自动追加）。入库代理用 `python agent-creator/skills/agent-creator/scripts/create_agent.py ... --records agents/AGENTS-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `AGENT.md` frontmatter（`version`/`tools_clients` 也不写，版本以 git 提交历史为准）。本库条目采用目录形态（`<分类>/<name>/AGENT.md`），生成时须加 `--layout dir`（脚手架默认输出扁平单文件 `<name>.md`；`install.py` 按 `AGENT.md` 定位条目，扁平形态不会被收录）。
 - `AGENTS-AUDIT.md`：**入库合规审计**（人工维护，规则见根 `AGENTS.md`）：新增/改进代理后同步登记。
 - agent-creator 是**创建工具**（工作区 + 成品在 `agent-creator/`），不在代理库审计范围内。
 

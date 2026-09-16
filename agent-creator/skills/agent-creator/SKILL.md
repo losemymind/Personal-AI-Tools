@@ -60,14 +60,21 @@ risk: safe
 
 ## 代理文件解剖（Anatomy）
 
+代理定义有两种等价形态，`validate_agents.py` 两种都接受：
+
 ```
+# 扁平单文件（默认，--layout flat）：多数客户端 agent 目录/扁平库直接加载
+agents/<分类>/
+└── <agent-name>.md      ← 必需：代理定义（frontmatter + 身份/边界/协作）
+
+# 目录形态（--layout dir）：代理需捆绑 references/ 时用
 agents/<agent-name>/
 ├── AGENT.md             ← 必需：代理定义（frontmatter + 身份/边界/协作）
 ├── references/          ← 可选：按需加载的深化文档（协作协议、领域准则）
 └── README.md            ← 可选：附加说明
 ```
 
-**关键规则**：只有 `AGENT.md` 是必需的。各客户端的代理文件格式与安装位置见 `references/agent-template.md`。
+**关键规则**：代理定义本身是必需的，且文件名（扁平）或目录名（目录形态）应与 `name` 一致——校验器对不一致只告警，但客户端常以文件名/目录名作为代理标识。各客户端的代理文件格式与安装位置见 `references/agent-template.md`。
 
 ## 前置元数据字段规范
 
@@ -186,7 +193,7 @@ python scripts/search_agent_index.py --list-categories     # 分类（division�
 ### 阶段 3：设计与脚手架
 
 - 参考 `references/agent-template.md` 的四端字段兼容矩阵与 `references/agent-anatomy.md` 的结构规范；研究上游候选（阶段 0 命中）的身份表述、边界与协作写法作为范本。
-- 使用 `templates/AGENT.template.md` 骨架（或 `python scripts/create_agent.py --name <名> --mode subagent --out <目录>`）。
+- 使用 `templates/AGENT.template.md` 骨架（或 `python scripts/create_agent.py --name <名> --mode subagent --out <父目录>`）。脚手架默认输出**扁平单文件** `<父目录>/<名>.md`；当目标库以 `AGENT.md` 为键、或代理需捆绑 `references/` 时加 `--layout dir` 输出 `<父目录>/<名>/AGENT.md`。`--out` 是**父/分类目录**（脚手架自行追加名字），误传成代理自身目录会 fail loudly。
 - 按「身份先于指令」与「最小权限」确定职责边界与工具列表。
 
 ### 阶段 4：编写 AGENT.md

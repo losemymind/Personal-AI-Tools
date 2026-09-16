@@ -1,13 +1,20 @@
 """Interactive agent scaffold generator (part of agent-creator tooling).
 
-Creates a complete agent skeleton: AGENT.md with valid frontmatter,
+Creates a complete agent skeleton with valid frontmatter,
 identity/boundary/permission/collaboration sections. Output validates with
 validate_agents.py.
 
+Two output layouts are supported (--layout):
+  - flat (default): <out>/<name>.md          — single-file agent, the form most
+    client agent directories and flat agent libraries load directly
+  - dir:            <out>/<name>/AGENT.md    — directory form, used when the
+    agent ships bundled references/ (and by libraries keyed on AGENT.md)
+
 Usage:
     python scripts/create_agent.py                          # interactive
-    python scripts/create_agent.py --name my-reviewer --mode subagent --out ./agents  # non-interactive
-    python scripts/create_agent.py --name my-reviewer --mode subagent --color "#DC2626" --out ./agents  # 可选 UI 色
+    python scripts/create_agent.py --name my-reviewer --mode subagent --out ./agents  # flat
+    python scripts/create_agent.py --name my-reviewer --mode subagent --layout dir --out ./agents
+    python scripts/create_agent.py --name my-reviewer --color "#DC2626" --out ./agents  # 可选 UI 色
 """
 
 import argparse
@@ -23,6 +30,11 @@ TEMPLATE_PATH = SCRIPT_DIR.parent / "templates" / "AGENT.template.md"
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 MODES = ["primary", "subagent", "all"]
+# Output layouts: flat single file vs. directory keyed on AGENT.md. Both are
+# valid agent forms (validate_agents.py reads either), so the scaffold must not
+# hard-code one. Flat is the default: it is the shape client agent directories
+# and flat libraries load as-is; dir exists for agents shipping references/.
+LAYOUTS = ["flat", "dir"]
 # Optional UI display color; mirrors validate_agents.py / adapt_agent.py. In YAML
 # a `#` starts a comment, so hex values MUST be quoted (`--color "#DC2626"`).
 DEFAULT_COLOR = "#DC2626"
@@ -265,7 +277,11 @@ def main() -> int:
     parser.add_argument("--source-repo", default="", dest="source_repo", help="上游仓库 OWNER/REPO 或本地来源名（仅记录账本）")
     parser.add_argument("--method", default="created", help="创建方式：created/imported/migrated（仅记录账本）")
     parser.add_argument("--records", default=None, help="创建记录账本文件；提供则在创建后追加一行")
-    parser.add_argument("--out", default=None, help="输出目录（默认当前目录）")
+    parser.add_argument("--out", default=None, help="输出父目录（默认当前目录）")
+    parser.add_argument(
+        "--layout", default="flat", choices=LAYOUTS,
+        help="输出布局：flat=<out>/<name>.md（默认）；dir=<out>/<name>/AGENT.md（需捆绑 references 时）",
+    )
     parser.add_argument("--no-interactive", action="store_true", help="缺省字段使用默认值，不询问")
     args = parser.parse_args()
 
@@ -320,26 +336,45 @@ def main() -> int:
     if out_dir.exists() and not out_dir.is_dir():
         print(f"❌ --out 不是目录: {out_dir}")
         return 1
-    agent_dir = out_dir / name
-    if agent_dir.exists():
-        print(f"❌ 目录已存在: {agent_dir}")
+    # Guard the classic misuse `--out <...>/<name>`: the scaffold appends the
+    # name itself, so an --out whose last segment already IS the agent name
+    # would silently nest one level too deep (<...>/<name>/<name>/...). Fail
+    # loudly instead of writing an agent nobody loads.
+    if out_dir.name == name:
+        print(
+            f"❌ --out 指向代理自身目录: {out_dir}\n"
+            f"   --out 必须是**父目录/分类目录**（脚本会自行追加 '{name}'）——"
+            f"去掉末尾的 '{name}'，或改用其上一级。"
+        )
+        return 1
+
+    if args.layout == "flat":
+        target = out_dir / f"{name}.md"
+    else:
+        target = out_dir / name / "AGENT.md"
+    if target.exists():
+        print(f"❌ 目标已存在: {target}")
         return 1
     try:
-        agent_dir.mkdir(parents=True, exist_ok=True)
+        target.parent.mkdir(parents=True, exist_ok=True)
     except OSError as e:
         print(f"❌ 无法创建目录: {e}")
         return 1
 
     body = build_agent_md(name, description, mode, tools, color)
-    (agent_dir / "AGENT.md").write_text(body, encoding="utf-8")
-    print(f"✅ 创建骨架: {agent_dir}")
+    try:
+        target.write_text(body, encoding="utf-8")
+    except OSError as e:
+        print(f"❌ 无法写入: {e}")
+        return 1
+    print(f"✅ 创建骨架: {target}")
     if args.records:
         append_record(args.records, name, mode, author,
                       args.source, args.source_repo, args.method)
         print(f"   已登记创建记录: {args.records}")
     else:
         print("   提示: 传 --records <账本文件> 可追加创建/来源记录")
-    print(f"   下一步: python scripts/validate_agents.py --dir {agent_dir}")
+    print(f"   下一步: python scripts/validate_agents.py --dir {target.parent}")
     print("   然后按本技能 SKILL.md 阶段 4-6 完善内容与测试")
     return 0
 

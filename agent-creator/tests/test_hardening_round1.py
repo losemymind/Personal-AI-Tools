@@ -296,7 +296,7 @@ def test_create_quote_description_yields_valid_agent(tmp_path):
         "--description", desc, "--out", str(out),
     )
     assert r.returncode == 0, r.stdout + r.stderr
-    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(out / "edge-agent"))
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(out))
     assert v.returncode == 0, v.stdout + v.stderr
 
 
@@ -309,7 +309,7 @@ def test_create_mode_not_corrupted_by_description(tmp_path):
         "--out", str(out),
     )
     assert r.returncode == 0, r.stdout + r.stderr
-    text = (out / "mode-agent" / "AGENT.md").read_text(encoding="utf-8")
+    text = (out / "mode-agent.md").read_text(encoding="utf-8")
     assert "mode: primary" in text
     assert 'description: "a subagent that reviews"' in text
 
@@ -338,10 +338,10 @@ def test_create_records_provenance_ledger(tmp_path):
     assert after.count("| 代理 | mode | created |") == 1
     assert "| rec-agent |" in after and "| rec-agent-2 |" in after
 
-    agent_md = (tmp_path / "rec-agent" / "AGENT.md").read_text(encoding="utf-8")
+    agent_md = (tmp_path / "rec-agent.md").read_text(encoding="utf-8")
     for banned in ("version:", "tools_clients:", "source:", "author:", "date_added:"):
         assert f"\n{banned}" not in agent_md, f"{banned!r} must not be in frontmatter"
-    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path / "rec-agent"))
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path))
     assert v.returncode == 0, v.stdout + v.stderr
 
 
@@ -349,7 +349,7 @@ def test_create_agent_omits_removed_frontmatter_fields(tmp_path):
     r = run_script("scripts/create_agent.py", "--no-interactive", "--name", "fm-agent",
                    "--out", str(tmp_path))
     assert r.returncode == 0, r.stdout + r.stderr
-    md = (tmp_path / "fm-agent" / "AGENT.md").read_text(encoding="utf-8")
+    md = (tmp_path / "fm-agent.md").read_text(encoding="utf-8")
     fm = md.split("---", 2)[1]
     keys = {ln.split(":", 1)[0].strip() for ln in fm.splitlines() if ":" in ln and not ln.startswith(" ")}
     assert "version" not in keys and "tools_clients" not in keys

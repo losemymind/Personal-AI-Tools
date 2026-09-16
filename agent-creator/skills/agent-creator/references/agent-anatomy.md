@@ -4,15 +4,22 @@
 
 ## 基本文件夹结构
 
+代理定义有两种等价形态，`validate_agents.py` 两种都接受，按目标库/客户端的加载方式选择：
+
 ```
+# 目录形态（--layout dir）：代理需捆绑 references/ 时用
 agents/
 └── my-agent-name/
     ├── AGENT.md              ← 必需：代理定义（frontmatter + 身份/边界/协作）
     ├── references/           ← 可选：按需加载的深化文档（领域准则、协作协议）
     └── README.md             ← 可选：附加说明
+
+# 扁平单文件形态（默认 flat）
+agents/<分类>/
+└── my-agent-name.md          ← 必需：代理定义（frontmatter + 身份/边界/协作）
 ```
 
-**关键规则：** 只有 `AGENT.md` 是必需的。安装到客户端时，兼容单文件（直接复制 .md）或目录（复制整个文件夹）两种形式（落点与各客户端字段转换经 SKILL.md「多客户端安装指引」与「读取规则」导读）。
+**关键规则：** 代理定义本身是必需的。安装到客户端时，兼容单文件（直接复制 .md）或目录（复制整个文件夹）两种形式（落点与各客户端字段转换经 SKILL.md「多客户端安装指引」与「读取规则」导读）。
 
 ## AGENT.md 结构
 
@@ -21,7 +28,7 @@ agents/
 
 ## 前置元数据要点
 
-- `name`：kebab-case，与目录名一致（客户端常以文件名/目录名作为代理标识）
+- `name`：kebab-case，与目录名/文件名一致（客户端常以文件名/目录名作为代理标识）
 - `description`：触发依据（何时被调用），前端加载特定术语
 - `mode`（opencode）：`primary`（用户直接对话）/ `subagent`（被主代理调用）/ `all`
 - `tools` / `permission`：最小权限的关键声明位置

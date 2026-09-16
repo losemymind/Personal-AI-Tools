@@ -4,6 +4,10 @@ Regression: the template body hard-coded ``允许：`read` `grep` `bash```, so a
 ``--tools`` value disagreed with the frontmatter whitelist (and the default even
 omitted ``glob``). The body is now derived from the whitelist, and an explicit
 edit-family grant no longer contradicts the boilerplate ``permission: edit: deny``.
+
+Layout contract: the default output is the flat single file ``<out>/<name>.md``
+(the form flat agent libraries load); ``--layout dir`` writes the directory form
+``<out>/<name>/AGENT.md`` for agents shipping references/.
 """
 
 from conftest import run_script
@@ -15,7 +19,7 @@ def _scaffold(tmp_path, *extra):
         "--out", str(tmp_path), *extra,
     )
     assert r.returncode == 0, r.stdout + r.stderr
-    return (tmp_path / "probe" / "AGENT.md").read_text(encoding="utf-8")
+    return (tmp_path / "probe.md").read_text(encoding="utf-8")
 
 
 def test_scaffold_body_matches_frontmatter_tools(tmp_path):
@@ -78,7 +82,7 @@ def test_scaffold_default_permission_is_full_matrix(tmp_path):
 
 def test_scaffold_output_still_validates(tmp_path):
     _ = _scaffold(tmp_path, "--tools", "read,grep,glob")
-    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path / "probe"))
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path))
     assert v.returncode == 0, v.stdout + v.stderr
 
 
@@ -86,7 +90,7 @@ def test_scaffold_color_injected_quoted_and_validates(tmp_path):
     """--color injects a quoted hex line and the scaffold still passes strict."""
     md = _scaffold(tmp_path, "--color", "#DC2626")
     assert 'color: "#DC2626"' in md
-    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path / "probe"))
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path))
     assert v.returncode == 0, v.stdout + v.stderr
 
 
@@ -110,3 +114,54 @@ def test_scaffold_rejects_invalid_color(tmp_path):
     )
     assert r.returncode == 1
     assert "color" in r.stdout
+
+
+def test_scaffold_default_layout_is_flat_single_file(tmp_path):
+    """Default output is <out>/<name>.md — the form flat agent libraries and
+    client agent directories load as-is (no wrapper dir, no AGENT.md)."""
+    r = run_script(
+        "scripts/create_agent.py", "--no-interactive", "--name", "probe",
+        "--out", str(tmp_path),
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (tmp_path / "probe.md").is_file()
+    assert not (tmp_path / "probe").exists()
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path))
+    assert v.returncode == 0, v.stdout + v.stderr
+
+
+def test_scaffold_dir_layout_writes_agent_md(tmp_path):
+    """--layout dir keeps the directory form (<out>/<name>/AGENT.md) for agents
+    that ship bundled references/ and for libraries keyed on AGENT.md."""
+    r = run_script(
+        "scripts/create_agent.py", "--no-interactive", "--name", "probe",
+        "--layout", "dir", "--out", str(tmp_path),
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (tmp_path / "probe" / "AGENT.md").is_file()
+    assert not (tmp_path / "probe.md").exists()
+    v = run_script("scripts/validate_agents.py", "--strict", "--dir", str(tmp_path))
+    assert v.returncode == 0, v.stdout + v.stderr
+
+
+def test_scaffold_rejects_out_pointing_at_agent_dir(tmp_path):
+    """`--out <...>/<name>` must fail loudly: the scaffold appends the name
+    itself, so this used to silently nest <...>/<name>/<name>/AGENT.md."""
+    r = run_script(
+        "scripts/create_agent.py", "--no-interactive", "--name", "probe",
+        "--out", str(tmp_path / "probe"),
+    )
+    assert r.returncode == 1
+    assert "父目录" in r.stdout
+    assert not (tmp_path / "probe").exists()
+
+
+def test_scaffold_refuses_existing_target(tmp_path):
+    """An existing target is refused for either layout (never clobber)."""
+    (tmp_path / "probe.md").write_text("mine", encoding="utf-8")
+    r = run_script(
+        "scripts/create_agent.py", "--no-interactive", "--name", "probe",
+        "--out", str(tmp_path),
+    )
+    assert r.returncode == 1
+    assert (tmp_path / "probe.md").read_text(encoding="utf-8") == "mine"

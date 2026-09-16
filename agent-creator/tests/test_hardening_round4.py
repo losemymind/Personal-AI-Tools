@@ -27,7 +27,7 @@ def test_create_agent_description_with_backslash_is_valid_yaml(tmp_path):
         "--description", desc, "--no-interactive", "--out", str(tmp_path),
     )
     assert r.returncode == 0, r.stdout + r.stderr
-    fm = _frontmatter(tmp_path / "probe-backslash" / "AGENT.md")
+    fm = _frontmatter(tmp_path / "probe-backslash.md")
     assert fm["description"] == desc
 
 
@@ -38,7 +38,7 @@ def test_create_agent_description_multiline_round_trips(tmp_path):
         "--description", desc, "--no-interactive", "--out", str(tmp_path),
     )
     assert r.returncode == 0, r.stdout + r.stderr
-    fm = _frontmatter(tmp_path / "probe-multiline" / "AGENT.md")
+    fm = _frontmatter(tmp_path / "probe-multiline.md")
     assert fm["description"] == desc
 
 
@@ -56,7 +56,7 @@ def test_create_agent_rejects_oversized_description(tmp_path):
     )
     assert r2.returncode == 1
     assert "超长" in r2.stdout
-    assert not (tmp_path / "probe-len-over").exists()
+    assert not (tmp_path / "probe-len-over.md").exists()
 
 
 def test_create_agent_rejects_whitespace_description(tmp_path):
@@ -65,7 +65,7 @@ def test_create_agent_rejects_whitespace_description(tmp_path):
         "--description", "   ", "--no-interactive", "--out", str(tmp_path),
     )
     assert r.returncode == 1
-    assert not (tmp_path / "probe-blank").exists()
+    assert not (tmp_path / "probe-blank.md").exists()
 
 
 def test_create_agent_out_conflicts_fail_cleanly(tmp_path):
