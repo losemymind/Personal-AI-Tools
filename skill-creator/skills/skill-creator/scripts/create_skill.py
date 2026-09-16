@@ -198,7 +198,7 @@ def main() -> int:
     parser.add_argument("--source-repo", default="", dest="source_repo", help="上游仓库 OWNER/REPO（仅记录账本）")
     parser.add_argument("--method", default="created", help="创建方式：created/imported/adapted（仅记录账本）")
     parser.add_argument("--records", default=None, help="创建记录账本文件；提供则在创建后追加一行")
-    parser.add_argument("--out", default=None, help="输出目录（默认当前目录）")
+    parser.add_argument("--out", default=None, help="输出目录（默认当前目录；不要指向已存在的 skill 目录）")
     parser.add_argument("--no-interactive", action="store_true", help="缺省字段使用默认值，不询问")
     args = parser.parse_args()
 
@@ -249,6 +249,9 @@ def main() -> int:
     out_dir = Path(args.out) if args.out else Path.cwd()
     if out_dir.exists() and not out_dir.is_dir():
         print(f"❌ --out 不是目录: {out_dir}")
+        return 1
+    if out_dir.name == name:
+        print(f"❌ --out 已指向目标目录 (out_dir.name == name)，避免误用：{out_dir}")
         return 1
     skill_dir = out_dir / name
     if skill_dir.exists():

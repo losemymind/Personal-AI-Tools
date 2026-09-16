@@ -1,6 +1,6 @@
 ---
 name: ue-editor-lifecycle
-description: "指导 Unreal Engine 编辑器的安全关闭、重建与异步启动，避免卡死与 MCP 服务器无响应。当用户提到启动/重启编辑器、LaunchUE、PIE、MCP 未响应、DLL占用、Build失败、GenerateProjectFiles、UnrealEditor等时使用。"
+description: "指导 Unreal Engine 编辑器的安全关闭、重建与异步启动，避免卡死与 MCP 服务器无响应。当用户提到启动/打开/重启 UE 编辑器、LaunchUE、PIE、MCP 未响应、DLL占用、Build失败、GenerateProjectFiles、UnrealEditor等时使用。"
 category: development
 risk: safe
 ---
