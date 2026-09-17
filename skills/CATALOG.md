@@ -37,6 +37,16 @@
 
 **触发器**：用户要**构建 MCP 服务器**以集成某个外部 API 或服务（Python/FastMCP 或 TypeScript/MCP SDK）。
 
+## ue-editor-lifecycle
+
+| category | development |
+| risk | safe |
+| install | 复制 `skills/development/ue-editor-lifecycle` → 客户端 skills/ 目录 |
+
+**用途**：指导 Unreal Engine 编辑器的安全关闭、重建与异步启动，避免卡死与 MCP 服务器无响应。当用户提到启动/打开/重启 UE 编辑器、LaunchUE、PIE、MCP 未响应、DLL占用、Build失败、GenerateProjectFiles、UnrealEditor等时使用。
+
+**触发器**：用户需要启动/重启/打开 Unreal Engine 编辑器
+
 ## ue5-performance-optimization
 
 | category | game-development |
@@ -66,14 +76,4 @@
 **用途**：将用户需求转化为结构化 PRD（Product Requirements Document）：接收功能描述 → 交互式澄清问题 → 生成完整章节文档。当用户要求『创建 PRD』『写需求文档』或说 plan this feature、requirements for spec out 时使用。
 
 **触发器**：用户要求「创建 PRD」「写需求文档」「spec out 一个功能」
-
-## ue-editor-lifecycle
-
-| category | development |
-| risk | safe |
-| install | 复制 `skills/ue-editor-lifecycle` → 客户端 skills/ 目录 |
-
-**用途**：指导 Unreal Engine 编辑器的安全关闭、重建与异步启动，避免卡死与 MCP 服务器无响应。当用户提到启动/打开/重启 UE 编辑器、LaunchUE、PIE、MCP 未响应、DLL占用、Build失败、GenerateProjectFiles、UnrealEditor等时使用。
-
-**触发器**：用户需要启动/重启/打开 Unreal Engine 编辑器
 

@@ -16,7 +16,7 @@ skill-creator/                     同上（把工作流蒸馏为 SKILL.md 技�
 - 工作区根可放 `AGENTS.md` 作为 dev-only **角色守则**（两工作区均已建：`agent-creator/AGENTS.md` 与 `skill-creator/AGENTS.md` 各为「成品演进维护者」，前者为后者的同构镜像），随工作区存留、不随成品分发；它与仓库根 `AGENTS.md`（全局布局/铁律/命令）分工不同，也与已删除的「成品内 AGENTS.md」无关——成品根一律不放 `AGENTS.md`/`INSTALL.md`。
 
 - 两工作区**同构**（已统一精简，无 `build/`）：成品 = `SKILL.md` + `README.md`（产品文档，随技能分发）+ `scripts/`/`references/`/`templates/`/`indexes/`/`agents/`/`evolutions/`（`examples/` 为 skill-creator 独有）；工作区根 = `README.md` + `INSTALL.md`（安装手册，不随成品分发）+ `tests/`（仅 dev）+ `AGENTS.md`（角色守则，仅 dev）。成品 `AGENTS.md` 均已删除、`INSTALL.md` 均已移至各自工作区根，**SKILL.md 为唯一入口**。同名不同物，别搞混。
-- 根目录 `agents/` 与 `skills/` 是**已验证能力库**（区别于两个工作区 `skills/` 下的创建器成品）：`skills/` = 3 个已验证技能（code-review-skill / pr-summarizer / prd-generator），`agents/` = 7 个已验证代理（academic×5 / code-quality×2）。两个「skills」同名不同物：**根 `skills/` = 能力库**、`<creator>/skills/<creator>/` = 创建器成品。
+- 根目录 `agents/` 与 `skills/` 是**已验证能力库**（区别于两个工作区 `skills/` 下的创建器成品）：`skills/` = 7 个已验证技能（development：code-review-skill / coding-discipline / mcp-builder / ue-editor-lifecycle；game-development：ue5-performance-optimization；git：pr-summarizer；product-design：prd-generator），`agents/` = 7 个已验证代理（academic×5 / code-quality×2）。两个「skills」同名不同物：**根 `skills/` = 能力库**、`<creator>/skills/<creator>/` = 创建器成品。
 - 环境：纯 stdlib + pytest（无 requirements/锁文件），Python 3.10+（代码用 `X | None` 类型注解，实测 3.11）。
 
 ## 能力库（根 `skills/` 与 `agents/`）
