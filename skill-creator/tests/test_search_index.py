@@ -87,3 +87,5 @@ def test_source_aliases_cover_all_index_sources():
     assert mod.SOURCE_ALIASES["addy"] == "addyosmani/agent-skills"
     assert mod.SOURCE_ALIASES["anthropics"] == "anthropics/skills"
     assert mod.SOURCE_ALIASES["composiohq"] == "ComposioHQ/awesome-claude-skills"
+    assert mod.SOURCE_ALIASES["coevoskills"] == "Zhang-Henry/CoEvoSkills"
+    assert mod.SOURCE_ALIASES["coevo"] == "Zhang-Henry/CoEvoSkills"

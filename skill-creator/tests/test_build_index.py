@@ -1,8 +1,9 @@
 """Tests for build_index.py multi-source registry and helpers.
 
-Pins the source registry (aas/addy/anthropics/composiohq), root-scoped dir
-scanning (skills_root may be empty), derived provenance meta, and best-effort
-temp cleanup.
+Pins the source registry (aas/addy/anthropics/composiohq/coevoskills),
+root-scoped dir scanning (skills_root may be empty), the sparse API fetch used
+by repos whose tarball is huge, derived provenance meta, and best-effort temp
+cleanup.
 """
 
 import importlib.util
@@ -32,15 +33,123 @@ def _load_module():
     return mod
 
 
-def test_sources_registry_has_four_sources():
+def test_sources_registry_has_expected_sources():
     mod = _load_module()
-    assert set(mod.SOURCES) == {"aas", "addy", "anthropics", "composiohq"}
+    assert set(mod.SOURCES) == {"aas", "addy", "anthropics", "composiohq", "coevoskills"}
     assert mod.SOURCES["anthropics"]["repo"] == "anthropics/skills"
     assert mod.SOURCES["anthropics"]["skills_root"] == "skills"
     assert "refs/heads/main.tar.gz" in mod.SOURCES["anthropics"]["tarball"]
     assert mod.SOURCES["composiohq"]["repo"] == "ComposioHQ/awesome-claude-skills"
     assert mod.SOURCES["composiohq"]["skills_root"] == ""
     assert "refs/heads/master.tar.gz" in mod.SOURCES["composiohq"]["tarball"]
+
+
+def test_coevoskills_source_uses_sparse_subtree():
+    """CoEvoSkills is ~600MB of task data around a 200KB skill subtree: sparse."""
+    mod = _load_module()
+    src = mod.SOURCES["coevoskills"]
+    assert src["repo"] == "Zhang-Henry/CoEvoSkills"
+    assert src["skills_root"] == "meta_skills"
+    assert src["api_subtree"] == "meta_skills"
+    assert src["branch"] == "main"
+    assert src["index_file"] is None
+
+
+def test_sparse_subtree_paths_scopes_and_prefixes(monkeypatch):
+    mod = _load_module()
+    calls = []
+
+    def fake_api(url, timeout=60):
+        calls.append(url)
+        if "/contents/" in url:
+            return [
+                {"name": "tasks", "type": "dir", "sha": "TASKS"},
+                {"name": "meta_skills", "type": "dir", "sha": "META"},
+            ]
+        return {
+            "truncated": False,
+            "tree": [
+                {"path": "skill-creator/SKILL.md", "type": "blob"},
+                {"path": "skill-creator/scripts", "type": "tree"},
+                {"path": "skill-creator/scripts/run.py", "type": "blob"},
+            ],
+        }
+
+    monkeypatch.setattr(mod, "_api_json", fake_api)
+    paths = mod.sparse_subtree_paths("Zhang-Henry/CoEvoSkills", "main", "meta_skills")
+    assert paths == ["meta_skills/skill-creator/SKILL.md", "meta_skills/skill-creator/scripts/run.py"]
+    # scoped: the subtree's tree SHA is used, not a recursive listing of the repo
+    tree_calls = [c for c in calls if "recursive=1" in c]
+    assert tree_calls and all("META" in c for c in tree_calls)
+
+
+def test_sparse_subtree_paths_missing_dir_is_unavailable(monkeypatch):
+    mod = _load_module()
+    monkeypatch.setattr(mod, "_api_json", lambda url, timeout=60: [{"name": "tasks", "type": "dir", "sha": "T"}])
+    try:
+        mod.sparse_subtree_paths("owner/repo", "main", "meta_skills")
+    except mod.SourceUnavailable as e:
+        assert "meta_skills" in str(e)
+    else:  # pragma: no cover - the call must raise
+        raise AssertionError("expected SourceUnavailable")
+
+
+def test_fetch_sparse_checkout_writes_subtree_files(monkeypatch, tmp_path):
+    mod = _load_module()
+    monkeypatch.setattr(
+        mod,
+        "sparse_subtree_paths",
+        lambda repo, branch, subtree: ["meta_skills/skill-creator/SKILL.md"],
+    )
+    monkeypatch.setattr(mod, "_read_url", lambda url, timeout=60: b"---\nname: skill-creator\n---\n")
+    src = {"repo": "Zhang-Henry/CoEvoSkills", "branch": "main", "api_subtree": "meta_skills"}
+    root = mod.fetch_sparse_checkout(src, tmp_path / "sparse")
+    assert (root / "meta_skills" / "skill-creator" / "SKILL.md").is_file()
+    # returned root is shaped like the repo root, so skills_root resolves
+    assert (root / "meta_skills").is_dir()
+
+
+def test_fetch_sparse_checkout_retries_then_raises(monkeypatch, tmp_path):
+    mod = _load_module()
+    monkeypatch.setattr(mod, "sparse_subtree_paths", lambda repo, branch, subtree: ["meta_skills/a/SKILL.md"])
+
+    def boom(url, timeout=60):
+        raise OSError("simulated network error")
+
+    monkeypatch.setattr(mod, "_read_url", boom)
+    src = {"repo": "owner/repo", "branch": "main", "api_subtree": "meta_skills"}
+    try:
+        mod.fetch_sparse_checkout(src, tmp_path / "sparse")
+    except mod.SourceUnavailable as e:
+        assert "SKILL.md" in str(e)
+    else:  # pragma: no cover - the call must raise
+        raise AssertionError("expected SourceUnavailable")
+
+
+def test_load_source_checkout_uses_sparse_when_api_subtree(monkeypatch, tmp_path):
+    """api_subtree sources never touch the tarball path."""
+    mod = _load_module()
+
+    def boom(source, dest):  # pragma: no cover - must not be called
+        raise AssertionError("tarball download used for a sparse source")
+
+    monkeypatch.setattr(mod, "download_tarball", boom)
+    sparse_calls = []
+
+    def fake_sparse(source, dest):
+        sparse_calls.append(source["name"])
+        return tmp_path
+
+    monkeypatch.setattr(mod, "fetch_sparse_checkout", fake_sparse)
+    monkeypatch.setattr(mod, "extract_entries", lambda root, source: [_entry("skill-creator", source["repo"])])
+
+    class Args:
+        from_extracted = None
+        no_dl = False
+
+    root, entries = mod.load_source_checkout(mod.SOURCES["coevoskills"], Args(), tmp_path)
+    assert sparse_calls == ["coevoskills"]
+    assert [e["name"] for e in entries] == ["skill-creator"]
 
 
 def test_scan_skill_dir_nested_root():
@@ -79,11 +188,12 @@ def test_scan_skill_dir_empty_root_has_no_leading_slash():
 def test_provenance_meta_covers_all_sources():
     mod = _load_module()
     note = mod.data_source_note()
-    for name in ("aas", "addy", "anthropics", "composiohq"):
+    for name in ("aas", "addy", "anthropics", "composiohq", "coevoskills"):
         assert f"{name}(" in note
     meta = mod.sources_meta()
     assert "anthropics/skills" in meta
     assert "ComposioHQ/awesome-claude-skills" in meta
+    assert "Zhang-Henry/CoEvoSkills" in meta
 
 
 def _entry(name, repo):

@@ -40,6 +40,9 @@ SOURCE_ALIASES = {
     "composiohq": "ComposioHQ/awesome-claude-skills",
     "composio": "ComposioHQ/awesome-claude-skills",
     "awesome-claude-skills": "ComposioHQ/awesome-claude-skills",
+    "coevoskills": "Zhang-Henry/CoEvoSkills",
+    "coevo": "Zhang-Henry/CoEvoSkills",
+    "zhang-henry": "Zhang-Henry/CoEvoSkills",
 }
 
 

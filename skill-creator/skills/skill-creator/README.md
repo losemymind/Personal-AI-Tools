@@ -12,12 +12,13 @@
 | **addy** | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) | 25 | 扫描 `skills/*/SKILL.md`（无官方索引） | `addy` |
 | **anthropics** | [anthropics/skills](https://github.com/anthropics/skills) | ~19 | 扫描 `skills/*/SKILL.md`（无官方索引） | `anthropics` |
 | **composiohq** | [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) | ~28 | 扫描仓库根 `*/SKILL.md`（无官方索引） | `composiohq` |
+| **coevoskills** | [Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills) | 1 | **稀疏 API 取数** `meta_skills/*/SKILL.md`（仓库约 600MB，不走整仓 tarball） | `coevoskills` |
 
 - 检索全库：`python scripts/search_index.py "<关键词>"`（默认查所有源）
-- 按源检索：加 `--source anthropics`（或 `aas` / `addy` / `composiohq`）
-- 重建/增量：`python scripts/build_index.py [--source all|aas|addy|anthropics|composiohq] [--incremental]`
+- 按源检索：加 `--source anthropics`（或 `aas` / `addy` / `composiohq` / `coevoskills`）
+- 重建/增量：`python scripts/build_index.py [--source all|aas|addy|anthropics|composiohq|coevoskills] [--incremental]`
 - 离线优雅降级：某源下载/解包失败且已有 `indexes/upstream.db` 时，跳过该源并保留其已提交数据（可达源仍增量同步），退出码 0；仅当既无网络又无可用 DB 时才失败
-- 许可以各上游仓库 LICENSE 为准（aas/addy 为 MIT；anthropics 多数 Apache-2.0、文档类技能为 source-available；composiohq 未声明），入库技能需保留来源归属
+- 许可以各上游仓库 LICENSE 为准（aas/addy 为 MIT；anthropics 多数 Apache-2.0、文档类技能为 source-available；composiohq 未声明；coevoskills 为 Apache-2.0），入库技能需保留来源归属
 - 索引细节见 `references/skill-index.md`；新建技能时先在多源中「先查后建」
 
 ## 约定

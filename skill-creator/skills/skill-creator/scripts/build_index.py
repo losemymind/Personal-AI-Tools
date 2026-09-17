@@ -3,10 +3,11 @@
 Part of the skill-creator skill. See references/skill-index.md.
 
 Sources:
-  - aas        : sickn33/agentic-awesome-skills      (official skills_index.json + dir scan; ~2100 skills)
-  - addy       : addyosmani/agent-skills             (scanned skills/*/SKILL.md; 25 skills, no index file)
-  - anthropics : anthropics/skills                   (scanned skills/*/SKILL.md; small official catalog)
-  - composiohq : ComposioHQ/awesome-claude-skills    (scanned */SKILL.md at repo root; no index file)
+  - aas         : sickn33/agentic-awesome-skills      (official skills_index.json + dir scan; ~2100 skills)
+  - addy        : addyosmani/agent-skills             (scanned skills/*/SKILL.md; 25 skills, no index file)
+  - anthropics  : anthropics/skills                   (scanned skills/*/SKILL.md; small official catalog)
+  - composiohq  : ComposioHQ/awesome-claude-skills    (scanned */SKILL.md at repo root; no index file)
+  - coevoskills : Zhang-Henry/CoEvoSkills             (sparse API fetch of meta_skills/*/SKILL.md; no index file)
 
 Every row carries a `source_repo` column; `path` is unique per source so the
 incremental sync scopes by (source_repo, path).
@@ -17,6 +18,7 @@ Usage:
     python scripts/build_index.py --source addy            # only addyosmani (scan)
     python scripts/build_index.py --source anthropics      # only anthropics/skills
     python scripts/build_index.py --source composiohq      # only awesome-claude-skills
+    python scripts/build_index.py --source coevoskills     # only CoEvoSkills (sparse)
     python scripts/build_index.py --incremental            # reuse upstream.db
     python scripts/build_index.py --from-extracted <dir>   # use an already-checked-out repo
     python scripts/build_index.py --no-dl                  # scan <repo>/skills locally
@@ -48,6 +50,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 INDEX_DIR = SCRIPT_DIR.parent / "indexes"
 DB_PATH = INDEX_DIR / "upstream.db"
 INDEX_VERSION = 4
+GITHUB_API = "https://api.github.com"
 
 
 class SourceUnavailable(RuntimeError):
@@ -95,6 +98,16 @@ SOURCES = {
         "index_file": None,
         "skills_root": "",
         "note": "scanned */SKILL.md at repo root (no index file)",
+    },
+    "coevoskills": {
+        "name": "coevoskills",
+        "repo": "Zhang-Henry/CoEvoSkills",
+        "tarball": "https://github.com/Zhang-Henry/CoEvoSkills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "meta_skills",
+        "branch": "main",
+        "api_subtree": "meta_skills",
+        "note": "sparse GitHub API fetch of meta_skills/*/SKILL.md (repo is ~600MB; full tarball avoided)",
     },
 }
 
@@ -153,6 +166,86 @@ def unpack_tarball(tar_path: Path, dest: Path) -> Path:
         tar.extractall(dest, filter="data")
     tops = [p for p in dest.iterdir() if p.is_dir()]
     return tops[0] if tops else dest
+
+
+def _read_url(url: str, timeout: int = 60) -> bytes:
+    req = urllib.request.Request(url, headers={"User-Agent": "skill-creator-index/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        # Chunked read: a single resp.read() can die with IncompleteRead on
+        # large chunked responses (same reason download_tarball reads in blocks).
+        chunks = []
+        while True:
+            block = resp.read(1024 * 256)
+            if not block:
+                break
+            chunks.append(block)
+    return b"".join(chunks)
+
+
+def _api_json(url: str, timeout: int = 60):
+    return json.loads(_read_url(url, timeout=timeout).decode("utf-8"))
+
+
+def sparse_subtree_paths(repo: str, branch: str, subtree: str) -> list[str]:
+    """List blob paths under `subtree` via two scoped GitHub API calls.
+
+    Scoping matters: a recursive listing of the whole repo both wastes bandwidth
+    and can hit GitHub's truncation limit on the very repos sparse mode exists
+    for. Resolve the subtree's tree SHA from its parent listing, then list only
+    that subtree. Returned paths are repo-relative (subtree prefix included).
+    """
+    subtree = subtree.strip("/")
+    parent, _, name = subtree.rpartition("/")
+    listing = _api_json(f"{GITHUB_API}/repos/{repo}/contents/{parent}?ref={branch}")
+    if not isinstance(listing, list):
+        raise SourceUnavailable(f"{repo}: '{parent or '/'}' is not a directory")
+    entry = next((e for e in listing if e.get("name") == name and e.get("type") == "dir"), None)
+    if entry is None:
+        raise SourceUnavailable(f"{repo}: no directory '{subtree}' on branch '{branch}'")
+    tree = _api_json(f"{GITHUB_API}/repos/{repo}/git/trees/{entry['sha']}?recursive=1")
+    if tree.get("truncated"):
+        raise SourceUnavailable(f"{repo}: tree listing of '{subtree}' truncated")
+    return [
+        f"{subtree}/{e['path']}"
+        for e in tree.get("tree", [])
+        if e.get("type") == "blob"
+    ]
+
+
+def fetch_sparse_checkout(source: dict, dest: Path) -> Path:
+    """Materialize only `api_subtree`'s files (for repos whose tarball is huge).
+
+    Some upstreams keep a tiny skill subtree inside a multi-hundred-MB repo
+    (e.g. CoEvoSkills: ~200KB of meta_skills vs ~600MB of benchmark task data).
+    Downloading the full tarball would be ~3000x waste, so list the subtree via
+    the GitHub API and pull just those blobs from raw.githubusercontent.
+
+    Returns a directory that `skills_root` resolves against, i.e. a minimal
+    checkout shaped like the repo root (only the requested subtree is present).
+    """
+    repo = source["repo"]
+    branch = source.get("branch", "main")
+    subtree = source["api_subtree"].strip("/")
+    dest.mkdir(parents=True, exist_ok=True)
+
+    blobs = sparse_subtree_paths(repo, branch, subtree)
+    if not blobs:
+        raise SourceUnavailable(f"{repo}: no files found under '{subtree}' on branch '{branch}'")
+
+    for rel in blobs:
+        target = dest / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        last_err: Exception | None = None
+        for _ in range(2):
+            try:
+                target.write_bytes(_read_url(f"https://raw.githubusercontent.com/{repo}/{branch}/{rel}"))
+                break
+            except Exception as e:  # noqa: BLE001 - retry transient network errors
+                last_err = e
+        else:
+            raise SourceUnavailable(f"{repo}: could not fetch {rel}: {last_err}")
+    print(f"✅ Sparse checkout {repo}/{subtree}: {len(blobs)} files -> {dest}")
+    return dest
 
 
 # ---------------------------------------------------------------------------
@@ -547,8 +640,11 @@ def load_source_checkout(source: dict, args, tmp: Path) -> tuple[Path, list[dict
         print(f"🗂️  {source['repo']}: using local repo root {root}")
     else:
         try:
-            tar_path = download_tarball(source, tmp)
-            root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
+            if source.get("api_subtree"):
+                root = fetch_sparse_checkout(source, tmp / f"sparse-{source['name']}")
+            else:
+                tar_path = download_tarball(source, tmp)
+                root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
         except (
             SourceUnavailable,
             urllib.error.URLError,
