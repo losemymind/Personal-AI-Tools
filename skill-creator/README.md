@@ -47,7 +47,7 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 调研过的其余 skill-creator 实现（OpenAI Codex 官方内置、openai/skills `.system`、vercel-labs/json-render、SkillForge、qiaomu-meta-skill、fskill-creator、skill-forge、claude-skills-cli 等）经评估后**未作为采纳来源**（或与上述同源、或与其方法论重叠、或非方法论实现），不在融合名单内。
 
 另有两类非「skill-creator 方法论」依赖保留其真实来源标注（不在收敛范围）：
-- 成品「先查后建」的**上游技能库索引**来自 [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills)（`aas`）、[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（`addy`），以及 [anthropics/skills](https://github.com/anthropics/skills)（`anthropics`）、[ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)（`composiohq`）、[Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills)（`coevoskills`，稀疏 API 取数 `meta_skills/`）。
+- 成品「先查后建」的**上游技能库索引**来自 [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills)（`aas`）、[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（`addy`），以及 [anthropics/skills](https://github.com/anthropics/skills)（`anthropics`）、[ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)（`composiohq`）、[Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills)（`coevoskills`，稀疏 API 取数 `meta_skills/`）、[mattpocock/skills](https://github.com/mattpocock/skills)（`mattpocock`，两层嵌套 `skills/<category>/<name>/`）、[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)（`karpathy`，`karpathy-guidelines`）。
 - 成品 `references/` 若干文档头部与 `validate_skills.py` 标注「基于 agentic-awesome-skills 适配」——代码级真实出处，保留。
 
 具体吸收点与对比择优记录见成品 `references/` 文档头与 `evolutions/`。
@@ -73,6 +73,10 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 **2026-09-11 跟进（版本 0.7.2）**：发布门加固。交叉引用门禁覆盖 `.template` 文件并改大小写不敏感（`tools/tests` + 两侧 `test_independence.py`）；skill 侧新增 dev-only `tests/test_product_self_containment.py`，与 agent 侧对等扫描成品**全 md** 的 dev-only/悬空引用（此前仅 `validate_skills.py` 校验 SKILL.md），并修正 `references/skill-anatomy.md` 一处悬空示意路径。记录见 `evolutions/2026-09-11-fix-independence-and-self-containment-gates.md`。
 
 **2026-09-17 跟进（索引源扩容 + 竞品对比）**：新增第五个上游索引源 `coevoskills`（[Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills) 的 `meta_skills/skill-creator/`）。该仓库整仓约 600MB（基准任务数据）而技能子树仅约 200KB，故 `build_index.py` 新增可选**稀疏 API 取数**模式（`api_subtree`：scoped trees API 定位子树 + raw 取文件，落成最小 checkout 复用既有扫描/结构统计），索引 4 源 2187 条 → **5 源 2188 条**。同期对该竞品 skill-creator 做方法论对比：与本地同血脉（Anthropic 官方工具链衍生），本地为实质超集（0.98 vs 0.55，扣 schema 口径后仍超集）；上游增量 = 评测结果可视化评审页（`eval-viewer/`）与 run_loop HTML 报告（train/test 区分），已记为学习点、**暂不采纳**（本项目「无人工评审闭环」为既定纪律，需先明确其服务对象）。记录见 `evolutions/2026-09-17-adopt-coevoskills-source.md` 与 `evolutions/2026-09-17-compare-coevoskills.md`。
+
+**2026-09-23 跟进（索引源扩容）**：新增第六个上游索引源 `mattpocock`（[mattpocock/skills](https://github.com/mattpocock/skills)，MIT，「Skills for Real Engineers」，约 1.8MB/38 技能）。该仓库把技能按类别分组到 `skills/<category>/<name>/`（`engineering`/`productivity`/`in-progress`/`misc`），比既有扫描源深一层，故 `build_index.py` 新增可选**两层嵌套扫描**（`skills_nested`：扫描 `<skills_root>/<category>/<name>/SKILL.md`，`path` 保留完整相对路径，frontmatter 无 `category` 时用父目录名兜底），索引 5 源 2188 条 → **6 源 2226 条**。记录见 `evolutions/2026-09-23-adopt-mattpocock-source.md`。
+
+**2026-09-23 跟进（索引源扩容 ②）**：新增第七个上游索引源 `karpathy`（[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)，约 20KB/1 技能 `karpathy-guidelines`）。此为能力库 `coding-discipline` 的**上游原始源**（此前只能经 `aas` 的同源分发副本 `skills/andrej-karpathy` 命中），普通 `skills/*/SKILL.md` 一层扫描即可，直接注册；索引 6 源 2226 条 → **7 源 2227 条**。记录见 `evolutions/2026-09-23-adopt-karpathy-source.md`。
 
 ## 提交说明
 

@@ -222,7 +222,7 @@ frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作
 
 ### 阶段 0：检索上游技能库（先查后建）
 
-动手创建前，**先在本地索引中检索上游技能库是否已有可用技能**（索引为多源：`aas` = agentic-awesome-skills、`addy` = agent-skills、`anthropics` = anthropics/skills、`composiohq` = awesome-claude-skills、`coevoskills` = CoEvoSkills，默认全库检索，`--source` 过滤单源；避免重复造轮子，是本技能的第一个决策门）：
+动手创建前，**先在本地索引中检索上游技能库是否已有可用技能**（索引为多源：`aas` = agentic-awesome-skills、`addy` = agent-skills、`anthropics` = anthropics/skills、`composiohq` = awesome-claude-skills、`coevoskills` = CoEvoSkills、`mattpocock` = mattpocock/skills、`karpathy` = andrej-karpathy-skills，默认全库检索，`--source` 过滤单源；避免重复造轮子，是本技能的第一个决策门）：
 
 ```bash
 python scripts/search_index.py "<用户需求关键词>" [--category <分类>] [--risk <级别>] [--limit 10]

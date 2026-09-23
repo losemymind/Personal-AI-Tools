@@ -1,9 +1,9 @@
 """Tests for build_index.py multi-source registry and helpers.
 
-Pins the source registry (aas/addy/anthropics/composiohq/coevoskills),
-root-scoped dir scanning (skills_root may be empty), the sparse API fetch used
-by repos whose tarball is huge, derived provenance meta, and best-effort temp
-cleanup.
+Pins the source registry (aas/addy/anthropics/composiohq/coevoskills/mattpocock/karpathy),
+root-scoped dir scanning (skills_root may be empty), two-level category scanning,
+the sparse API fetch used by repos whose tarball is huge, derived provenance
+meta, and best-effort temp cleanup.
 """
 
 import importlib.util
@@ -35,13 +35,74 @@ def _load_module():
 
 def test_sources_registry_has_expected_sources():
     mod = _load_module()
-    assert set(mod.SOURCES) == {"aas", "addy", "anthropics", "composiohq", "coevoskills"}
+    assert set(mod.SOURCES) == {"aas", "addy", "anthropics", "composiohq", "coevoskills", "mattpocock", "karpathy"}
     assert mod.SOURCES["anthropics"]["repo"] == "anthropics/skills"
     assert mod.SOURCES["anthropics"]["skills_root"] == "skills"
     assert "refs/heads/main.tar.gz" in mod.SOURCES["anthropics"]["tarball"]
     assert mod.SOURCES["composiohq"]["repo"] == "ComposioHQ/awesome-claude-skills"
     assert mod.SOURCES["composiohq"]["skills_root"] == ""
     assert "refs/heads/master.tar.gz" in mod.SOURCES["composiohq"]["tarball"]
+
+
+def test_karpathy_source_scans_single_level():
+    mod = _load_module()
+    src = mod.SOURCES["karpathy"]
+    assert src["repo"] == "multica-ai/andrej-karpathy-skills"
+    assert src["skills_root"] == "skills"
+    assert src.get("skills_nested") is not True
+    assert src["index_file"] is None
+    assert "refs/heads/main.tar.gz" in src["tarball"]
+
+
+def test_mattpocock_source_scans_nested_categories():
+    mod = _load_module()
+    src = mod.SOURCES["mattpocock"]
+    assert src["repo"] == "mattpocock/skills"
+    assert src["skills_root"] == "skills"
+    assert src["skills_nested"] is True
+    assert src["index_file"] is None
+    assert "refs/heads/main.tar.gz" in src["tarball"]
+
+
+def test_scan_skill_dir_nested_categories_use_parent_as_category():
+    """Two-level sources (skills/<category>/<name>) path + category fallback."""
+    mod = _load_module()
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        for category, name in (("engineering", "code-review"), ("productivity", "handoff")):
+            target = repo / "skills" / category / name
+            target.mkdir(parents=True)
+            (target / "SKILL.md").write_text(SKILL_MD.format(name=name), encoding="utf-8")
+        # README-only bucket (no SKILL.md anywhere) must be skipped
+        (repo / "skills" / "deprecated").mkdir()
+        (repo / "skills" / "deprecated" / "README.md").write_text("x", encoding="utf-8")
+        entries = mod.scan_skill_dir(repo, mod.SOURCES["mattpocock"])
+        assert [e["path"] for e in entries] == [
+            "skills/engineering/code-review",
+            "skills/productivity/handoff",
+        ]
+        # frontmatter in SKILL_MD sets category: testing, so it wins over the dir
+        assert {e["category"] for e in entries} == {"testing"}
+
+
+def test_scan_skill_dir_nested_category_fallback_when_frontmatter_absent():
+    mod = _load_module()
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        target = repo / "skills" / "engineering" / "code-review"
+        target.mkdir(parents=True)
+        (target / "SKILL.md").write_text(
+            '---\nname: code-review\ndescription: "review a diff"\n---\n\n# code-review\n',
+            encoding="utf-8",
+        )
+        entries = mod.scan_skill_dir(repo, mod.SOURCES["mattpocock"])
+        assert len(entries) == 1
+        assert entries[0]["category"] == "engineering"
+        assert entries[0]["path"] == "skills/engineering/code-review"
 
 
 def test_coevoskills_source_uses_sparse_subtree():
@@ -188,12 +249,14 @@ def test_scan_skill_dir_empty_root_has_no_leading_slash():
 def test_provenance_meta_covers_all_sources():
     mod = _load_module()
     note = mod.data_source_note()
-    for name in ("aas", "addy", "anthropics", "composiohq", "coevoskills"):
+    for name in ("aas", "addy", "anthropics", "composiohq", "coevoskills", "mattpocock", "karpathy"):
         assert f"{name}(" in note
     meta = mod.sources_meta()
     assert "anthropics/skills" in meta
     assert "ComposioHQ/awesome-claude-skills" in meta
     assert "Zhang-Henry/CoEvoSkills" in meta
+    assert "mattpocock/skills" in meta
+    assert "multica-ai/andrej-karpathy-skills" in meta
 
 
 def _entry(name, repo):

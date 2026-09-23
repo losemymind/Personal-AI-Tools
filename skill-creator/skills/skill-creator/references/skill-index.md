@@ -7,7 +7,7 @@
 | 项 | 值 |
 |---|---|
 | 索引文件 | `indexes/upstream.db` |
-| 技能总数 | ~2190（随上游更新变化） |
+| 技能总数 | ~2227（随上游更新变化） |
 | 数据源 | 多源：见下表 |
 | 许可 | 各上游仓库 LICENSE 为准 |
 
@@ -20,6 +20,8 @@
 | `anthropics` | [anthropics/skills](https://github.com/anthropics/skills) | ~19 | 扫描 `skills/*/SKILL.md`（官方示例技能目录，无索引文件） | 混合：多数 Apache-2.0，`docx`/`pdf`/`pptx`/`xlsx` 为 source-available |
 | `composiohq` | [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills) | ~28 | 扫描**仓库根** `*/SKILL.md`（技能即顶层目录，无索引文件） | 未声明（收录前以各技能来源为准） |
 | `coevoskills` | [Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills) | 1 | **稀疏 API 取数** `meta_skills/*/SKILL.md`（GitHub trees API 定位子树 + raw 取文件；无索引文件） | Apache-2.0 |
+| `mattpocock` | [mattpocock/skills](https://github.com/mattpocock/skills) | 38 | 扫描 `skills/<category>/<name>/SKILL.md`（**两层嵌套**，无索引文件） | MIT |
+| `karpathy` | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) | 1 | 扫描 `skills/*/SKILL.md`（`karpathy-guidelines`，无索引文件） | 无 LICENSE 文件；`SKILL.md` 声明 MIT |
 
 > 同名技能可能出现在多个源（如 `skill-creator`、`brand-guidelines`）：索引按 `source_repo` 区分，检索结果会标注来源。
 
@@ -40,10 +42,12 @@ FTS5 的 `unicode61` 分词器不切分中文，因此**含中文（CJK）的查
 python scripts/search_index.py "debugging"
 python scripts/search_index.py "git push" --category devops --risk safe
 
-# 按源检索（aas / addy / anthropics / composiohq / coevoskills）
+# 按源检索（aas / addy / anthropics / composiohq / coevoskills / mattpocock / karpathy）
 python scripts/search_index.py "accessibility" --source addy
 python scripts/search_index.py "skill creator" --source anthropics
 python scripts/search_index.py "skill creator" --source coevoskills
+python scripts/search_index.py "code review" --source mattpocock
+python scripts/search_index.py "karpathy" --source karpathy
 
 # 查看索引状态（含按源分布）/ 分类分布
 python scripts/search_index.py --stats
@@ -65,6 +69,8 @@ python scripts/build_index.py --source addy
 python scripts/build_index.py --source anthropics
 python scripts/build_index.py --source composiohq
 python scripts/build_index.py --source coevoskills
+python scripts/build_index.py --source mattpocock
+python scripts/build_index.py --source karpathy
 
 # 增量同步（推荐日常使用：复用现有 upstream.db，只更新增/改/删项，速度快）
 python scripts/build_index.py --incremental
@@ -76,3 +82,5 @@ python scripts/build_index.py --source addy --from-extracted <本地仓库目录
 **同步策略：** 手动触发（推荐）。索引文件已提交入仓库，用户克隆即得索引；日常更新上游用 `--incremental`（快），索引结构变更时用完整重建。注意多源全量构建会下载全部源（约 117MB+，`aas` 单源即约 110MB），建议用 `--source <单源>` + `--incremental` 按需同步。
 
 **稀疏取数（`api_subtree`）：** 当上游把技能放在一个超大仓库的小子树里时（`coevoskills` = `Zhang-Henry/CoEvoSkills`：`meta_skills/` 仅约 200KB，整仓却约 600MB 基准数据），整仓 tarball 是约 3000 倍的浪费。此类源在 `SOURCES` 里声明 `api_subtree` + `branch`：构建时用 GitHub trees API 定位子树、按 raw URL 只取该子树文件（`coevoskills` 为 18 个文件），落成一个「形如仓库根」的最小 checkout，后续扫描/结构统计复用同一套逻辑。`--from-extracted` / `--no-dl` 仍按整仓 checkout 语义工作。
+
+**两层嵌套目录（`skills_nested`）：** 默认扫描布局是 `<skills_root>/<name>/SKILL.md`（一层深）；当上游把技能按类别分组到子目录时（`mattpocock` = `mattpocock/skills`：`skills/engineering/<name>/`、`skills/productivity/<name>/` 等），该源声明 `skills_nested: True`，扫描改为 `<skills_root>/<category>/<name>/SKILL.md`，索引 `path` 保留完整相对路径（如 `skills/engineering/code-review`）。当技能 frontmatter 未声明 `category` 时，用其**父目录名**兜底（如 `engineering`）；含 `SKILL.md` 的目录才收录，仅有 README 的目录（如 `deprecated/`）自动跳过。

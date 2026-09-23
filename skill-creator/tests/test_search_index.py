@@ -89,3 +89,8 @@ def test_source_aliases_cover_all_index_sources():
     assert mod.SOURCE_ALIASES["composiohq"] == "ComposioHQ/awesome-claude-skills"
     assert mod.SOURCE_ALIASES["coevoskills"] == "Zhang-Henry/CoEvoSkills"
     assert mod.SOURCE_ALIASES["coevo"] == "Zhang-Henry/CoEvoSkills"
+    assert mod.SOURCE_ALIASES["mattpocock"] == "mattpocock/skills"
+    assert mod.SOURCE_ALIASES["matt-pocock"] == "mattpocock/skills"
+    assert mod.SOURCE_ALIASES["karpathy"] == "multica-ai/andrej-karpathy-skills"
+    assert mod.SOURCE_ALIASES["andrej-karpathy"] == "multica-ai/andrej-karpathy-skills"
+    assert mod.SOURCE_ALIASES["multica"] == "multica-ai/andrej-karpathy-skills"

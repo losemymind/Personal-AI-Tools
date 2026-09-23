@@ -8,6 +8,8 @@ Sources:
   - anthropics  : anthropics/skills                   (scanned skills/*/SKILL.md; small official catalog)
   - composiohq  : ComposioHQ/awesome-claude-skills    (scanned */SKILL.md at repo root; no index file)
   - coevoskills : Zhang-Henry/CoEvoSkills             (sparse API fetch of meta_skills/*/SKILL.md; no index file)
+  - mattpocock  : mattpocock/skills                   (scanned skills/<category>/<name>/SKILL.md; no index file)
+  - karpathy    : multica-ai/andrej-karpathy-skills   (scanned skills/*/SKILL.md; 1 skill, no index file)
 
 Every row carries a `source_repo` column; `path` is unique per source so the
 incremental sync scopes by (source_repo, path).
@@ -19,6 +21,8 @@ Usage:
     python scripts/build_index.py --source anthropics      # only anthropics/skills
     python scripts/build_index.py --source composiohq      # only awesome-claude-skills
     python scripts/build_index.py --source coevoskills     # only CoEvoSkills (sparse)
+    python scripts/build_index.py --source mattpocock      # only mattpocock/skills (nested scan)
+    python scripts/build_index.py --source karpathy        # only andrej-karpathy-skills (scan)
     python scripts/build_index.py --incremental            # reuse upstream.db
     python scripts/build_index.py --from-extracted <dir>   # use an already-checked-out repo
     python scripts/build_index.py --no-dl                  # scan <repo>/skills locally
@@ -108,6 +112,23 @@ SOURCES = {
         "branch": "main",
         "api_subtree": "meta_skills",
         "note": "sparse GitHub API fetch of meta_skills/*/SKILL.md (repo is ~600MB; full tarball avoided)",
+    },
+    "mattpocock": {
+        "name": "mattpocock",
+        "repo": "mattpocock/skills",
+        "tarball": "https://github.com/mattpocock/skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "skills_nested": True,
+        "note": "scanned skills/<category>/<name>/SKILL.md (two-level; category from dir)",
+    },
+    "karpathy": {
+        "name": "karpathy",
+        "repo": "multica-ai/andrej-karpathy-skills",
+        "tarball": "https://github.com/multica-ai/andrej-karpathy-skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "note": "scanned skills/*/SKILL.md (single karpathy-guidelines skill; no index file)",
     },
 }
 
@@ -323,31 +344,51 @@ def load_official_index(repo_root: Path, source: dict) -> list[dict]:
     return data
 
 
+def _iter_skill_dirs(skills_root: Path, root_rel: str, nested: bool):
+    """Yield ``(skill_dir, repo-relative path, parent_category)`` for SKILL.md dirs.
+
+    Default layout is one level deep (``<skills_root>/<name>/``). Sources that
+    group skills into category subdirs (``skills/<category>/<name>/``) set
+    ``skills_nested``; the category dir name is returned so it can be used as a
+    category fallback when the skill's frontmatter omits one. Dirs without a
+    SKILL.md (README-only buckets like ``deprecated/``) are skipped by the caller.
+    """
+    def _rel(*parts: str) -> str:
+        return "/".join(p for p in parts if p)
+
+    for d in sorted(p for p in skills_root.iterdir() if p.is_dir() and not p.name.startswith(".")):
+        if nested:
+            for sub in sorted(p for p in d.iterdir() if p.is_dir() and not p.name.startswith(".")):
+                yield sub, _rel(root_rel, d.name, sub.name), d.name
+        else:
+            yield d, _rel(root_rel, d.name), None
+
+
 def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
-    """Scan <skills_root>/<name>/SKILL.md (used when a source has no official index file).
+    """Scan ``<skills_root>/<name>/SKILL.md`` (used when a source has no official index file).
 
     ``skills_root`` may be empty for sources that keep skills at the repo root
     (e.g. ComposioHQ/awesome-claude-skills); in that case ``path`` is just the
-    directory name (no leading slash).
+    directory name (no leading slash). A source may set ``skills_nested`` when it
+    groups skills into category subdirs (see ``_iter_skill_dirs``).
     """
     root_rel = source["skills_root"].strip("/")
     skills_root = repo_root / root_rel if root_rel else repo_root
     entries = []
     if not skills_root.is_dir():
         return entries
-    for d in sorted(skills_root.iterdir()):
-        if not d.is_dir() or d.name.startswith("."):
-            continue
+    nested = bool(source.get("skills_nested"))
+    for d, path, parent_category in _iter_skill_dirs(skills_root, root_rel, nested):
         skill_md = d / "SKILL.md"
         if not skill_md.exists():
             continue
         fm = frontmatter_of(skill_md)
         entry = {
             "id": d.name,
-            "path": f"{root_rel}/{d.name}" if root_rel else d.name,
+            "path": path,
             "name": fm.get("name") or d.name,
             "description": fm.get("description"),
-            "category": fm.get("category"),
+            "category": fm.get("category") or parent_category,
             "risk": fm.get("risk"),
             "source": "community",
         }
@@ -360,7 +401,8 @@ def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
         if isinstance(tools, list) and tools:
             entry["plugin"] = {"targets": {str(t): {} for t in tools}}
         entries.append(entry)
-    print(f"🗂️  {source['repo']}: scanned {root_rel or '.'}/*/SKILL.md ({len(entries)} entries)")
+    layout = "*/<category>/<name>" if nested else "*/<name>"
+    print(f"🗂️  {source['repo']}: scanned {root_rel or '.'}/SKILL.md under {layout} ({len(entries)} entries)")
     return entries
 
 

@@ -35,7 +35,7 @@
 - 文档层：安装/结构/来源/用法失准 → `references/` 或成品 `README.md`。
 
 **Step 2 上游对比（有候选时）**
-- 涉及方法论演进、且存在可对照的上游实现/规范时，先对比再改。被采纳/参考来源：anthropics/skills（官方方法论+评测链）、ComposioHQ/awesome-claude-skills（官方方法论在 awesome-list 中的分发副本）、antongulin/opencode-skill-creator（description 闭环）、Zhang-Henry/CoEvoSkills（自主评测循环/盲比对照，见 `evolutions/2026-09-17-compare-coevoskills.md`）；索引源（aas/addy/anthropics/composiohq/coevoskills）用于「先查后建」。
+- 涉及方法论演进、且存在可对照的上游实现/规范时，先对比再改。被采纳/参考来源：anthropics/skills（官方方法论+评测链）、ComposioHQ/awesome-claude-skills（官方方法论在 awesome-list 中的分发副本）、antongulin/opencode-skill-creator（description 闭环）、Zhang-Henry/CoEvoSkills（自主评测循环/盲比对照，见 `evolutions/2026-09-17-compare-coevoskills.md`）；索引源（aas/addy/anthropics/composiohq/coevoskills/mattpocock/karpathy）用于「先查后建」。
 - 上游更优 → 吸收优点，把对比结论与学习点写入 `evolutions/<YYYY-MM-DD>-<slug>.md`。
 
 **Step 3 出方案再动手**
@@ -95,7 +95,7 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir <仓库根
 ```bash
 python -m pytest tests/ -q                                     # 回归（计数随测试增长，不在此硬编码）
 python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator   # 成品 strict 自检
-python skills/skill-creator/scripts/search_index.py --stats    # 索引完整性（5 源 2188 条）
+python skills/skill-creator/scripts/search_index.py --stats    # 索引完整性（7 源 2227 条）
 python skills/skill-creator/scripts/validate_skills.py --strict --dir <能力库绝对路径>       # 库校验
 ```
 
