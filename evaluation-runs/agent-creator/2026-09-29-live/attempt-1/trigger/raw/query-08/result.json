@@ -1,0 +1,18 @@
+{
+  "id": 8,
+  "query": "把“检查失败后交还负责人决定”翻译成自然英文，并给一个更简短版本。",
+  "should_trigger": false,
+  "passed": true,
+  "scorable": true,
+  "dispatch": false,
+  "target_read": false,
+  "combined": false,
+  "status": "completed",
+  "error": null,
+  "combined_rule": "dispatch OR target_read",
+  "dispatch_evidence": [],
+  "target_read_evidence": [],
+  "target_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-d9f0jfvj\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+  "timed_out": false,
+  "returncode": 0
+}

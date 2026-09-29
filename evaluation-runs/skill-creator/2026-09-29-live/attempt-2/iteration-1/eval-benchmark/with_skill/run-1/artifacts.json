@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "output_dir": "outputs",
+  "files": [
+    {
+      "source_path": "outputs/benchmark.json",
+      "path": "outputs/artifacts/outputs/benchmark.json",
+      "bytes": 7921,
+      "sha256": "7dad94f94a70461c2916f92f87894474bc5bec292cf51450b3cb41d1e31f1514",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/benchmark.md",
+      "path": "outputs/artifacts/outputs/benchmark.md",
+      "bytes": 1718,
+      "sha256": "f2df626235dc940901f38b7589f50daf17fb864c019a2d7772d0a500ac15cd3f",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/conclusion.json",
+      "path": "outputs/artifacts/outputs/conclusion.json",
+      "bytes": 5390,
+      "sha256": "d3f633c6c559f74c2d532a85558fb85a64ce3db651ed0de802578d8d10188876",
+      "declared_output": true
+    }
+  ],
+  "skipped": [
+    {
+      "source_path": ".opencode",
+      "reason": "input_or_runtime_metadata"
+    },
+    {
+      "source_path": "inputs",
+      "reason": "input_or_runtime_metadata"
+    }
+  ],
+  "errors": []
+}

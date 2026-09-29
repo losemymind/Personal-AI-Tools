@@ -1,0 +1,44 @@
+[
+  {
+    "eval_id": 1,
+    "config": "old_skill",
+    "returncode": 0,
+    "status": "completed",
+    "error": null
+  },
+  {
+    "eval_id": 1,
+    "config": "without_skill",
+    "returncode": 0,
+    "status": "completed",
+    "error": null
+  },
+  {
+    "eval_id": 1,
+    "config": "with_skill",
+    "returncode": 0,
+    "status": "completed",
+    "error": null
+  },
+  {
+    "eval_id": 2,
+    "config": "with_skill",
+    "returncode": 0,
+    "status": "completed",
+    "error": null
+  },
+  {
+    "eval_id": 2,
+    "config": "old_skill",
+    "returncode": 0,
+    "status": "completed",
+    "error": null
+  },
+  {
+    "eval_id": 2,
+    "config": "without_skill",
+    "returncode": 0,
+    "status": "completed",
+    "error": null
+  }
+]

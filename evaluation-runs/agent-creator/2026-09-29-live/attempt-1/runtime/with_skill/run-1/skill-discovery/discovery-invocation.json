@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "debug",
+    "skill"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-ipzmm9hx\\runtime-workspace",
+  "timeout_seconds": 40,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:37:47.245036+00:00"
+}

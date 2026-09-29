@@ -1,0 +1,40 @@
+{
+  "synthetic": true,
+  "comparable": false,
+  "delta_available": false,
+  "reason": "Records are synthetic and incomplete: of 4 expected run cells, 3 completed and 1 (eval-b/without_skill/run-1) errored with no grading. The two configurations are therefore not comparable as groups (without_skill coverage 0.50 vs with_skill 1.00). Only 1 of 2 planned eval_id x run pairs is valid, so no averaged or overall delta can be formed. The one computable difference (eval-a pass_rate 1.0 vs 0.0) is synthetic and n=1 and cannot support a claim about overall skill gain.",
+  "delta_available_detail": {
+    "eval-a": {
+      "pass_rate_delta": 1.0,
+      "available": true,
+      "caveat": "synthetic, n=1, not a real measurement"
+    },
+    "eval-b": {
+      "pass_rate_delta": null,
+      "available": false,
+      "reason": "without_skill arm errored, grading missing"
+    },
+    "overall": {
+      "pass_rate_delta": null,
+      "available": false,
+      "reason": "1/2 valid pairs; missing cell not imputable"
+    },
+    "tokens": {
+      "available": false,
+      "reason": "not supplied"
+    },
+    "cost": {
+      "available": false,
+      "reason": "not supplied; not zero"
+    }
+  },
+  "limitations": [
+    "All input records are synthetic fixtures; they do not measure real model behavior.",
+    "Only one iteration and n=1 run per eval/configuration: no variance, no statistical inference.",
+    "One of four cells errored (eval-b/without_skill) and produced no grading; excluding it would bias any comparison.",
+    "Only 1 of 2 planned pairs is valid; the two configurations have unequal completion (coverage 1.00 vs 0.50), so they are not comparable.",
+    "Token and cost measurements were not supplied and are reported as null, never as zero.",
+    "No skill-provided benchmark tool was present in the workspace; aggregation was done with the Python standard library."
+  ],
+  "evidence_boundary": "Conclusions are limited to a faithful transcription of the synthetic fixtures and an inventory of their gaps. No claim can be made that the skill improves real task performance, reduces latency, or changes cost."
+}

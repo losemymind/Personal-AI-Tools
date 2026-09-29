@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: "创建、改进并验证个人工作流技能（Skills）。当用户需要从零创建技能、把反复出现的工作流沉淀为技能、修改或优化现有技能、评估技能触发与质量、或为 claude/opencode/codex/deepseek 等客户端安装与管理技能时使用。当用户提到「创建skill」「写个技能」「skill-creator」「把xx做成技能」「添加技能」等说法时，使用本技能。"
+description: "创建、改进并验证个人工作流技能（Skills）。当用户需要从零创建技能、把反复出现的工作流沉淀为技能、修改或优化现有技能、评估技能触发与质量、或为 claude/opencode/codex/deepseek 等客户端打包安装指定技能时使用。也适用于「创建skill」「写个技能」「skill-creator」「把xx做成技能」等请求。"
 category: productivity
 risk: safe
 ---
@@ -9,527 +9,140 @@ risk: safe
 
 ## 概述
 
-本技能指导如何把真实工作流蒸馏为可复用、可验证、跨客户端安装的高质量技能。技能的本质是一组「指令 + 资源」（`SKILL.md` 及其目录），为 LLM 客户端提供精确的触发条件与可预期的操作流程。方法遵循：证据驱动、渐进式披露、自由度匹配脆弱性、高信号命名、迭代测试循环与治理化验证；内置多源上游技能索引（`indexes/upstream.db`，检索细节见「何时使用此技能」与 `references/skill-index.md`）支撑「先查后建」，避免重复造轮子。
-
-本技能目录结构（符合技能解剖标准）：
-
-```
-skill-creator/
-├── SKILL.md                    ← 本方法论（唯一入口：何时使用/工作流/资源导览）
-├── README.md                   ← 说明（上游来源/约定/结构）
-├── evals.json                  ← 本技能自身的触发测试用例（随技能回归）
-├── scripts/
-│   ├── build_index.py          ← 构建上游技能索引（tarball→SQLite）
-│   ├── search_index.py         ← 检索上游索引（FTS5 全文/分类/风险）
-│   ├── compare_skills.py       ← 自建 vs 上游对比评分（质量6维+结构4维）
-│   ├── create_skill.py         ← 交互式脚手架生成器（含 evals/evals.json）
-│   ├── package_skill.py        ← 客户端打包器（按端适配 frontmatter + 复制整目录 + post-check）
-│   ├── validate_skills.py      ← 自动验证器（frontmatter/章节/安全/链接/密钥扫描；allowlist 局部豁免）
-│   ├── run_eval.py             ← 触发评测（heuristic 默认 / cli 双模式；--concurrency 有界并行；逐查询隔离工作区；--output-dir 落盘）
-│   ├── run_loop.py             ← description 自动优化循环（train/test 60/40；cli 隔离运行）
-│   ├── run_scenario.py         ← 场景执行器（跑单个任务、落盘 run 目录供评分/汇总；超时也留档）
-│   ├── aggregate_benchmark.py  ← 量化基准汇总（benchmark.json + benchmark.md；--primary/--baseline 定 delta 方向；--notes 合并分析笔记）
-│   ├── utils.py                ← 共享：frontmatter 解析 + 章节模式 + 触发启发式 + 安全扫描 + 进程树终止客户端运行器（四端通用）
-│   └── _project_paths.py       ← 技能根定位辅助（自包含，不依赖宿主仓库）
-├── agents/                     ← 子代理指令（SKILL.md 按需拉起，不自动加载）
-│   ├── grader.md               ← 评分子代理：断言判定 → grading.json
-│   ├── reviewer.md             ← 评审子代理：质量/纪律评分 + pass·revise 判定 → review.json
-│   ├── comparator.md           ← 盲测对比子代理：A/B 定性对比 → comparison.json
-│   └── analyzer.md             ← 复盘/基准分析子代理：改进建议 / 观察笔记
-├── indexes/
-│   └── upstream.db             ← SQLite 索引（官方 skills_index.json + 结构扫描）
-├── references/
-│   ├── skill-template.md       ← 字段与分类完整参考
-│   ├── skill-anatomy.md        ← 结构解剖与渐进式披露
-│   ├── quality-bar.md          ← 8 项质量检查与验证标准
-│   ├── skill-writing-guide.md  ← 写作规律（TDD 化/表述匹配失败类型/防借口/措辞微测）
-│   ├── skill-index.md          ← 索引构建/检索/更新说明
-│   ├── skill-comparison.md     ← 对比评分维度与择优流程
-│   └── benchmark-schema.md     ← 评测/基准 JSON schema（移植自 Anthropic 官方）
-├── examples/                   ← 上游学习样本（MIT 许可，验证豁免）
-│   ├── README.md               ← 样本入口：来源/许可/目录清单/学习要点
-│   ├── brainstorming/          ← 单文件·结构教科书
-│   ├── copywriting/            ← 单文件·流程门控
-│   ├── git-pushing/            ← 单文件+scripts·高风险模板
-│   ├── systematic-debugging/   ← 单文件+references·阶段强制序
-│   ├── react-best-practices/   ← 多文件·渐进式披露范本（AGENTS.md+rules/）
-│   └── loki-mode/              ← 综合·复杂工作流范本（references/ 大拆分）
-├── evolutions/                 ← 对比学习记录（反馈闭环；README + 日期平铺记录）
-└── templates/
-    ├── SKILL.template.md       ← 新技能骨架
-    └── evals.json.template     ← 触发测试用例模板
-```
+把真实工作流整理成可复用、可验证、可独立安装的技能。根据当前任务选择创建、局部修改、评测或安装流程；用观察到的失败与产出证据决定改什么。SKILL.md 是唯一入口，工具、参考、角色指令均随成品分发。
 
 ## 何时使用此技能
 
-- 用户要求「把这个工作流做成一个技能」、「创建一个 skill」
-- 用户描述了一个反复出现的手动流程或专业领域知识，值得沉淀为技能
-- 需要改进、重构或评估一个现有技能
-- 需要把一个技能安装到 claude / opencode / codex / deepseek 等客户端的 skills 目录
-- 需要为技能编写测试用例、评估触发准确性、或运行自动验证
+- 从零创建技能，或把已有对话、SOP、反复执行的工作沉淀为技能。
+- 修改现有技能的指令、脚本、引用、目录或命名。
+- 对比技能版本或上游候选，评估任务效果、优化 description 触发面。
+- 打包或安装一个已指定的技能；批量浏览能力库和跨产物安装由所在环境的编排层处理。
 
-> 本技能只管**创建/改进 + 与上游对比**；若用户只是想「按需安装已有的现成技能」（读现有能力清单直接给安装命令、不创建），不在本技能范围——由所在环境的编排层自行处理。
+## 先选择任务范围
 
-## 资源路径基准
+| 当前请求 | 执行路径 | 按需读取 |
+|---|---|---|
+| 改名、修正引用、修复明确的小问题 | 定位调用方 → 最小修改 → 相关校验；不自动重做上游研究或整轮评测 | 相关资源与质量标准 |
+| 从零创建或实质改进工作流 | 读下方「创建与改进」；先收集失败证据并检索上游 | 写作、结构、字段参考 |
+| 比较产出、跑场景基准 | 固定场景与基线 → 执行 → 评分 → 配对汇总 | `references/skill-evaluation.md`、`references/benchmark-schema.md` |
+| 优化触发描述 | 审查询集 → 开发集选优 → 独立最终集确认 | `references/skill-trigger-optimization.md` |
+| 打包、自安装或覆盖更新 | 使用已确定的客户端与作用域；只补问缺失信息 | `references/skill-installation.md` |
+| 调查上游或更新索引 | 离线检索；需要更新时按源固定提交下载 | `references/skill-index.md` |
 
-本技能是**自包含完整体**：内部所有引用（脚本、参考、索引、模板、示例、演进记录）一律以 **skill-creator 目录自身为根**书写，不依赖任何外部布局：
+授权与用户已给出的选择在同一任务内持续有效。局部修改仅在实际改变触发或任务行为时补相应行为评测。用户只要分析时，先交付证据与方案；不把分析自动扩大成修改或安装。
 
-- 脚本：`python scripts/<脚本>.py ...`（如 `python scripts/validate_skills.py`）
-- 参考：`references/skill-template.md`、`references/quality-bar.md` 等
-- 索引：`indexes/upstream.db`；模板：`templates/`；示例：`examples/`；记录：`evolutions/`
+## 资源路径与按需读取
 
-**调用约定**：上述命令均以「在本技能目录内执行」为准；不在技能目录内执行时，给命令加上技能目录前缀：`python "<技能目录>/scripts/<脚本>.py" ...`。定位本技能目录的方法：codex 的技能列表自带文件路径，直接使用；claude/opencode 按存在性依次探测——工作区候选 `<项目>/.claude/skills/skill-creator/`、`<项目>/.opencode/skills/skill-creator/`、`<项目>/.agents/skills/skill-creator/`；全局候选 `~/.claude/skills/skill-creator/`、`~/.config/opencode/skills/skill-creator/`、`~/.agents/skills/skill-creator/`。脚本会以自身位置定位索引/模板等内部资源，无需其他配置。
+内部路径以本技能目录为根；任意 cwd 调用时使用 `python "<技能目录>/scripts/<脚本>.py" ...`。优先用客户端技能列表给出的确切路径；否则检查用户已指定的安装位置，落点见安装参考。脚本通过 `_project_paths.py` 自定位，不依赖宿主仓库。
 
-读取规则：references 文档**按需读取**（渐进式披露），需要字段/分类细节时读 `references/skill-template.md`，需要结构规范时读 `references/skill-anatomy.md`，需要质量标准时读 `references/quality-bar.md`，需要写作规律（TDD 化/表述匹配失败类型/防借口/微测）时读 `references/skill-writing-guide.md`；不要一次性全部注入。
+脚本命名为 skill_<用途>.py，索引为 skill_index_<动作>.py；共享模块为 `scripts/skill_utils.py`、`scripts/skill_events.py` 与 `scripts/_project_paths.py`。本创建器的角色指令统一命名为 agents/skill_<角色>.md。
 
-## 核心理念
+| 需要的细节 | 读取资源 |
+|---|---|
+| frontmatter、风险、分类、创建台账 | `references/skill-template.md` |
+| 目录组织、渐进披露、资源选择 | `references/skill-anatomy.md` |
+| 校验项目与质量门 | `references/quality-bar.md` |
+| 失败类型、纪律型技能、措辞微测 | `references/skill-writing-guide.md` |
+| 静态比较维度及采纳边界 | `references/skill-comparison.md` |
+| 场景执行与评审流程 | `references/skill-evaluation.md` |
+| 评分、指标、基准 JSON 契约 | `references/benchmark-schema.md` |
+| 触发评测与描述优化参数 | `references/skill-trigger-optimization.md` |
+| 多客户端打包与自安装 | `references/skill-installation.md` |
+| 索引来源、更新、固定提交与离线状态 | `references/skill-index.md` |
+| 有针对性的上游写作样本 | `examples/README.md`，再选与本任务相关的样本 |
+| 历史决定与未解决事项 | `evolutions/README.md`，再按主题恢复背景 |
 
-### 证据驱动，而非规格驱动
+只读当前任务需要的资源。references 从本入口一层深访问，不互链兄弟文件；超过 100 行的参考加目录，超大文件在入口提供检索词。正文越长，上下文成本越高；元技能也应把条件性细节移至按需参考。
 
-从**用户实际做过的工作**出发，而不是从技术需求规格出发。让用户贴出真实产出（报表、脚本、邮件、截图、SOP、表格、对话记录）作为证据。更好的源材料产出更可用的初版。
+## 工作原理：创建与改进
 
-### 渐进式披露（Progressive Disclosure）
+### 1. 捕捉工作与失败证据
 
-技能有三层加载模型：
-1. **元数据**（`name` + `description`）—— 任何时刻都在上下文（约 100 词），决定是否触发
-2. **SKILL.md 正文** —— 触发后加载（理想 <1000 行）
-3. **捆绑资源**（`scripts/` `references/` `assets/`）—— 按需加载，无限量
+优先从对话、现有产出、脚本、SOP 提取目标、输入、输出、成功标准与真实失败。只询问无法推断且会影响结果的信息。业务定义、权限与发布决策由有权的人确定；仅对尚未获得的必要授权暂停对应动作。
 
-正文超过 1000 行时，把细节下沉到 `references/` 并按需读取；正文保留工作流 + 选择逻辑 + 明确指引。
+新技能或行为改动先用代表性任务确认基线：新建时不带技能，改进时用原版本。保留失败与证据，再写针对失败的指导。若没有观察到增益需求，说明技能的必要性尚未验证，不虚构基线；命名、引用等机械修复可用结构校验验证。
 
-**references 引用纪律（硬规则）**：references 只允许从 SKILL.md **一层深**引用，references 之间不互相链接成图（保持按需加载路径可预期）；单文件 >100 行在顶部加**目录**；超大文件（>10k 词）在 SKILL.md 引用处附 **grep 模式**（如 `grep -n "阶段 7" references/xxx.md`）让代理跳过读全文直接定位。
-
-**元技能豁免**：skill-creator 自身是**元技能**（为了"创建更完善的技能"而存在），不受本行数指引约束——它优先保证方法论完整度，若后续扩展需要超出 1000 行，允许超出（references 已按需加载，正文变长不影响客户端加载性能）。行数指引只适用于它所产出的**普通技能**，不适用于它自己。
-
-### 自由度匹配脆弱性（Guardrails to Fragility）
-
-结构化的程度应与「犯错代价」匹配：
-- **高自由度**：启发式、检查清单、示例（代价低、创造性工作）
-- **中自由度**：伪代码、模板、带参数的脚本（流程半固定）
-- **低自由度**：精确命令、严格模板、强制验证步骤（易碎、代价高、如删除/推送/资金操作）
-
-不要给简单技能堆一大串 MUST/NEVER；也不要让高危流程含糊。
-
-### 高信号命名与描述
-
-`name`/`description` 是技能的唯一门面，直接决定是否触发：
-- `name`：小写-连字符，与目录名完全一致，≤100 字符，稳定不变
-- `description`：触发场景优先——以「何时用/Use when」开头，前部加载具体触发关键词（文件名、领域、工具、用户惯用语）；可保留一句能力定位，但**不写执行步骤/流程阶段摘要**（实证：总结流程的描述会让 agent 跳过正文走捷径）。实测 LLM 倾向**欠触发**，描述可稍「主动」——列举会触发它的用户说法，即使没字面提到技能名。
-
-**description 硬约束（唯一无条件加载的触发面）**：`description` 是客户端在触发前唯一始终加载的字段——必须**自足**覆盖全部触发场景，不依赖正文兜底。约束：≤1024 字符（validate 强制）、**单行、不含 `<`/`>` 占位符**（`<技能名>`、`<path>` 之类），禁流程摘要。正文保留「何时使用此技能」章节作触发后的范围确认（claude/opencode/codex 加载正文后依赖它），但**触发判定只看 description**——写正文前先把 description 当唯一门面试一遍触发查询。
-
-### 迭代验证循环
-
-技能是迭代出来的，不是一次写成的：**草案 → 测试 → 评审 → 改进 → 重跑**，直到用户满意或反馈为空。
-
-### 先失败后写 + 表述匹配失败类型（TDD 化）
-
-技能写作是对**过程文档的 TDD**：先在无技能状态跑真实场景看基线失败（verbatim 记录 agent 借口），再写**只针对这些失败**的最小正文，重测补漏直到无法绕开——**无「失败先例」不写技能**。且指导措辞的形式必须**匹配失败类型**（违规→禁止+借口表；形状错→正面配方；漏元素→模板 REQUIRED 槽；条件行为→可观察谓词）；实证显示禁止清单会反噬「输出形状错」类问题。防借口、措辞微测、类型取舍与 Token 预算等完整规律见 `references/skill-writing-guide.md`。
-
-### 无意外原则（Lack of Surprise）
-
-技能不得包含恶意、利用或误导内容，也不得在意图上隐藏改动。拒绝创建「伪装成正常技能但实际做不该做的事」的技能。
-
-## 技能目录解剖（Anatomy）
-
-```
-skills/<skill-name>/
-├── SKILL.md              ← 必需：主技能定义（frontmatter + 指令）
-├── examples/             ← 可选：真实示例
-├── scripts/              ← 可选：可执行辅助脚本（可复现/重复任务）
-├── templates/            ← 可选：输出模板
-├── references/           ← 可选：参考文档（>100 行的大文件附目录；多领域按文件拆分）
-├── agents/               ← 可选：子代理指令文件（由 SKILL.md 按需拉起，不自动加载）
-└── README.md             ← 可选：附加说明（跨客户端差异、维护记录）
-```
-
-关键规则：**只有 `SKILL.md` 是必需的**。`scripts/` 用于确定性/重复性任务（脚本被执行，不进上下文）；`references/` 用于按需注入的深度文档；`agents/` 存子代理角色指令——SKILL.md 在流程中拉起子代理时让其读入（语义判断类工作），与 `scripts/`（确定性可复现工作）分工互补。
-
-## 前置元数据字段规范
-
-SKILL.md 顶部用 `---` 包裹 YAML frontmatter：
-
-```yaml
----
-name: <skill-name>                 # 必需：小写-连字符，与目录名完全一致
-description: "..."                 # 必需：触发场景优先 + 一句能力定位（不写步骤流程摘要），≤1024 字符
-category: <category>               # 必需：见下方分类值
-risk: <none|safe|critical|offensive|unknown>  # 必需
-allowed-tools: [Read, Grep, Glob]  # 可选：最小权限白名单（Claude 工具名；打包时按端映射）
----
-
-# <技能标题>
-```
-
-**来源/作者/日期/版本不进 frontmatter**：`author`、`date_added`、`source`、`source_repo`、`source_type`、`version` 一律不写入 `SKILL.md`——打包前技能应是**客户端中立、内容自足**的，来源与创建元数据集中记录在技能库根的**创建记录账本**（见「创建记录账本」），版本以 git 提交历史为准。
-
-**可选权限白名单 `allowed-tools`**：只有需要限制工具的技能才写；值是 Claude 工具名列表（`Read`/`Grep`/`Glob`/`Bash`/`WebFetch`/…），代表**最小权限**。不写 = 不限制（该端全部工具）。打包器按端映射：claude 保留（规范为逗号串）、opencode 反查为逐工具 `permission`（白名单 allow、其余 deny，不放大）、codex/deepseek 透传（见阶段 9）。
-
-**风险级别：**
-- `none` — 纯文本 / 推理，无命令或状态变更
-- `safe` — 读取文件、运行非破坏性命令（推荐用于多数指导类技能）
-- `critical` — 修改状态、删除文件、推送生产环境
-- `offensive` — 渗透测试 / 红队；**必须**含「仅限授权使用」警告，并强制要求执行前向用户确认
-- `unknown` — 遗留 / 未分类；**新技能不要用**
-
-**分类常用值：** `development` / `frontend` / `backend` / `testing` / `devops` / `architecture` / `security` / `ai` / `prompt-engineering` / `git` / `productivity` / `documentation` / `planning` / `communication` / `research` 等。
-
-### 创建记录账本
-
-frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作者/日期等创建元数据集中写入**创建记录账本**——技能库根的一个 Markdown 文件（本仓库约定 `SKILL-RECORDS.md`），由 `create_skill.py --records <文件>` 在创建/导入时追加一行：
-
-| 技能 | category | created | author | source | source_repo | method | evolutions |
-|---|---|---|---|---|---|---|---|
-
-- `create_skill.py` 传 `--records` 即自动追加一行；`--author` / `--source`（默认 `self`）/ `--source-repo` / `--method`（默认 `created`）提供各列值。不传 `--records` 则不写账本（任意目录脚手架保持干净）。
-- 导入/适配上游技能时 `method` 记 `imported`/`adapted`，`source` 记 `community`/`official`，`source_repo` 记 `OWNER/REPO`。
-- 账本是**逐条创建/来源的可查询台账**；与库的**入库审计**文件（如 `SKILLS-AUDIT.md`）互补：账本记事实，审计记合规结论。
-
-## 内容结构与写作指南
-
-推荐结构（必需章节：概述 / 何时使用此技能 / 工作原理；其余可选）：
-
-```markdown
-# <技能标题>
-## 概述            # 2-4 句：做什么、为什么存在
-## 何时使用此技能     # 具体触发场景列表
-## 工作原理          # 步骤化执行流程（技能核心）
-## 示例             # 至少 1 个可立即复制使用的代码块/交互示例
-## 最佳实践          # ✅ 要这样做 / ❌ 避免什么
-## 相关技能          # 纯技能名 + 何时用；禁止 @ 语法（force-load 烧上下文）
-## 常见问题          # 故障排查
-## 限制和注意事项     # 已知边界与做不到的事
-## 安全与安全说明     # 涉及命令/安装/权限/高风险时才需要
-```
-
-**写作要点：**
-- 祈使句、动作动词、具体步骤：「创建文件…」「在继续之前检查…」，避免「应该被创建」「您可能需要考虑」。
-- 解释每个指令的**为什么**，而不是用大写 MUST/NEVER 堆砌。
-- 示例具体、可直接使用；可标注输入 → 输出。
-- 定义输出格式时直接给固定模板。
-- 用「渐进式披露」组织：`## 基本用法`（常见场景）+ `## 高级用法`（复杂场景）。
-- 从通用模式出发，不要过拟合到狭窄例证。
-- `description` 说「何时触发」，正文写「怎么执行」——不要对调。
-
-## 创建流程（核心工作流）
-
-> **可独立安装**：作为独立模块，本技能不依赖宿主仓库的目录结构。
->
-> **闭环（3 步）**：
-> 1. **按用户需求创建一个技能**（阶段 1-4）
-> 2. **检索上游**是否已有同类（阶段 0）——有候选 → 与自建对比（阶段 5.5）取最优；无候选 → 用自建版本
-> 3. **若上游更优** → 采纳并记录 `evolutions/` → 优化本技能方法论（反馈闭环）
-
-### 阶段 0：检索上游技能库（先查后建）
-
-动手创建前，**先在本地索引中检索上游技能库是否已有可用技能**（索引为多源：`aas` = agentic-awesome-skills、`addy` = agent-skills、`anthropics` = anthropics/skills、`composiohq` = awesome-claude-skills、`coevoskills` = CoEvoSkills、`mattpocock` = mattpocock/skills、`karpathy` = andrej-karpathy-skills，默认全库检索，`--source` 过滤单源；避免重复造轮子，是本技能的第一个决策门）：
+### 2. 先查后建与上游择优
 
 ```bash
-python scripts/search_index.py "<用户需求关键词>" [--category <分类>] [--risk <级别>] [--limit 10]
-python scripts/search_index.py --stats                # 查看索引状态
-python scripts/search_index.py --list-categories      # 列出全部分类
+python scripts/skill_index_search.py "<关键词>" --limit 10
+python scripts/skill_index_search.py --stats
 ```
 
-- 索引文件 `indexes/upstream.db` 已随仓库提交，无需联网即可检索。
-- **索引落后于上游时**（上游有更新）：运行 `python scripts/build_index.py` 重建。
-- 检索结果给出：技能名/描述/路径/风险/分类/行数/目录结构标志（scripts/references/examples）。
-- 检索详情见 `references/skill-index.md`。
+索引 `indexes/upstream.db` 随包提供，覆盖 aas、addy、anthropics、composiohq、coevoskills、mattpocock、karpathy。查询先用领域、动作、工具关键词；中文常见词有离线扩展，未知词再补英文与近义词。一次 0 命中不证明不存在候选。
 
-**决策分支：**
-- **有匹配候选** → 记录候选；照常进入创建（阶段 1-5），在阶段 5.5 与候选对比择优（自建 vs 上游 → 取最优）。
-- **无匹配候选** → 跳过阶段 5.5，用自建版本。
-- 若上游更优被采纳 → 提炼学习点记录到 `evolutions/`（阶段 5.5），反哺优化本技能。
+查看逐源状态与 upstream_commit；unknown 不能证明远端最新。需要更新时按源运行 `scripts/skill_index_build.py`，不为一个候选默认下载全部上游。
 
-### 阶段 1：捕捉工作与证据
+有候选先检查适用范围、许可和已有能力：可直接适配满足需求的部分；确有差距再自建。运行 `scripts/skill_compare.py` 做结构筛查，并在相同输入、成功标准和条件下比较至少一个真实场景。结构分不代表任务效果，没有运行条件就记录「待任务验证」。采纳后按 `evolutions/README.md` 记录来源、日期、证据、取舍和限制。
 
-让用户描述**他们实际做的工作**，并贴出真实产出作为证据。优先从当前对话提取（工具、步骤、纠正过的错误、输入输出格式）。
+### 3. 设计与编写
 
-可用的提问（一次一条，避免轰炸）：
-1. 这个技能最终要让 LLM 能做什么？
-2. 平时你**反复做**的是哪几步？（这是技能的价值所在）
-3. 输入是什么（文件类型、数据、场景），输出要什么格式？
-4. 有没有现成的产出、脚本、SOP、表格可以贴出来当证据？有的话质量会好很多。
-5. 有没有需要**人才能拍板**的决策、权限边界或风险边界？（没有就继续）
+- 只有 SKILL.md 必需；脚本、模板、示例和参考按任务价值添加，不为目录数量凑结构。
+- 脚本负责确定性和重复操作；正文保留工作流、关键约束、选择逻辑与输出契约。
+- 固定步骤用于脆弱或高风险操作；开放任务保留判断空间，解释约束的原因。
+- 违规型失败用边界和可观察条件，形状错误用正面输出配方，漏项用模板槽；纪律型技能按写作参考验证压力场景。
+- 新技能可用 `templates/SKILL.template.md` 或 `scripts/skill_create.py` 初始化；已有技能直接修改。
 
-如果用户只是抽象地说「帮我做个技能处理数据」，引导到具体工作流上再继续。
+frontmatter 的核心字段为 name、description、risk、category，可选 allowed-tools。name 与目录一致、小写 kebab-case；本地验证器上限 100 字符，目标客户端有更严格限制时从其要求。description 单行、≤1024 字符，无尖括号占位，描述能力与触发条件，不写执行步骤摘要。正文保留范围确认。
 
-### 阶段 2：确认唯一的「人力决策点」
+来源、作者、日期和版本不进入 frontmatter；创建元数据用 `skill_create.py --records <账本>` 的 author/source/source-repo/method 参数登记，版本由 Git 历史追溯。产品文档用中文，外部来源与许可保留。
 
-梳理出整个工作流里**只有人才能决定**的事情——业务定义、授权、风险边界。把它明确记录，并询问是否有权作决定的人能确认该定义。
-
-- 能确认 → 记录决策，继续构建。
-- 无法确认/无权 → 结果为 `BLOCKED`，向合适的负责人索取那一个缺失的授权。**不要替用户拍板，不要编造授权。**
-
-### 阶段 3：设计与脚手架
-
-- 先读本地 `examples/README.md`（样本入口：来源/许可/目录清单/学习要点），再研究 `examples/` 中的 6 个上游学习样本（对应 skill-anatomy 的「研究这些示例」），按需求类型选取参考：结构清晰 → `brainstorming`；高风险操作模板 → `git-pushing`；流程门控 → `copywriting`；阶段强制序 → `systematic-debugging`；多文件渐进式披露 → `react-best-practices`；复杂工作流 → `loki-mode`。
-- 确定技能结构与所需资源（`scripts/`、`references/`、`examples/`、`templates/`）。
-- 结构规范见 `references/skill-anatomy.md`（目录解剖 + 渐进式披露 + 大小指南）。
-- 按「自由度匹配脆弱性」决定结构强度（见 `references/quality-bar.md` 与正文「核心理念」节）。
-- 从最小可行开始，先让技能「跑起来」，再按反馈扩展。
-- 使用 `templates/SKILL.template.md` 作为骨架；字段与分类完整参考见 `references/skill-template.md`。
-- 可一键生成骨架：`python scripts/create_skill.py --name <技能名> --category <分类> --risk <级别>`（交互式或 `--no-interactive`）。入库时用 `--records <创建记录账本>` 追加来源记录（见「创建记录账本」）。
-- frontmatter 只声明 `name`/`description`/`risk`/`category`（不含 version/tags/来源字段；版本以 git 提交历史为准）。
-
-### 阶段 4：编写 SKILL.md
-
-按「前置元数据字段规范」与「内容结构与写作指南」两节编写；字段细节见 `references/skill-template.md`，结构规范见 `references/skill-anatomy.md`。编写顺序建议：
-
-1. 先写「何时使用此技能」——明确目的
-2. 再写示例——帮自己理解在教什么
-3. 然后补全工作流正文
-
-### 阶段 5：运行自动验证
-
-编写完成后、测试前，运行技能自带的验证器（基于 agentic-awesome-skills 的验证器实现，位于本技能的 `scripts/`）：
+### 4. 校验、测试与 AI 评审闭环
 
 ```bash
-python scripts/validate_skills.py                # 标准模式（警告不阻断）
-python scripts/validate_skills.py --strict       # 严格模式（有警告即失败，适合 CI）
-python scripts/validate_skills.py --dir <skills目录>  # 校验指定目录
+python scripts/skill_validate.py --strict --dir <技能目录>
 ```
 
-说明：不带 `--dir` 时默认扫描**技能根自身目录**（`scripts/` 的上一级，即自检，不依赖任何宿主仓库布局）；校验其他技能目录或技能库时用 `--dir <目录>`。
+校验 frontmatter、章节、安全模式、资源引用和 evals 形状；目标目录必须显式给出，否则默认自检本创建器。修改脚本时运行对应行为测试；修复错误后再进入语义评估。
 
-验证器检查项（完整列表见 `references/quality-bar.md`）：frontmatter 有效性（YAML、`name` 与目录名一致、小写 kebab-case 且 ≤100 字符、`description` ≤1024 字符、`risk` 合法）、中英文「何时使用」章节、示例章节、限制章节、offensive 技能的安全免责声明与用户确认门、危险管道与明文密钥扫描、本地链接/反引号引用是否悬空（含 `indexes/*.db` 等数据/文本资源），`evals.json` 存在时的形状合法性（缺 `query`/`should_trigger` 即失败），以及 `references/*.md` 不互链兄弟文件（一层深纪律）。存在错误时 exit code 为 1，严格模式下警告也会导致失败。
+需要评估行为增益时，从本入口读取场景评测与 schema 参考。使用相同输入和运行条件生成两组结果，保存真实产物与失败状态；缺失样本或成本不得补成成功或零。
 
-技能正文稳定后开始量化评估。采用「**确定性脚本打底 + SKILL.md 拉起子代理判断 + 脚本聚合收尾**」的混合编排（子代理指令在 `agents/`，移植自 Anthropic 官方；子代理负责语义判断，脚本负责可复现的确定性工作）：
+AI 评审闭环：作者修订，独立评审者按 `agents/skill_reviewer.md` 产出 review.json（pass|revise、issues、上轮修复核验）。通过或达到 max-iterations（默认 5）停止，达到上限不等于通过。仅在任务需要且客户端支持时派发；无法派发可按同一指令内联评审并标明缺少独立性。
 
-**第 1 步：触发评测（确定性脚本，先跑）**——`templates/evals.json.template` 为 evals 模板：
+- 客观断言评分：`agents/skill_grader.md`，输出 grading.json。
+- 单份产物质量与查询集审核：`agents/skill_reviewer.md`。
+- 输出级匿名 A/B 比较：`agents/skill_comparator.md`，输出 comparison.json；随机标签并隐藏来源。
+- 基准模式及比较结果复盘：`agents/skill_analyzer.md`。
 
-> 默认的 `--mode heuristic` 是**词面覆盖代理指标**（只度量查询与 `description` 共享的措辞，用 CJK 二元组 + 拉丁词集合求交），**不代表真实触发行为**；真实触发以 `--mode cli` 读到的客户端技能派发信号为准（见下）。该代理指标固有的假阴/假阳不是缺陷、不再作为缺陷上报——它只是无客户端 CLI 时的离线参考。
+描述影响触发时再走触发优化路径。heuristic 是词面代理指标；真实客户端信号与独立最终测试单独报告，测试全绿不证明实际触发率提升。
 
-```bash
-# 1) 确定性触发启发式（无外部 CLI，默认；CJK 感知）
-python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录>
-# 2) 真实客户端无头 CLI 触发（需对应客户端 CLI：claude / opencode）
-python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client claude --model <模型id>
-python scripts/run_eval.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> --mode cli --client opencode --model <模型id> --timeout 120 --concurrency 4
-```
+### 5. 交付与反馈
 
-> cli 模式**判定真实触发**：opencode 走**结构化判定**，只认客户端把技能工具派发出去（`type` 为 `tool_use`/`tool` 的事件里 `tool=="skill"` 且 `input.name` 等于本技能）——**不做全文子串匹配**，工作区列表里出现技能路径、或模型仅在正文提到技能名，都不算触发。claude 的纯 JSON 输出不含技能派发事件，只能退化为**全文子串匹配**（会因正文提到技能名/列出技能路径而假阳性），其触发数字仅供参考、勿与 opencode 直接可比。**自动评测仅支持 claude / opencode 两种 CLI**（`--client`；codex/deepseek 暂无可用无头调用——它们仍是可安装目标，只是触发评测需人工或改用 heuristic）。客户端默认模型未配置/配错时，用 `--model` 显式指定（否则每次都是 run_error）；单条查询耗时不定，用 `--timeout` 兜底（超时会**杀掉整个进程树**，不留孤儿）；查询彼此独立，`--concurrency N` 有界并行（默认 1 = 串行，保持结果顺序不变）可把整轮真机评测的墙钟时间缩短数倍。**超时保留已发生的触发**：技能工具常在客户端卡在技能启动的耗时任务**之前**就已派发，故超时时先解析已捕获的部分输出——已见本技能派发即记触发，无触发证据才记 run_error（否则会把真实触发误算成假阴性、系统性低估 recall）。**每查询一次性隔离工作区**：cli 模式为**每条查询**在临时目录里安装技能并以其为 cwd 运行，结束即删除——被触发的代理会真的执行技能（可能生成文件、派生进程），逐查询隔离既防污染调用方仓库、也避免并发查询互相写同一目录；调试时用 `--keep-workspace` 保留目录。
+交付当前技能、改动理由、验证结果与未解决项。需要时保留 VERIFICATION.md，记录当时检查，不承诺未来安全。上游吸收和方法论决定按主题更新 evolutions；机械修改更新相关命名与引用记录即可。
 
-输出每条查询的触发判定 + 汇总（passed/total、precision、recall）；`--json` 可机器读取；`--output-dir <目录>` 把结果 JSON 落盘为 `eval-results-<技能名>.json`（供后续评分/复盘引用）。**运行错误（CLI 缺失/超时/非零退出）汇总为 `errors` 单列**，不计入假阴性——改描述前先按阶段 7 的失败分类归因。
-
-> **职责边界**：`run_eval.py` 只产出触发判定信号（stdout / 落盘文件），不铺设目录结构——评分所需的工作区布局由下节的场景执行器或编排层搭建。
-
-**第 2 步：产出运行目录（确定性脚本）**：对每个 eval 用 `run_scenario.py` 跑「有技能」与「无技能（基线）」两组，直接落盘到基准布局（`transcript.md` / `outputs/` / `metrics.json` / `timing.json`）：
-
-```bash
-# with_skill：把技能装进一次性工作区后运行
-python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" --model <模型id> \
-  --skill-dir <技能目录> --run-dir <workspace>/iteration-N/eval-<名>/with_skill/run-1
-# without_skill：同一提示词、不装技能
-python scripts/run_scenario.py --client opencode --prompt "<任务提示词>" --model <模型id> \
-  --run-dir <workspace>/iteration-N/eval-<名>/without_skill/run-1
-```
-
-> 需要与客户端 CLI 不同的调用方式或做测试时用 `--client-cmd "<命令模板>"`（支持 `{prompt}` 占位）。`--model` 传给客户端 `-m/--model`（默认模型未配置时必需）。技能会被复制进一次性工作区，`without_skill` 组看不到它。
-
-**第 3 步：断言打分（拉起评分子代理）**：跑完两组、产物落到 `<workspace>/iteration-N/eval-<名>/<with_skill|without_skill>/run-N/` 后，**拉起评分（grader）子代理**：提示词中给出 `expectations` / `transcript_path` / `outputs_dir`，令其读入 `agents/grader.md` 执行——逐条断言判定、核验隐含声明、审视断言质量，把 `grading.json` 写进每个 run 目录（字段契约见 `references/benchmark-schema.md`）。
-
-**第 4 步：聚合（确定性脚本）**：
-
-```bash
-python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名>
-```
-
-读取各 `grading.json`（+ `timing.json` / `metrics.json`）汇总为带 mean±stddev 与 delta 的 `benchmark.json`（+ `benchmark.md`）；直接读 delta 判断技能相对基线的真实增益。**delta 方向由配置角色决定，不靠目录名字典序**：默认 `--primary with_skill`、`--baseline without_skill`（并识别 `skill`/`baseline` 等别名，再回退输入顺序）——否则 `baseline`/`skill` 这类命名的符号可能静默反转。`benchmark.json` 的 `run_summary.delta` 同时记录实际使用的 `primary`/`baseline`。
-
-**第 5 步：模式分析（拉起分析子代理）**：**拉起分析（analyzer）子代理**，按 `agents/analyzer.md` 模式二分析 `benchmark.json`——逐断言模式（恒过/恒败/单侧过/高方差 flaky）、跨 eval 模式、耗时与 token 模式——产出**观察笔记**（JSON 字符串数组），再用脚本合并进基准：
-
-```bash
-python scripts/aggregate_benchmark.py <workspace>/iteration-N --skill-name <名> --notes <notes文件>
-```
-
-**可选第 6 步：盲测对比（拉起对比子代理）**：需要定性比较两份输出（如 with_skill vs without_skill、新旧版本技能）时，**拉起盲测对比（comparator）子代理**：A/B 标签随机分配且保密来源，令其读入 `agents/comparator.md` 出 `comparison.json`；随后可再拉起 analyzer 模式一复盘「胜者为何胜出」。盲测是定性补充——`compare_skills.py` 的结构评分与 `aggregate_benchmark.py` 的 delta 仍是主决策依据。
-
-> 客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/*.md` 内联完成评分/对比/分析，产物格式不变。高方差 eval 视为 flaky 需更多 run。Schema 与布局见 `references/benchmark-schema.md`。
-
-### 阶段 5.5：与上游候选对比择优
-
-若阶段 0 检索到匹配候选，将自建技能与上游候选进行结构化对比（使用 `compare_skills.py`，实现 **质量 6 维 + 结构 4 维** 评分）：
-
-```bash
-# 对比单个技能目录
-python scripts/compare_skills.py <自建目录> <上游候选目录>
-
-# 对比某上下游候选目录下的全部技能
-python scripts/compare_skills.py <自建目录> <上游目录> --all-candidates
-```
-
-评分维度（详见 `references/skill-comparison.md`）：
-- **质量 6 维**（权重 60%）：触发清晰度 / 示例可得性 / 限制声明 / 风险声明 / 安全护栏 / 元数据完整
-- **结构 4 维**（权重 40%）：渐进式披露 / 资源组织 / 脚本复用 / 正文行数控制
-
-**决策：**
-- **上游更优** → 分析上游优势维度，提炼学习点，改进 skill-creator 方法论（记录到 `evolutions/`，形成反馈闭环）；必要时直接采纳上游技能。
-- **自建更优或持平** → 采纳自建版本，继续阶段 6。
-- 对比报告保存至 `evolutions/<日期>-compare-<技能名>.md`。
-
-结构分相近（±0.05 内）难以定夺、且双方都能实际产出时，可追加**输出级盲测**：拉起 `agents/comparator.md` 盲测对比子代理比较双方真实输出，再拉起 `agents/analyzer.md` 模式一复盘胜因——语义判断补结构评分之短，结论并入对比报告。
-
-### 阶段 6：测试与迭代
-
-> **纪律（Iron Law）**：基线必须先于写作——**无技能状态的失败观察在前，写技能在后**（RED→GREEN→REFACTOR）。如果技能已写好才想起基线，回到正文会写前先跑一遍无技能场景。指导措辞的**形式须匹配失败类型**，防借口/微测/正反对照见 `references/skill-writing-guide.md`。
-
-**RED→GREEN 行为差门（技能是否成立的显式判定）**：用 fresh-context 子代理**不带技能**跑真实场景（RED）：
-- **基线不失败 → 技能不必要**——停下，向用户说明「没有可修的行为差」，不硬写技能（写出来也只是冗余指导）。
-- **基线失败（verbatim 记录借口）→ 才进入写作**；写后带技能重跑（GREEN）必须消除基线失败——若仍失败则补正/删冗余，直到行为差消失。
-
-**AI 评审闭环（agent1 ↔ agent2，无人工）**：把「有/无技能」两组输出与产物交给**评审子代理**（agent2，读 `agents/reviewer.md`）独立评审，产出 `review.json`（`verdict: pass|revise` + 可执行 `issues[]`）。`revise` 时由作者代理（agent1）按 `issues[]` 逐条修订，再交评审；**`pass` 或达 `max-iterations`（默认 5）即停**。评审者与作者分离——**别让 agent 自评自改闭环自嗨**；客观断言仍交 grader，主观质量与纪律合规交 reviewer。`review.json` 随 iteration 目录版本化，下一轮用 `previous_review_path` 核验上轮问题是否修复。客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/reviewer.md` 内联扮演评审者。
-
-提出 2-3 个**真实用户会说的话**作为测试提示词，请用户确认后运行：
-
-- **有技能** 和 **无技能（基线）** 两组对比运行同一提示词，记录输出、耗时与 token。
-- 断言打分**拉起评分子代理**（读 `agents/grader.md`，产物 `grading.json`）：客观断言逐条判过/不过并引用证据；客户端不支持子代理时由主持会话按同一份指令内联完成。主观质量与纪律合规交**评审子代理**（`agents/reviewer.md`，产物 `review.json`）；两组输出需定性比较时拉起盲测对比子代理（`agents/comparator.md`，A/B 随机标签保密来源）。
-- 把结果整理成便于对照的形式（输出对比 + 量化指标 + `review.json`）。
-- 根据 reviewer 的 `issues[]` 改进：从反馈中**归纳共性**而非死板套用；剔除不生效的指令；把各测试中反复手写的辅助脚本沉淀为 `scripts/`。
-- 重复「改进 → 重跑 → 评审」直到 reviewer 判 `pass` 或达 `max-iterations`（无人工介入）。
-
-测试用例与结果记录在工作区内，参考官方结构的元数据字段（eval id、描述性名称、断言、输出路径、时间/token）。
-
-### 阶段 7：描述优化（触发测试 + 自动优化循环）
-
-技能内容稳定后进行。两档做法：
-
-**手动档（默认）**：
-1. 生成约 20 条**真实风格**触发查询：约一半应触发、一半不应触发。不应触发的最有价值的是「近似干扰项」——关键词重叠但实际需要别的技能。
-2. **先审查询集再跑**：由**评审子代理**（读 `agents/reviewer.md`）审查询集质量并给 `pass`/`revise`（坏查询会训练出坏描述——假阴性/假阳性/运行错误必须先排除，再让它们进评测）；判 `revise` 时按 `issues[]` 修正查询后复审。
-3. 用现版与改进版描述分别跑 `run_eval.py`，对比触发率。
-4. 选择测试集分数更高的版本，展示前后对比与得分。
-
-**触发失败分类（改前先归因）**：把每次 eval 失败归入三类再决定怎么改——**假阴性**（应触发未触发 → 触发面漏词/说法没覆盖）、**假阳性**（不应触发却触发 → 描述过度泛化/兜底词过多）、**run_error**（运行失败 → 工具/依赖/路径问题，与描述无关别乱改 description）。三类混改会把「改错病」当成「改好病」。
-
-**gold-standard 先例（从好里选更好）**：每轮改进提示里，附上本次运行 `history` 中 test 分最高的 description（连同其 run_eval 得分）当 few-shot 先例——描述优化是「从已验证的好措辞里选更好的」，不是每轮从零发明措辞（`run_loop.py` 已实现）。先例仅取自本次运行的迭代历史。
-
-**自动档（借鉴 Anthropic 官方 run_loop，train/test 60/40 分层分集，防过拟合）**：
-
-```bash
-python scripts/run_loop.py --eval-set <技能目录>/evals.json --skill-dir <技能目录> \
-  --holdout 0.4 --max-iterations 5 --improve-mode manual|cli [--client <客户端> --model <模型id>] --report <输出>.json
-```
-
-- 评测按 `should_trigger` 分层的 60/40 切分为 train/test；每轮用当前 description 评 train+test，再按失败模式请求改写。
-- `--improve-mode manual`（默认）：打印改进提示词，粘贴返回的 description，以独立 `EOF` 行结束。
-- `--improve-mode cli`：调用客户端无头 CLI（`--client claude|opencode`，必要时 `--model <模型id>`）生成新 description。
-- **最终选取以 test 集得分最高者为准**（不选 train 满分者），避免过拟合到测试用例。
-
-注意：复杂、多步、专精的查询才适合评估触发（简单单步查询无论描述多好都常不触发）。触发评测结果 `--json` 输出写入 `evals/` 或技能目录，作为阶段 8 验证记录的一部分。
-
-### 阶段 8：记录验证与治理信息
-
-**可选留痕**：需要时创建 `VERIFICATION.md`（生成时检查记录：结构、代码、安全模式、示例）：它记录**当时**做过的检查，不承诺未来的运行安全——不创建不阻断流程。缺失的凭据、权限或安全输入应产出「verification-blocked」说明，并给出一个具体的下一步动作。
-
-技能使用后若需修正，记录修正的原因与回归记录（版本化、带原因的原子补丁，即本技能的 `evolutions/` 模式）。**不要把未经单独验证的草稿直接应用进 `SKILL.md`。**
-
-### 阶段 9：安装与验证
-
-- 按「多客户端安装指引」把技能复制到目标客户端的 skills 目录。
-- 需要把同一技能适配给多个客户端时，用打包器生成各端产物（自动做 frontmatter 适配 + post-check，避免手改漂移）：
-
-  ```bash
-  python scripts/package_skill.py <技能目录> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]
-  ```
-
-  产物布局为 `<产物目录>/<客户端>/<技能名>/`（`--zip` 另出同名压缩包）；把该目录放到目标客户端的 skills 目录即可。关键适配：技能的可选 `allowed-tools` 白名单按端映射——claude 保留并规范为逗号分隔的 Claude 工具名；opencode 把每个 Claude 工具名反查为 opencode 工具类 key、合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；codex/deepseek 透传。旧 `tools` 形式保留为回退兼容（与 `allowed-tools` 取并集）。各端适配结果均过该端 post-check，不合格不出包。不写 `allowed-tools` = 该端不限制工具。
-- 重启客户端后用真实小任务触发一次，确认技能被加载、按指令执行。
-- 经验证、可复用的技能按质量检查清单归档到宿主技能库的分类目录 `skills/<分类>/<name>/`——按功能分类入库，分类目录不存在则先创建，不得散置在库根目录。
-
-**入库/发布纪律（提交前逐项）**：
-- **evals 随技能发布**：触发用例（`evals.json` 或场景清单）与技能同目录沉淀——入库后任何人改动技能都能回归触发，不用重新发明测试。
-- **secret 扫描**：入库/提交前扫一遍技能目录与脚本，确认无明文密钥/token/凭据示例（危险管道 `curl|bash` 等按「安全护栏」处理）。`validate_skills.py` 已自动扫描危险管道与常见明文凭据；确为操作必需的用 `<!-- security-allowlist: ... -->` 显式豁免并附警告上下文。
-- **隔离验证再交付**：非直推——经 PR 评审、tag 版本后，在**隔离环境**（独立 HOME/临时目录）安装一次实测跑通，再宣告入库；禁止未经隔离验证直推默认分支。
-- 高风险（`critical`/`offensive`）技能的发布升级给负责人确认，不自行放行。
-
-## 质量检查清单
-
-提交/入库前逐项核对：
-
-**元数据：**
-- [ ] frontmatter 是有效 YAML，`name` 小写-连字符且与目录一致
-- [ ] `description` ≤1024 字符、单行、**无 `<`/`>` 占位符**，触发场景优先 + 一句能力定位，**无步骤流程摘要**（E：说什么场景触发，不替正文写短版；description 须自足覆盖触发，不依赖正文兜底）
-- [ ] `risk` / `category` 已声明；**无** `source`/`date_added`/`author`/`tags`/`version`（来源进创建记录账本，版本以 git 为准）
-
-**内容质量：**
-- [ ] 指令清晰、可操作（祈使句、动作动词）
-- [ ] 有明确的「何时使用此技能」触发说明（触发后作范围确认）
-- [ ] 至少有 1 个可复制粘贴的示例
-- [ ] 列出了限制和注意事项（已知边缘情况 / 做不到的事）
-- [ ] 指导措辞的形式与基线失败类型匹配（禁止 vs 配方 vs REQUIRED 槽 vs 条件谓词；见 `references/skill-writing-guide.md`）
-- [ ] 技术准确性已验证，无拼写错误
-
-**可用性：**
-- [ ] 初学者能按步骤执行
-- [ ] 解决一个真实问题，而非空泛建议
-- [ ] 不依赖超窄的具体例证（避免过拟合到测试用例）
-- [ ] 涉及命令/安装的内容通过安全审查（无 `curl ... | bash` 等管道，无明文密钥示例）
-- [ ] 若为纪律型技能：已含防合理化设计（借口表/红旗清单/封漏洞）
-- [ ] 跨技能引用不用 `@` 语法（用纯技能名 + 显式 REQUIRED 标记）
-
-**渐进披露 / 引用纪律：**
-- [ ] references 只从 SKILL.md 一层深引用、references 之间不互链成图
-- [ ] >100 行的 references 文件顶部有目录；超大文件在 SKILL.md 引用处附 grep 模式
-- [ ] 触发用例（`evals.json`/场景）随技能沉淀，改动技能后跑过回归
-- [ ] 入库前做过 secret 扫描；基线失败记录（verbatim）留存
-
-## 安全护栏
-
-- 攻击性技能（渗透 / 红队 / 利用）：**必须以「AUTHORIZED USE ONLY / 仅限授权使用」免责声明开头**，指令中明确要求代理在执行任何利用或攻击命令前请求用户确认，推荐在 Docker/VM 等受控环境运行。
-- 防御性/分析类技能：审计默认只读；未经用户明确同意不得把数据上传到第三方。
-- 技能正文中的命令示例不得包含危险管道（`curl|bash`、`wget|sh`、`irm|iex`）或内联密钥/token；确为操作必需的，需使用 `<!-- security-allowlist: ... -->` 声明并附警告上下文。
-- 不编写、不复制恶意软件、勒索软件或非教育性利用负载。
-- 一旦发现技能需要凭据、权限、生产数据或会造成后果的外部动作，停下来升级给负责人，而不是「尽力而为」。
+入库按宿主技能库的分类、台账与审计要求执行；evals 随技能保存，发布前运行安全扫描及相关校验。提交、推送、发布与外部动作遵循用户授权和宿主仓库规则，不由本技能自动授权。
 
 ## 多客户端安装指引
 
-技能本体是通用目录格式 `skills/<name>/SKILL.md`，安装 = 把该目录放到目标客户端的 skills 目录，重启客户端生效。本技能自身与本技能产出的技能安装同理。
+仅在请求包含打包或安装时读取 `references/skill-installation.md`，按其中「自安装」或「打包」路径执行。安装位置、客户端与作用域已有答案时直接沿用；只安装用户指定的范围。产物适配后自检，再用真实小任务确认加载。
 
-### 自安装（本技能自身；LLM 客户端直接执行，无需外部工具）
+## 示例
 
-被要求把本技能（或任意技能）安装到某客户端时，按序执行，不依赖任何仓库级工具：
+**局部修改**：「把四份子代理指令改为 skill_*.md」→ 查找调用方 → 改名并同步引用 → 相关测试与 strict 自检 → 说明外部旧路径需要迁移。
 
-1. **定位技能目录**：按「资源路径基准」的探测顺序定位本技能目录（codex 用技能列表自带路径）。
-2. **选定作用域与端**（先问用户）：全局（所有项目可用，默认）或工作区（仅该仓库，**必须落到 git 仓库根**）；端默认全部支持的端。
-3. **放置**：把技能目录**整体**复制到落点，目录名保持不变，复制时排除 `__pycache__/` 等缓存。落点矩阵见下节。
-4. **安装后自检**（技能形态自带验证器）：`python scripts/validate_skills.py --strict --dir .`；若含索引再跑 `python scripts/search_index.py --stats` 核对索引来源与条数。
-5. **清理缓存**：删除安装目录内的 `__pycache__/`，保持与源一致。
-6. **交付**：提示重启客户端，用真实小任务触发一次，并输出确切安装路径。
+**创建**：「把每周报表整理工作做成技能」→ 提取实际输入与报表样本 → 确认基线问题、检索候选 → 写最小指令和必要脚本 → 对相同输入验证真实产物 → 评审后交付。
 
-> 覆盖更新：备份已装目录 → 新版本整目录覆盖（目录名不变）→ 重跑第 4 步；卸载 = 删除安装目录（只删本技能副本）。
+**触发优化**：「相关请求经常不调用技能」→ 检查是否运行错误 → 审真实查询与近似干扰项 → 开发集选择描述 → 未见最终集确认，并注明读取或派发证据。
 
-### 直接放置到客户端目录
+## 质量检查清单
 
-三种已支持客户端均可手动放置（以目标客户端官方文档为准）：
+- [ ] 修改范围与请求一致，约束解决实际问题，未重复索取已有授权。
+- [ ] description 自足且能区分相邻任务；正文与参考职责清楚。
+- [ ] 资源自包含、路径可达；产品内不依赖宿主的测试或安装文档。
+- [ ] 脚本已验证；行为改动有代表性任务证据，失败和未测状态如实保留。
+- [ ] 评分基于真实产物；配对、覆盖率、模型和未知成本清楚。
+- [ ] 来源、采纳理由、许可与必要演进记录可追溯。
 
-- **Claude Code**：全局 `~/.claude/skills/<name>/`；工作区 `<项目根>/.claude/skills/<name>/`。同名时全局覆盖工作区；技能目录可以是符号链接。
-- **OpenCode**：全局 `~/.config/opencode/skills/<name>/`；工作区 `<项目根>/.opencode/skills/<name>/`；也可在 `opencode.json` 的 `skills.paths` 注册任意目录（loader 递归扫描 `**/SKILL.md`）。opencode 还兼容读 `~/.claude/skills/` 与 `~/.agents/skills/`——别在多个枢纽重复安装同一技能。
-- **Codex (OpenAI)**：全局 USER 域 `~/.agents/skills/<name>/`；工作区 REPO 域 `<项目根>/.agents/skills/<name>/`。`~/.codex/skills` 是 Codex 的 SYSTEM 域（内置技能），不要写入。注意 Codex 内置同名 `.system/skill-creator`，安装后选择器会并存两个。
+## 安全护栏
 
-安装后验证：用一个真实小任务触发试运行，确认技能被正确加载、按指令执行。
-
-## 常见问题
-
-**Q: 技能不会被触发怎么办？**
-A: 优化 `description`：前部加具体触发场景、口语/近义说法；补充「近似干扰项」做触发测试（见阶段 7）。
-
-**Q: 技能太长超过 1000 行？**
-A: 把细节拆到 `references/` 子文件按需加载，正文保留工作流与选择逻辑，给出读取指引。
-
-**Q: 技能同时覆盖多个领域？**
-A: 按变体拆分：正文放工作流+选择逻辑，`references/` 每领域一个文件（如 `aws.md` / `gcp.md` / `azure.md`）。
-
-**Q: 一个工作流应该做成技能还是 Agent 或命令？**
-A: 简短的单次交互用命令；可复用的多步骤流程先做技能；技能稳定、需持续关注某领域后再考虑专职 Agent。
-
-**Q: 用户给的是抽象需求，没有具体工作流？**
-A: 引用阶段 1 的提问逐条引导，让用户描述「平时反复做的那几件事」，而不是替用户设计一个。
+- 攻击性技能须声明 AUTHORIZED USE ONLY / 仅限授权使用，并在攻击操作前确认所需授权；以受控测试环境为目标。
+- 默认不把用户数据上传到第三方；外部状态变更需要对应授权。
+- 不在示例或脚本中埋入密钥、危险下载执行管道或隐藏操作。确有必要的危险示例使用 security-allowlist 注释并解释上下文。
+- 临时 cwd 用于分离生成文件，不是权限沙箱；客户端仍可能继承全局技能、配置、凭据和工具权限。敏感评测需要独立客户端环境。
 
 ## 限制和注意事项
 
-- 本技能产出的是**通用目录格式**的技能，各客户端对 frontmatter 扩展字段支持程度不同；以目标客户端文档为准。
-- 触发准确性无法 100% 保证，`description` 需要持续迭代。
-- 本技能不自动执行测试运行环境（如无 Python）、不代替用户最终审核；安装到生产客户端前应先在测试项目验证。
-- 自动验证脚本依赖 Python 3 + PyYAML；缺 `python` 时手动对照质量检查清单。
-- Windows 下安装路径与类 Unix 不同（`~/.config` 对应 `%USERPROFILE%\.config`），跨平台请以实际路径为准。
-- 本技能不替代业务负责人与市场/治理方的审批；需要授信或发布时升级给相应负责人。
+- 自动工具依赖 Python 3.10+ 与 PyYAML；没有运行条件时做静态检查并标明未执行。
+- 自动触发与场景执行当前支持 Claude / OpenCode CLI；Codex / DeepSeek 是打包目标，不能据此声称已支持其自动评测。
+- 结构化读取或派发证明技能被加载/调用，不证明任务完成；场景失败仍须单独报告。
+- 统计结论只适用于记录的场景、版本与运行条件；旧索引缺失的提交号为 unknown，本地目录不冒充远端提交。

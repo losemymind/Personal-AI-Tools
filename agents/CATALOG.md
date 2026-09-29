@@ -6,7 +6,7 @@
 
 > 检索：让 LLM 读本文件匹配需求 → 命中即复制对应 `agents/<name>` 目录到目标客户端对应目录，人类确认后执行。
 
-> 落地前转换：仓库规范形 frontmatter 复制到 claude/opencode 前，先用 `python agent-creator/skills/agent-creator/scripts/adapt_agent.py <目录> --client <claude|opencode> --out <落点>` 转换。
+> 落地前转换：仓库规范形 frontmatter 复制到 claude/opencode 前，先用 `python agent-creator/skills/agent-creator/scripts/agent_adapt.py <目录> --client <claude|opencode> --out <落点>` 转换。
 
 
 ## 分组：academic

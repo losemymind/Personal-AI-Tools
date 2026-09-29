@@ -1,0 +1,21 @@
+{
+  "before": {
+    "inputs": {
+      "integration-417.txt": "689e9565a8cb4963c4200ea81d14f1832c712c04e726f2ab6aa7553c3eaf7fc2",
+      "release-notes.md": "a276b6dab98b6bce38d28cd701c0e6cff4a1b36fd93a3463816bc3b3fe44e1b1",
+      "release.json": "598aa5f62f2d6dd98667e3f9219624b53692d798b83deff6bf810d511bf44ade",
+      "unit-417.txt": "cd9b66ea3386e3c4dfff7862f4b4e608a3edde336fa7c9ba42e915231caa8cdf"
+    },
+    "sentinel": "b8c97ddaf0d32992a9e1ea1b3e4caee8cf1b43c2230ea9e3a54b49b930c6f187"
+  },
+  "after": {
+    "inputs": {
+      "integration-417.txt": "689e9565a8cb4963c4200ea81d14f1832c712c04e726f2ab6aa7553c3eaf7fc2",
+      "release-notes.md": "a276b6dab98b6bce38d28cd701c0e6cff4a1b36fd93a3463816bc3b3fe44e1b1",
+      "release.json": "598aa5f62f2d6dd98667e3f9219624b53692d798b83deff6bf810d511bf44ade",
+      "unit-417.txt": "cd9b66ea3386e3c4dfff7862f4b4e608a3edde336fa7c9ba42e915231caa8cdf"
+    },
+    "sentinel": "b8c97ddaf0d32992a9e1ea1b3e4caee8cf1b43c2230ea9e3a54b49b930c6f187"
+  },
+  "unchanged": true
+}

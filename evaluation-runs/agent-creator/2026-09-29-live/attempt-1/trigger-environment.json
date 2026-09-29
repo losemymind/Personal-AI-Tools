@@ -1,0 +1,66 @@
+{
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-thbzrudm",
+  "isolated_user_directories": true,
+  "public_config": {
+    "model": "deepseek/deepseek-flash",
+    "small_model": "deepseek/deepseek-flash",
+    "share": "disabled",
+    "autoupdate": false,
+    "mcp": {},
+    "plugin": [],
+    "agent": {
+      "build": {
+        "steps": 8
+      }
+    },
+    "permission": {
+      "*": "allow",
+      "webfetch": "deny",
+      "websearch": "deny",
+      "question": "deny",
+      "task": "deny",
+      "external_directory": "deny",
+      "skill": {
+        "*": "deny",
+        "agent-creator": "allow",
+        "customize-opencode": "deny"
+      }
+    }
+  },
+  "credential_storage": "child environment only",
+  "limitations": "Discovery/home isolation is not an operating-system sandbox",
+  "started_at": "2026-09-29T11:32:29.928191+00:00",
+  "exe": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+  "client_version": "1.18.30",
+  "requested_model": "deepseek/deepseek-flash",
+  "baseline_commit": "f68cfc8",
+  "baseline_discovery": [
+    {
+      "name": "customize-opencode",
+      "description": "Use ONLY when the user is editing or creating opencode's own configuration: opencode.json, opencode.jsonc, files under .opencode/, or files under ~/.config/opencode/. Also use when creating or fixing opencode agents, subagents, skills, plugins, MCP servers, or permission rules. Do not use for the user's own application code, or for any project that is not configuring opencode itself.",
+      "location": "<built-in>"
+    }
+  ],
+  "concurrency": 2,
+  "trigger_timeout": 90,
+  "scenario_timeout": 360,
+  "trigger_steps": 8,
+  "scenario_steps": 32,
+  "query_sha256": "7f03d56c9fc0e5cc82a2b1bee122988b2f5e1357b4538fb1f8b129dab2112d0d",
+  "scenario_sha256": "2ce1b038e7685fcafaf80b68ee5a6102384509943178fc4e3a9f3e754133b828",
+  "protocol_sha256": "33eaeb459d1f167db6f0585e8e2566f5375283c458c4526831cceafccb44092d",
+  "runtime_sha256": "c209f55406f7cd86fa0c4635c7790d1ad0648a60ce372c88650c631230dcf95e",
+  "frozen_inputs_sha256": "98aaae14fccc5b9b6e77866ed50bf666d9eb9ee0b59ee205ad0a5364d78dd915",
+  "fixture_hashes": {
+    "creation/brief.md": "cdb08584c941e8e3f621253350edab17f5e289eeae34c0b4b3f221f46ff41d4c",
+    "repair/brief.md": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+    "repair/bug-triager/AGENT.md": "3a30e9303e5921e8e51c73bc39fae81f4e1e97793a55aecaa814549382c6f031",
+    "repair/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "runtime/integration-417.txt": "689e9565a8cb4963c4200ea81d14f1832c712c04e726f2ab6aa7553c3eaf7fc2",
+    "runtime/release-notes.md": "a276b6dab98b6bce38d28cd701c0e6cff4a1b36fd93a3463816bc3b3fe44e1b1",
+    "runtime/release.json": "598aa5f62f2d6dd98667e3f9219624b53692d798b83deff6bf810d511bf44ade",
+    "runtime/sentinel.txt": "b8c97ddaf0d32992a9e1ea1b3e4caee8cf1b43c2230ea9e3a54b49b930c6f187",
+    "runtime/unit-417.txt": "cd9b66ea3386e3c4dfff7862f4b4e608a3edde336fa7c9ba42e915231caa8cdf",
+    "trigger/sample-agent.md": "81e58aca2e6ced356795ada6532a3dcbd03c449fcddd107bb3a6382653cf0964"
+  }
+}

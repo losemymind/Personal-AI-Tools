@@ -1,0 +1,8 @@
+完成。交付物：
+
+- `outputs/bug-triager/AGENT.md` + `references/report-format.md`：中文只读 subagent，`tools: [read, grep, glob]`，permission `"*": deny` 仅放行三种读取工具，含必须做/拒绝做、升级路径、可验收完成标准，已删 version/tags/tools_clients/source，`color: "#2563EB"`。
+- `outputs/packages/opencode/bug-triager/`：tools 白名单已物化为 permission 对象（no `tools:` array）。
+- `outputs/packages/claude/bug-triager/`：`tools: Read, Grep, Glob`。
+- `outputs/verification.json`：如实列出 8 项已执行校验与 4 项未执行项（客户端原生加载、真实试跑、独立评审）。
+
+校验：`agent_validate.py --strict` 对规范文件及全部输出 3 个代理均通过；report-format.md 三份副本与输入 sha256 逐字节一致；未改 inputs、未写入真实客户端目录、未联网。独立审核未执行，verification.json 中已将评审标为 `independent: false`。

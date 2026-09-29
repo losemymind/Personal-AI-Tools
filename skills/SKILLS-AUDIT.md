@@ -5,6 +5,8 @@
 > 依据：本仓库根 `AGENTS.md`「能力库准入与审计」（规则 2：技能入库**无论参考本地文件还是远程仓库，必须经过 skill-creator**；规则 3：**参考外部仓库的技能必须在创建记录台账 `SKILL-RECORDS.md` 标注数据来源**；规则 4：**技能按功能放入分类目录 `skills/<分类>/<name>/`，分类不存在则创建**）。来源/作者/日期**不进** `SKILL.md` frontmatter，集中登记于 `SKILL-RECORDS.md`。
 > 本次审计日期：2026-09-03（2026-09-09 更新：prd-generator 转合规；2026-09-10 更新：新增 mcp-builder、ue5-performance-optimization；2026-09-11 更新：来源迁至 `SKILL-RECORDS.md` 台账；2026-09-17 更新：新增 coding-discipline、ue-editor-lifecycle，后者按规则 4 迁入 `skills/development/`；2026-09-23 更新：补 ue-editor-lifecycle 上游对比记录，7 项全合规）
 
+> 2026-09-29：对比/导入原记录已压缩到主题摘要，证据引用迁移至具体技能章节。以下分数与通过率保留当时测量口径，未重新作任务效果验证。
+
 ## 1. 审计结论摘要
 
 | 指标 | 数值 |
@@ -23,7 +25,7 @@
 - ✅ **mcp-builder 合规（规则 2、3、4）**：2026-09-10 自 `anthropics/skills` 的 `skills/mcp-builder`（Apache-2.0）导入并中文本地化——保留官方 `reference/` + `scripts/` + `LICENSE.txt`，入口 SKILL.md 重写为中文并补本地 schema 与必需章节；`compare_skills.py` 对比本地适配版（0.93）> 官方原版（0.51）> aas `mcp-tool-developer`（0.75）→ 采纳适配版；`validate_skills.py --strict` 通过；触发评测 12/12。
 - ✅ **ue5-performance-optimization 合规（规则 2、4；规则 3 不适用）**：2026-09-10 本仓库**自建**（`SKILL-RECORDS.md` source=self），完整经过 skill-creator 流程；上游索引无专门 UE 性能优化技能（`unreal engine performance optimization` 0 命中），与相邻候选 `unreal-engine-cpp-pro`（aas）对比 0.81 vs 0.68 采纳自建；`validate_skills.py --strict` 通过；触发评测 11/12（「Unity 性能优化」为启发式固有近义假阳性）。
 - ✅ **coding-discipline 合规（规则 2、3、4）**：2026-09-14 自上游 `multica-ai/andrej-karpathy-skills`（MIT）导入并适配——四条 LLM 编码行为准则改写为「反例 → 正例」对照，回填本地 schema（category: development / risk: safe；来源记于 `SKILL-RECORDS.md`）；`compare_skills.py` 对比同源上游 `sickn33/agentic-awesome-skills@skills/andrej-karpathy`（0.76 vs 0.73，metadata_complete 本库 1.00 > 上游 0.75）→ 采纳自建；`validate_skills.py --strict` 通过，含 `evals/evals.json` 触发用例。
-- ✅ **ue-editor-lifecycle 合规（规则 2、4；规则 3 不适用）**：2026-09-15 本仓库**自建**（`SKILL-RECORDS.md` source=self），沉淀 UE 编辑器安全关闭/重建/异步启动流程 + `evals/evals.json` 触发用例（CLI 重新评测 10/10，precision/recall 100%）；2026-09-17 按规则 4 由顶层迁入 `skills/development/`；2026-09-23 补上游对比记录——主题检索 0 命中，以最近邻 `unreal-engine-cpp-pro`（aas）量化对比 0.76 vs 0.72 采纳自建（`evolutions/2026-09-23-compare-ue-editor-lifecycle.md`）。
+- ✅ **ue-editor-lifecycle 合规（规则 2、4；规则 3 不适用）**：2026-09-15 本仓库**自建**（`SKILL-RECORDS.md` source=self），沉淀 UE 编辑器安全关闭/重建/异步启动流程 + `evals/evals.json` 触发用例（CLI 重新评测 10/10，precision/recall 100%）；2026-09-17 按规则 4 由顶层迁入 `skills/development/`；2026-09-23 补上游对比记录——主题检索 0 命中，以最近邻 `unreal-engine-cpp-pro`（aas）量化对比 0.76 vs 0.72 采纳自建（[ue-editor-lifecycle](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#ue-editor-lifecycle)）。
 - ✅ **规则 3 达标**：本文件已标注全部外部数据来源（上游 comprehensive-review-pr-enhance、code-review-skill、snarktank/ralph、anthropics/skills 的 mcp-builder、multica-ai/andrej-karpathy-skills）。
 
 ## 2. 数据来源
@@ -39,7 +41,7 @@
 | 远程仓库（方法论导入，MIT） | `multica-ai/andrej-karpathy-skills`（用户指定源；索引同源候选 `sickn33/agentic-awesome-skills@skills/andrej-karpathy`） | coding-discipline（四条编码准则改写为反例→正例对照，`sickn33` 版 0.76 vs 0.73 采纳自建） |
 | 自建（skill-creator 流程） | 本仓库创建；`SKILL-RECORDS.md` source=self | ue-editor-lifecycle |
 
-> 上游对比/导入记录（位于技能创建器 `skill-creator/skills/skill-creator/evolutions/`）：`2026-09-02-compare-pr-summarizer.md`（自建版采纳上游精华 + 差异化定位）；`2026-09-03-import-code-review-skill.md`（本地无候选 A → 直接导入上游 B，整目录）；`2026-09-09-import-prd-generator.md`（本地无候选 A → 直接导入上游 B，方法论吸收 + 中文产品化）；`2026-09-10-import-mcp-builder.md`（官方导入 + 中文本地化 + 对比择优）；`2026-09-10-compare-ue5-performance-optimization.md`（自建 vs 相邻上游，采纳自建）；`2026-09-14-compare-coding-discipline.md`（用户指定源 vs 索引同源候选，采纳自建）；`2026-09-23-compare-ue-editor-lifecycle.md`（主题 0 命中，最近邻 `unreal-engine-cpp-pro` 对比 0.76 vs 0.72，采纳自建）。
+> 上游对比/导入记录（位于技能创建器 `skill-creator/skills/skill-creator/evolutions/`）：[pr-summarizer](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#pr-summarizer)（自建版采纳上游精华 + 差异化定位）；[code-review-skill](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#code-review-skill)（本地无候选 A → 直接导入上游 B，整目录）；[prd-generator](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#prd-generator)（本地无候选 A → 直接导入上游 B，方法论吸收 + 中文产品化）；[mcp-builder](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#mcp-builder)（官方导入 + 中文本地化 + 对比择优）；[ue5-performance-optimization](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#ue5-performance-optimization)（自建 vs 相邻上游，采纳自建）；[coding-discipline](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#coding-discipline)（用户指定源 vs 索引同源候选，采纳自建）；[ue-editor-lifecycle](../skill-creator/skills/skill-creator/evolutions/library-decisions.md#ue-editor-lifecycle)（主题 0 命中，最近邻 `unreal-engine-cpp-pro` 对比 0.76 vs 0.72，采纳自建）。
 
 ## 3. 技能清单
 

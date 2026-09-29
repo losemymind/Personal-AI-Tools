@@ -1,0 +1,1191 @@
+{
+  "records": [
+    {
+      "task": "creation",
+      "variant": "with_skill",
+      "entry": {
+        "exists": true,
+        "frontmatter": {
+          "name": "release-evidence-auditor",
+          "description": "发布证据审查员：只读核对发布包的测试报告、风险与回滚证据，判定是否达到发布门槛并输出 READY_FOR_HUMAN_REVIEW 或 BLOCKED；当发布负责人提交发布包证据请求放行审查时调用。",
+          "mode": "primary",
+          "color": "#DC2626",
+          "tools": [
+            "read",
+            "grep",
+            "glob"
+          ],
+          "permission": {
+            "*": "deny",
+            "read": "allow",
+            "glob": "allow",
+            "grep": "allow",
+            "list": "deny",
+            "skill": "deny",
+            "webfetch": "deny",
+            "websearch": "deny",
+            "question": "deny",
+            "edit": "deny",
+            "bash": "deny",
+            "task": "deny",
+            "lsp": "deny",
+            "external_directory": "deny"
+          }
+        },
+        "body_chars": 2799,
+        "sha256": "e759768784691954d9b148fae6612c134a7efaff8a1802cee805e860683cbdaf"
+      },
+      "source_exists": true,
+      "packages": {},
+      "strict_returncode": 0,
+      "self_report": {
+        "task": "依据 inputs/brief.md 创建 primary 代理 release-evidence-auditor",
+        "generated_at": "2026-09-29T19:36:39+08:00",
+        "deliverables": [
+          "outputs/agents/release-evidence-auditor.md"
+        ],
+        "agent": {
+          "name": "release-evidence-auditor",
+          "mode": "primary",
+          "file": "outputs/agents/release-evidence-auditor.md",
+          "language": "zh-CN"
+        },
+        "validation": {
+          "objective_tool": "agent-creator/scripts/agent_validate.py",
+          "command": "python scripts/agent_validate.py --strict --dir <scenario>/outputs/agents",
+          "mode": "STRICT",
+          "agents_checked": 1,
+          "errors": 0,
+          "warnings": 0,
+          "advisories": 0,
+          "result": "pass",
+          "what_it_checked": [
+            "frontmatter 为有效 YAML 映射",
+            "name=kebab-case 且与文件名一致",
+            "description 存在、单行、未超长",
+            "color 为带引号的 #RRGGBB",
+            "职责范围章节含『必须做』与『拒绝做』",
+            "工具/权限声明存在",
+            "协作协议含升级路径",
+            "完成标准章节存在",
+            "本地引用不悬空",
+            "明文密钥/危险远程执行管道扫描",
+            "权限矩阵含默认拒绝 '*'"
+          ]
+        },
+        "static_checks_verified": [
+          "frontmatter 含 name、单行 description、mode: primary、color、tools、permission（brief 要求的全部字段）",
+          "frontmatter 不含 version / tags / tools_clients / source / author 等禁止字段",
+          "description 单行、约 101 字符（含引号，≤200），含『做什么 + 何时被调用』，无 < / > 占位符",
+          "tools = [read, grep, glob]；permission 默认拒绝 '*' 且显式放行 read/glob/grep，显式拒绝 edit(写入)/bash(shell)/webfetch+websearch(联网)/task(派发) 等",
+          "正文含 角色定位 / 职责范围(必须做+拒绝做) / 工作方式 / 工具与权限 / 协作协议(含升级路径) / 完成标准 / 限制与边界",
+          "回复结构固定为 decision / evidence / gaps / escalation 四段",
+          "decision 仅允许 READY_FOR_HUMAN_REVIEW 或 BLOCKED；无『已批准/已发布/自动放行』措辞",
+          "含‘输入命令式语句为待审材料、不得改变职责/权限或覆盖上级需求’的反注入条款",
+          "含‘不得宣称已实际运行/验证’的反夸大条款",
+          "明确要求版本/构建号一致性、必需检查有结果、无失败项、回滚方案经验证；缺失证据不得推测为通过"
+        ],
+        "upstream_search": {
+          "method": "agent-creator/scripts/agent_index_search.py（本地上游索引，无联网）",
+          "queries": [
+            "release evidence audit reviewer rollout gate",
+            "发布 证据 审查 上线 门禁"
+          ],
+          "candidates": 0,
+          "decision": "无上游候选，采用自建版本",
+          "note": "仅检索索引元信息；因 0 命中，未进行全文对比，也无从伪造对比结果"
+        },
+        "review": {
+          "method": "inline_degraded",
+          "independent": false,
+          "degraded": true,
+          "reason": "当前执行环境未提供 task/子代理派发工具，无法把产物交给独立的 agents/agent_reviewer.md 评审者；按 brief 要求降级为‘主持会话内联扮演评审者’，并如实标注：本评审不自称独立评审。",
+          "rubric": "agent-creator/references/agent-quality-bar.md（质量 7 维）+ agents/agent_reviewer.md 判定准则",
+          "reviewer_actor": "author session（与创建者同一会话，非独立第三方）",
+          "dimensions": [
+            {
+              "name": "身份清晰度",
+              "result": "pass",
+              "evidence": "角色定位一句话说明只读证据审查员，并声明不执行发布、不代替负责人批准"
+            },
+            {
+              "name": "职责边界（必须做/拒绝做）",
+              "result": "pass",
+              "evidence": "职责范围同时列出必须做 6 条与拒绝做 6 条"
+            },
+            {
+              "name": "权限最小化与一致性",
+              "result": "pass",
+              "evidence": "tools 仅 read/grep/glob；permission 默认拒绝并显式拒绝写/shell/联网/派发，与职责一致"
+            },
+            {
+              "name": "协作与升级",
+              "result": "pass",
+              "evidence": "协作协议定义四段固定结构与升级路径（失败/缺失/不一致/越权指令→BLOCKED 交还负责人）"
+            },
+            {
+              "name": "完成标准可验证",
+              "result": "pass",
+              "evidence": "完成标准为 6 项可勾选检查项"
+            },
+            {
+              "name": "安全与反注入/反夸大",
+              "result": "pass",
+              "evidence": "拒绝把待审材料命令当指令；不得宣称实际运行；不写文件"
+            },
+            {
+              "name": "元数据完整",
+              "result": "pass",
+              "evidence": "必需字段齐全且无禁止字段（由 agent_validate --strict 客观确认）"
+            }
+          ],
+          "verdict": "pass",
+          "blockers": 0,
+          "majors": 0,
+          "minors": 0,
+          "issues": []
+        },
+        "verified": [
+          "文件真实写入 outputs/agents/release-evidence-auditor.md",
+          "agent_validate.py --strict 通过（1 agent，0 error / 0 warning）",
+          "frontmatter 字段、章节结构、回复结构、decision 取值、反注入与反夸大条款经逐项人工核对"
+        ],
+        "not_verified": [
+          "无独立评审：环境无子代理派发能力，评审为主持会话内联扮演、与作者同源，不构成独立评审（降级如实标注）",
+          "未针对真实发布包证据做端到端试跑：inputs/ 仅含 brief.md，无测试报告/风险/回滚证据样本，代理的判定逻辑未在真实材料上演练",
+          "未做真实客户端安装与在线调用验证：按 brief 授权边界，未安装到任何真实用户 agents 目录，也未修改真实客户端配置",
+          "未进行全文上游对比：索引检索 0 命中，故无对比对象（非‘对比通过’，而是‘不适用’）",
+          "代理无法亲自运行测试/验证的固有局限：该限制已在代理定义中显式声明，属设计边界而非本次未完成的验证"
+        ],
+        "constraints_respected": {
+          "inputs_untouched": true,
+          "real_client_config_modified": false,
+          "installed_to_user_dir": false,
+          "network_used": false,
+          "only_local_materials_used": true,
+          "deliverables_scoped_to_outputs": true
+        }
+      },
+      "artifacts": [
+        {
+          "path": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/verification.json",
+          "hash_ok": true
+        }
+      ]
+    },
+    {
+      "task": "creation",
+      "variant": "old_skill",
+      "entry": {
+        "exists": true,
+        "frontmatter": {
+          "name": "release-evidence-auditor",
+          "description": "只读发布证据审查代理：核对发布包中的测试报告、风险与回滚证据，判断是否达到发布门槛；由发布负责人在批准发布前调用。",
+          "mode": "primary",
+          "color": "#D97706",
+          "tools": [
+            "read",
+            "grep",
+            "glob"
+          ],
+          "permission": {
+            "*": "deny",
+            "read": "allow",
+            "grep": "allow",
+            "glob": "allow",
+            "list": "deny",
+            "skill": "deny",
+            "webfetch": "deny",
+            "websearch": "deny",
+            "question": "deny",
+            "edit": "deny",
+            "bash": "deny",
+            "task": "deny",
+            "lsp": "deny",
+            "external_directory": "deny"
+          }
+        },
+        "body_chars": 2498,
+        "sha256": "83e29c14ee471cce8241829b5f4040f398736ef57b255b2a81f491916322ed17"
+      },
+      "source_exists": true,
+      "packages": {},
+      "strict_returncode": 0,
+      "self_report": {
+        "target": "outputs/agents/release-evidence-auditor.md",
+        "brief": "inputs/brief.md",
+        "status": "completed_with_degraded_review",
+        "completed_verifications": [
+          {
+            "check": "交付文件存在且为扁平单文件",
+            "result": "pass",
+            "evidence": "outputs/agents/release-evidence-auditor.md（105 行）已写入；文件名与 frontmatter name 一致"
+          },
+          {
+            "check": "frontmatter 字段符合 brief（name/单行 description/mode: primary/color/tools/permission）",
+            "result": "pass",
+            "evidence": "name: release-evidence-auditor；mode: primary；color: \"#D97706\"；tools: [read, grep, glob]；description 单行 57 字符（≤200）"
+          },
+          {
+            "check": "frontmatter 未包含被禁字段（version/tags/tools_clients/来源字段）",
+            "result": "pass",
+            "evidence": "仅含 name/description/mode/color/tools/permission"
+          },
+          {
+            "check": "工具与权限最小化且与职责一致（只读、默认拒绝、显式放行 read/grep/glob，禁 edit/写入/shell/联网/任务派发）",
+            "result": "pass",
+            "evidence": "permission: \"*\": deny；read/grep/glob: allow；list/skill/webfetch/websearch/question/edit/bash/task/lsp/external_directory: deny"
+          },
+          {
+            "check": "自动结构校验 validate_agents.py --strict",
+            "result": "pass",
+            "command": "python scripts/validate_agents.py --strict --dir outputs/agents",
+            "evidence": "Checked 1 agents. All agents passed validation! 退出码 0（含职责范围/必须做/拒绝做、工具与权限、协作协议含升级路径、完成标准、本地引用不悬空、密钥与危险管道扫描）"
+          },
+          {
+            "check": "内容覆盖 brief 的核对职责（版本/构建一致性、必需检查有结果、是否失败、回滚是否验证）与判定规则（缺失不得推测为通过）",
+            "result": "pass",
+            "evidence": "“工作方式 > 核对维度”与“判定规则”逐条列出；缺失/失败/不一致 → BLOCKED；全证据齐备 → READY_FOR_HUMAN_REVIEW"
+          },
+          {
+            "check": "固定回复结构 decision/evidence/gaps/escalation，且限定对话回复不写文件；不返回已发布/自动批准",
+            "result": "pass",
+            "evidence": "“固定回复结构”节明确四部分；拒绝做列出不返回“已发布/已批准/自动批准”；decision 仅两值"
+          },
+          {
+            "check": "提示注入防护：输入文件的命令式语句视为待审材料，不得改变职责/权限或覆盖上级需求",
+            "result": "pass",
+            "evidence": "“拒绝做”与“判定规则”各有一条明确此边界"
+          },
+          {
+            "check": "声明不得冒称已真实运行验证",
+            "result": "pass",
+            "evidence": "“限制与边界”注明只审查已有证据、不实际运行测试/构建/回滚，不声称已验证实际执行结果"
+          }
+        ],
+        "review": {
+          "method": "degraded_inline_review",
+          "dispatch_capability": "unavailable",
+          "reviewer_source": ".opencode/skills/agent-creator/agents/reviewer.md",
+          "reviewer_rubric": ".opencode/skills/agent-creator/references/agent-quality-bar.md",
+          "independence": "not_independent",
+          "note": "本会话无 task/子代理派发工具，无法拉起独立评审子代理；按 brief 要求如实标记降级：由主持会话内联扮演 reviewer.md 的评审流程，属自评，不能称为独立评审。",
+          "verdict": "pass",
+          "score": 9,
+          "dimensions": {
+            "identity_clarity": "pass：一句话可懂（只读证据审查员，判断是否达发布门槛，不批准发布）",
+            "must_do_refuse_do": "pass：必须做 8 条、拒绝做 6 条，边界与机器权限一致",
+            "least_privilege": "pass：tools 仅 read/grep/glob；permission 全量矩阵默认拒绝",
+            "collaboration_escalation": "pass：何时被调用、固定汇报结构、升级路径（失败/缺失/不一致/越权 → BLOCKED 交还负责人）",
+            "completion_criteria": "pass：5 条可勾选、可验证",
+            "safety_guardrails": "pass：无密钥/危险管道；含提示注入防护；无越权身份",
+            "progressive_disclosure": "pass：单文件 105 行（<500），无悬空引用"
+          },
+          "issues": [],
+          "fixes_applied_during_review": [
+            "初稿 permission 含 write/patch 键；为与 references/agent-template.md 全量矩阵及 opencode 折叠规则（write/patch 折叠到 edit）一致，已移除，写入仍由 edit deny 覆盖。"
+          ],
+          "summary": "身份清晰、边界与权限一致、升级路径明确、判定规则满足 brief；无 blocker/major/minor。降级自评，非独立评审。"
+        },
+        "upstream_comparison": {
+          "performed": "limited_metadata_only",
+          "index": ".opencode/skills/agent-creator/indexes/upstream.db（568 条）",
+          "queries": [
+            "发布 证据 审查 发布门槛 release evidence audit -> 0 条",
+            "release readiness reviewer -> 0 条",
+            "审计 -> 8 条（含合规审计师/风险/质检等）",
+            "reviewer -> 3 条（Code Reviewer / Security Auditor / UI Finish-Gate Reviewer）"
+          ],
+          "note": "上游索引仅含元信息（名称/描述/路径/行数），无全文，未做全文逐项对比，未伪造全文对比结果；据此判定无直接等价的“发布门槛证据审查”现成代理，采用自建版本。"
+        },
+        "unverified": [
+          "未在真实发布包上实际调用该代理（无真实证据集），故无“试运行验证”证据。",
+          "未做独立第三方评审（会话内无子代理派发能力，仅有降级内联自评）。",
+          "未在 opencode/claude/codex/deepseek 客户端中加载或触发验证；未运行 adapt_agent.py/package_agent.py 做端侧适配（brief 未要求安装）。",
+          "未验证超过索引元信息的上游代理全文质量对比。"
+        ],
+        "constraints_respected": [
+          "未修改 inputs/（仅读取 brief.md）。",
+          "未写入或修改任何真实客户端配置/用户目录。",
+          "未安装到真实用户目录。",
+          "仅使用本地材料（brief、agent-creator 技能、上游索引）。",
+          "未派发评审子代理时按 brief 如实标记降级，未将自评称为独立评审。"
+        ],
+        "artifacts": [
+          "outputs/agents/release-evidence-auditor.md",
+          "outputs/verification.json"
+        ]
+      },
+      "artifacts": [
+        {
+          "path": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/verification.json",
+          "hash_ok": true
+        }
+      ]
+    },
+    {
+      "task": "creation",
+      "variant": "without_skill",
+      "entry": {
+        "exists": true,
+        "frontmatter": {
+          "name": "release-evidence-auditor",
+          "description": "只读发布证据审查员，核对发布包中的测试报告、风险与回滚证据并给出发布门槛判断，仅返回 BLOCKED 或 READY_FOR_HUMAN_REVIEW。",
+          "mode": "primary",
+          "color": "amber",
+          "tools": {
+            "read": true,
+            "grep": true,
+            "glob": true,
+            "edit": false,
+            "write": false,
+            "bash": false,
+            "webfetch": false,
+            "websearch": false,
+            "task": false,
+            "patch": false
+          },
+          "permission": {
+            "*": "deny",
+            "read": "allow",
+            "grep": "allow",
+            "glob": "allow",
+            "edit": "deny",
+            "write": "deny",
+            "bash": "deny",
+            "webfetch": "deny",
+            "websearch": "deny",
+            "task": "deny",
+            "patch": "deny"
+          }
+        },
+        "body_chars": 1753,
+        "sha256": "ef680cb32ba12e0597a584d6ff618157556a42496f63edfc1be7ab831ef67b0c"
+      },
+      "source_exists": true,
+      "packages": {},
+      "strict_returncode": 1,
+      "self_report": {
+        "artifact": "outputs/agents/release-evidence-auditor.md",
+        "task": "依据 inputs/brief.md 创建可通过客户端直接调用的 primary 代理 release-evidence-auditor",
+        "authoring_agent": "opencode (single author)",
+        "review_type": "self_review",
+        "independent_review": false,
+        "review_method": "静态检查：使用 read 通读生成文件，使用 grep/Select-String 核对 frontmatter 字段与禁用字段；未运行任何测试或客户端加载。",
+        "checks_completed": [
+          {
+            "item": "交付文件存在",
+            "method": "read outputs/agents/release-evidence-auditor.md",
+            "result": "pass",
+            "detail": "文件存在，共 88 行，UTF-8 中文正文。"
+          },
+          {
+            "item": "frontmatter 必需字段",
+            "method": "grep ^(name|description|mode|color):",
+            "result": "pass",
+            "detail": "name: release-evidence-auditor；description 为单行；mode: primary；color: amber；另含 tools 与 permission。"
+          },
+          {
+            "item": "frontmatter 禁用字段",
+            "method": "grep ^(version|tags|tools_clients|source):",
+            "result": "pass",
+            "detail": "未出现 version、tags、tools_clients、source 字段。"
+          },
+          {
+            "item": "tools 与权限一致（只读）",
+            "method": "read 通读 frontmatter",
+            "result": "pass",
+            "detail": "tools: read/grep/glob=true；edit/write/bash/webfetch/websearch/task/patch=false。permission 默认 \"*\": deny，仅放行 read/grep/glob，其余 deny。与职责一致。"
+          },
+          {
+            "item": "正文职责与约束章节齐全",
+            "method": "read 通读正文",
+            "result": "pass",
+            "detail": "含身份、必须做、拒绝做、输入材料处理规则、协作与升级、固定输出格式、完成标准、限制。"
+          },
+          {
+            "item": "核对规则覆盖 brief 要求",
+            "method": "逐条对照 inputs/brief.md",
+            "result": "pass",
+            "detail": "覆盖版本/构建号一致性、必需检查是否有结果、是否失败、回滚方案是否验证、缺失不得推测为通过。"
+          },
+          {
+            "item": "结论取值受限",
+            "method": "read 通读正文",
+            "result": "pass",
+            "detail": "decision 仅 BLOCKED 或 READY_FOR_HUMAN_REVIEW；明确禁止返回已发布/已批准/自动放行；固定四段 decision/evidence/gaps/escalation 且在对话回复不写文件。"
+          },
+          {
+            "item": "输入不被修改",
+            "method": "Get-ChildItem inputs",
+            "result": "pass",
+            "detail": "inputs/ 仅含 brief.md，长度与时间戳未变动；未写入 inputs/。"
+          },
+          {
+            "item": "verification.json 为合法 JSON",
+            "method": "Get-Content -Raw | ConvertFrom-Json",
+            "result": "pass",
+            "detail": "解析成功。"
+          },
+          {
+            "item": "未改真实客户端配置",
+            "method": "检查 ~/.config/opencode/agent、~/.opencode/agent、%APPDATA%\\opencode",
+            "result": "pass",
+            "detail": "相关目录均不存在，未安装、未修改任何真实客户端配置。"
+          }
+        ],
+        "unverified_items": [
+          "未在真实客户端中加载/调用该代理，运行时的权限强制与 mode: primary 行为未实际执行验证。",
+          "工作区仅提供 inputs/brief.md，无任何发布包/测试报告/回滚材料，代理针对真实证据的审查流程未运行。",
+          "frontmatter 的 YAML 合法性未用 YAML 解析器解析验证（本次仅做文本级 grep/read 检查）。",
+          "客户端对 permission/tools schema（含 \"*\" 通配）的接受度未在运行时验证。"
+        ],
+        "degradations": [
+          "无法派发评审子代理，未进行独立评审；本次记录为作者自评，非独立评审。",
+          "仅在本地已给材料范围内工作，未做也不得伪造全文对比结果。",
+          "无真实运行/实测验证，不得据此声称代理已验证可用。"
+        ],
+        "notes": "本作者被授权在 outputs/ 下创建代理文件与验证说明，该授权不等于给生成的代理授予写权限；生成的代理仍为只读。"
+      },
+      "artifacts": [
+        {
+          "path": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/verification.json",
+          "hash_ok": true
+        }
+      ]
+    },
+    {
+      "task": "repair",
+      "variant": "with_skill",
+      "entry": {
+        "exists": true,
+        "frontmatter": {
+          "name": "bug-triager",
+          "description": "缺陷分诊 subagent：只读缺陷记录与证据，判断严重性、影响、需补信息与交还对象；收到缺陷/Bug/工单分诊请求时被调用。",
+          "mode": "subagent",
+          "color": "#2563EB",
+          "tools": [
+            "read",
+            "grep",
+            "glob"
+          ],
+          "permission": {
+            "*": "deny",
+            "read": "allow",
+            "glob": "allow",
+            "grep": "allow",
+            "list": "deny",
+            "skill": "deny",
+            "webfetch": "deny",
+            "websearch": "deny",
+            "question": "deny",
+            "edit": "deny",
+            "bash": "deny",
+            "task": "deny",
+            "lsp": "deny",
+            "external_directory": "deny"
+          }
+        },
+        "body_chars": 1743,
+        "sha256": "61f1eafb6430b22d5d5a579af182b9969055825da73857efa16f31dc0f01b48b"
+      },
+      "source_exists": true,
+      "packages": {
+        "opencode": {
+          "exists": true,
+          "frontmatter": {
+            "name": "bug-triager",
+            "description": "缺陷分诊 subagent：只读缺陷记录与证据，判断严重性、影响、需补信息与交还对象；收到缺陷/Bug/工单分诊请求时被调用。",
+            "mode": "subagent",
+            "color": "#2563EB",
+            "permission": {
+              "*": "deny",
+              "read": "allow",
+              "glob": "allow",
+              "grep": "allow",
+              "list": "deny",
+              "skill": "deny",
+              "webfetch": "deny",
+              "websearch": "deny",
+              "question": "deny",
+              "edit": "deny",
+              "bash": "deny",
+              "task": "deny",
+              "lsp": "deny",
+              "external_directory": "deny",
+              "todowrite": "deny"
+            }
+          },
+          "body_chars": 1743,
+          "sha256": "e1335ebc9128d969eb9b14c226fbde6c2963a9b47ca0a50afd75e24fadd958ba",
+          "reference_exists": true,
+          "post_check_passed": true
+        },
+        "claude": {
+          "exists": true,
+          "frontmatter": {
+            "name": "bug-triager",
+            "description": "缺陷分诊 subagent：只读缺陷记录与证据，判断严重性、影响、需补信息与交还对象；收到缺陷/Bug/工单分诊请求时被调用。",
+            "mode": "subagent",
+            "color": "#2563EB",
+            "tools": "Read, Grep, Glob",
+            "permission": {
+              "*": "deny",
+              "read": "allow",
+              "glob": "allow",
+              "grep": "allow",
+              "list": "deny",
+              "skill": "deny",
+              "webfetch": "deny",
+              "websearch": "deny",
+              "question": "deny",
+              "edit": "deny",
+              "bash": "deny",
+              "task": "deny",
+              "lsp": "deny",
+              "external_directory": "deny"
+            }
+          },
+          "body_chars": 1743,
+          "sha256": "a1be3b5519c38cf787c19c59a36d53a6ce786d7659d55b3d174ca284cfa1221a",
+          "reference_exists": true,
+          "post_check_passed": true
+        }
+      },
+      "strict_returncode": 0,
+      "self_report": {
+        "scenario": "修复 inputs/bug-triager 代理并交付 opencode/claude 可分发包",
+        "generated_at": "2026-09-29",
+        "summary": "已重写 bug-triager 为中文只读 subagent（tools 仅 read/grep/glob，permission 默认拒绝并放行三种读取工具），保留并引用 references/report-format.md，移除 version/tags/tools_clients/source 元数据；交付 opencode 与 claude 两个包，所有路径引用在包内可解析。结构校验与打包 post-check 实际执行并通过；客户端原生加载与独立评审未执行，详见下。",
+        "deliverables": [
+          {
+            "path": "outputs/bug-triager/AGENT.md",
+            "role": "规范源文件（目录形态），客户端中立"
+          },
+          {
+            "path": "outputs/bug-triager/references/report-format.md",
+            "role": "既定汇报格式，从 inputs 逐字节复制"
+          },
+          {
+            "path": "outputs/packages/opencode/bug-triager/AGENT.md",
+            "role": "OpenCode 分发包：tools 白名单已转为 permission 对象"
+          },
+          {
+            "path": "outputs/packages/opencode/bug-triager/references/report-format.md",
+            "role": "OpenCode 包内 report-format.md"
+          },
+          {
+            "path": "outputs/packages/claude/bug-triager/AGENT.md",
+            "role": "Claude 分发包：tools 已转为 \"Read, Grep, Glob\" 工具串"
+          },
+          {
+            "path": "outputs/packages/claude/bug-triager/references/report-format.md",
+            "role": "Claude 包内 report-format.md"
+          }
+        ],
+        "executed_checks": [
+          {
+            "id": "canonical-strict-validation",
+            "method": "python .opencode/skills/agent-creator/scripts/agent_validate.py --strict --dir outputs/bug-triager",
+            "executed": true,
+            "result": "exit 0；Checked 1 agents；All agents passed validation",
+            "scope": "客观结构/元数据：frontmatter、章节（职责范围/工具与权限/协作协议/完成标准）、引用不悬空、security 扫描"
+          },
+          {
+            "id": "all-outputs-strict-validation",
+            "method": "python .opencode/skills/agent-creator/scripts/agent_validate.py --strict --dir outputs",
+            "executed": true,
+            "result": "exit 0；Checked 3 agents；All agents passed validation（规范文件 + 两个包）",
+            "scope": "规范文件与两个分发包的 AGENT.md 均通过结构校验"
+          },
+          {
+            "id": "opencode-package-postcheck",
+            "method": "python .opencode/skills/agent-creator/scripts/agent_package.py outputs/bug-triager --client opencode --client claude --out outputs/packages",
+            "executed": true,
+            "result": "exit 0；两包均写出；opencode 端日志: tools whitelist -> permission (glob, grep, read allow; deny edit, list, bash, task, webfetch, websearch, todowrite, question, skill)",
+            "scope": "打包器内置各端 schema post-check（不合格不出包）"
+          },
+          {
+            "id": "opencode-permission-object-assertion",
+            "method": "人工读取 outputs/packages/opencode/bug-triager/AGENT.md frontmatter；Select-String 确认包内无 'tools:' 行",
+            "executed": true,
+            "result": "opencode 包无 tools 数组；permission 为对象：'*': deny；read/glob/grep: allow；list/skill/webfetch/websearch/question/edit/bash/task/lsp/external_directory/todowrite: deny",
+            "scope": "满足「规范工具数组转 permission 对象」要求"
+          },
+          {
+            "id": "claude-tool-string-assertion",
+            "method": "人工读取 outputs/packages/claude/bug-triager/AGENT.md frontmatter",
+            "executed": true,
+            "result": "tools: Read, Grep, Glob",
+            "scope": "满足「Claude 用 Read, Grep, Glob 工具串」要求"
+          },
+          {
+            "id": "reference-integrity",
+            "method": "python hashlib.sha256 比对输入副本与三处输出的 report-format.md",
+            "executed": true,
+            "result": "输入 sha256=6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20；规范文件/opencode 包/claude 包三副本全部逐字节一致 (True)",
+            "scope": "references/report-format.md 被保留且未被篡改"
+          },
+          {
+            "id": "path-reference-resolution",
+            "method": "agent_validate.py 的 backtick 本地引用检查 + 目录列举",
+            "executed": true,
+            "result": "`references/report-format.md` 在 outputs/bug-triager、outputs/packages/opencode/bug-triager、outputs/packages/claude/bug-triager 三个代理根下均存在，无悬空引用",
+            "scope": "所有路径引用在包内可解析"
+          },
+          {
+            "id": "readonly-boundary-assertion",
+            "method": "人工核对 frontmatter 与正文一致性",
+            "executed": true,
+            "result": "tools=[read, grep, glob]；permission 仅 read/grep/glob=allow，edit/bash/task/webfetch/websearch 等=deny；正文「拒绝做」与「工具与权限」和权限矩阵一致，无写/执行/联网/派发授权",
+            "scope": "生成角色保持只读，正文与权限一致"
+          }
+        ],
+        "not_executed": [
+          {
+            "id": "opencode-native-load",
+            "description": "OpenCode 客户端对分发包的原生加载/解析（AgentConfig schema 实机加载）",
+            "executed": false,
+            "reason": "本环境无 OpenCode 客户端运行时或会话，无法实机加载验证；仅以打包器内置 schema post-check 代替，二者不等价。"
+          },
+          {
+            "id": "claude-native-load",
+            "description": "Claude Code 客户端 subagent 注册/原生加载",
+            "executed": false,
+            "reason": "本环境无 Claude Code 客户端运行时，未做实机注册与触发验证。"
+          },
+          {
+            "id": "live-scenario-trial",
+            "description": "阶段 6 真实场景试跑（把真实缺陷记录交给代理跑一次，验证身份/边界/权限/汇报格式）",
+            "executed": false,
+            "reason": "无真实客户端可被调用；未执行试运行，未取得「试运行验证」级别。"
+          },
+          {
+            "id": "independent-review",
+            "description": "由独立评审子代理（agents/agent_reviewer.md）出具 review.json 的独立审核",
+            "executed": false,
+            "reason": "本环境未派发独立评审子代理；仅由本次修复会话内联自评，自评不等于独立审核，故 verdict 不宣称已通过独立评审。"
+          }
+        ],
+        "review": {
+          "method": "authoring-session self-review（同一次修复会话内联对照 agent-quality-bar.md 7 项与 agent_reviewer.md 准则）",
+          "independent": false,
+          "reviewer": "本次修复会话自身（与作者同一主体）",
+          "independent_audit_claim": false,
+          "self_assessed_verdict": "pass",
+          "note": "按 brief 要求，自评不作为独立审核结论；独立审核未执行，见 not_executed.independent-review。"
+        },
+        "constraints_respected": {
+          "inputs_modified": false,
+          "real_user_dirs_modified": false,
+          "installed_to_real_client": false,
+          "write_scope": "仅写 outputs/（修复方模型有写 outputs 授权）；生成角色 bug-triager 保持只读",
+          "external_network_used": false,
+          "local_materials_only": true
+        },
+        "environment_limitations": [
+          "PowerShell 会话缺少 Get-FileHash cmdlet；改用 Python hashlib 完成完整性比对，不影响结论。",
+          "无 OpenCode/Claude 客户端运行时，客户端原生加载与真实触发均未执行。",
+          "无独立评审子代理派发通道，评审为内联自评而非独立审核。"
+        ]
+      },
+      "artifacts": [
+        {
+          "path": "outputs/artifacts/outputs/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/verification.json",
+          "hash_ok": true
+        }
+      ]
+    },
+    {
+      "task": "repair",
+      "variant": "old_skill",
+      "entry": {
+        "exists": true,
+        "frontmatter": {
+          "name": "bug-triager",
+          "description": "缺陷分诊代理：只读缺陷记录，依据证据判定严重性、影响、缺失信息与归属，在需要修复或访问生产时交还调用者。",
+          "mode": "subagent",
+          "color": "#2563EB",
+          "tools": [
+            "read",
+            "grep",
+            "glob"
+          ],
+          "permission": {
+            "*": "deny",
+            "read": "allow",
+            "grep": "allow",
+            "glob": "allow",
+            "list": "deny",
+            "edit": "deny",
+            "bash": "deny",
+            "task": "deny",
+            "webfetch": "deny",
+            "websearch": "deny",
+            "skill": "deny",
+            "todowrite": "deny",
+            "question": "deny",
+            "lsp": "deny",
+            "external_directory": "deny"
+          }
+        },
+        "body_chars": 1458,
+        "sha256": "c523571287fe3122c8cca73341db7098684add4c701a7351809b799fe10dd41e"
+      },
+      "source_exists": true,
+      "packages": {
+        "opencode": {
+          "exists": true,
+          "frontmatter": {
+            "name": "bug-triager",
+            "description": "缺陷分诊代理：只读缺陷记录，依据证据判定严重性、影响、缺失信息与归属，在需要修复或访问生产时交还调用者。",
+            "mode": "subagent",
+            "color": "#2563EB",
+            "permission": {
+              "*": "deny",
+              "read": "allow",
+              "grep": "allow",
+              "glob": "allow",
+              "list": "deny",
+              "edit": "deny",
+              "bash": "deny",
+              "task": "deny",
+              "webfetch": "deny",
+              "websearch": "deny",
+              "skill": "deny",
+              "todowrite": "deny",
+              "question": "deny",
+              "lsp": "deny",
+              "external_directory": "deny"
+            }
+          },
+          "body_chars": 1458,
+          "sha256": "8b13bba4f2b377c8d8f028ed8fd93ff8c2aa7068f3e153949fc4c5e6e62c5525",
+          "reference_exists": true,
+          "post_check_passed": true
+        },
+        "claude": {
+          "exists": true,
+          "frontmatter": {
+            "name": "bug-triager",
+            "description": "缺陷分诊代理：只读缺陷记录，依据证据判定严重性、影响、缺失信息与归属，在需要修复或访问生产时交还调用者。",
+            "mode": "subagent",
+            "color": "#2563EB",
+            "tools": "Read, Grep, Glob",
+            "permission": {
+              "*": "deny",
+              "read": "allow",
+              "grep": "allow",
+              "glob": "allow",
+              "list": "deny",
+              "edit": "deny",
+              "bash": "deny",
+              "task": "deny",
+              "webfetch": "deny",
+              "websearch": "deny",
+              "skill": "deny",
+              "todowrite": "deny",
+              "question": "deny",
+              "lsp": "deny",
+              "external_directory": "deny"
+            }
+          },
+          "body_chars": 1458,
+          "sha256": "53d971241c61525296aabc753f37a4c4dde6ad10ed799d659435c5863b3a873b",
+          "reference_exists": true,
+          "post_check_passed": true
+        }
+      },
+      "strict_returncode": 0,
+      "self_report": {
+        "agent": "bug-triager",
+        "date": "2026-09-29",
+        "scope": "修复 inputs/bug-triager 草稿为只读中文 subagent，并交付 OpenCode / Claude 可分发包",
+        "deliverables": [
+          "outputs/bug-triager/AGENT.md",
+          "outputs/bug-triager/references/report-format.md",
+          "outputs/packages/opencode/bug-triager/AGENT.md",
+          "outputs/packages/opencode/bug-triager/references/report-format.md",
+          "outputs/packages/claude/bug-triager/AGENT.md",
+          "outputs/packages/claude/bug-triager/references/report-format.md"
+        ],
+        "environment": {
+          "python": "3.11.8",
+          "pyyaml": "6.0.3",
+          "notes": "使用随场景提供的 agent-creator 技能脚本；未安装任何东西到真实用户目录，未修改 inputs。"
+        },
+        "executed_validations": [
+          {
+            "name": "package_generation",
+            "method": "executed",
+            "tool": "agent-creator/scripts/package_agent.py --client opencode --client claude",
+            "result": "pass",
+            "exit_code": 0,
+            "evidence": "生成 outputs/packages/opencode/bug-triager 与 outputs/packages/claude/bug-triager（含 AGENT.md 与 references/report-format.md）；脚本日志确认 opencode tools 白名单已物化为 permission（read/grep/glob allow，其余 deny），claude tools 转为 \"Read, Grep, Glob\"。"
+          },
+          {
+            "name": "canonical_validate_strict",
+            "method": "executed",
+            "tool": "agent-creator/scripts/validate_agents.py --strict --dir outputs/bug-triager",
+            "result": "pass",
+            "exit_code": 0,
+            "evidence": "Checked 1 agent；无 error、无 warning、无 advisory。"
+          },
+          {
+            "name": "opencode_package_validate_strict",
+            "method": "executed",
+            "tool": "agent-creator/scripts/validate_agents.py --strict --dir outputs/packages/opencode",
+            "result": "pass",
+            "exit_code": 0,
+            "evidence": "Checked 1 agent；无 error/warning/advisory。"
+          },
+          {
+            "name": "claude_package_validate_strict",
+            "method": "executed",
+            "tool": "agent-creator/scripts/validate_agents.py --strict --dir outputs/packages/claude",
+            "result": "pass",
+            "exit_code": 0,
+            "evidence": "Checked 1 agent；无 error/warning/advisory。"
+          },
+          {
+            "name": "frontmatter_and_reference_audit",
+            "method": "executed",
+            "tool": "临时 Python 脚本（PyYAML 解析三个 AGENT.md）",
+            "result": "pass",
+            "exit_code": 0,
+            "evidence": "三个目标全部通过：name=bug-triager；color==\"#2563EB\"；无 version/tags/tools_clients/source/author/date_added；含职责范围（必须做/拒绝做）、工具与权限、协作协议（含升级）、完成标准；正文引用 references/report-format.md 且该文件在各自包内存在；canonical tools==[read,grep,glob] 且 permission 默认 \"*\": deny、read/grep/glob=allow、edit/bash/task/webfetch/websearch=deny；opencode 包已移除 tools 且 permission 同上；claude 包 tools==\"Read, Grep, Glob\"。all_pass=true。"
+          }
+        ],
+        "not_executed": [
+          {
+            "name": "opencode_native_load",
+            "method": "not_executed",
+            "reason": "本环境无 OpenCode 运行时/客户端，无法实际加载 agent 并触发一次分诊调用；仅做了 schema 级 post-check 与静态校验。"
+          },
+          {
+            "name": "claude_native_load",
+            "method": "not_executed",
+            "reason": "本环境无 Claude Code 客户端，无法原生加载 subagent；仅验证了 frontmatter 形态（tools 为逗号分隔的 Claude 工具名）。"
+          },
+          {
+            "name": "independent_review",
+            "method": "not_executed",
+            "reason": "未启用 agent-creator 的独立评审子代理（agents/reviewer.md），未产生独立 review.json。"
+          }
+        ],
+        "review": {
+          "performed": true,
+          "independent": false,
+          "method": "self-review",
+          "description": "由本次修复会话（生成方）自评，核对 brief 各项要求；这不是独立审核，不能等同于第三方评审。"
+        },
+        "limitations": [
+          "客户端原生加载未执行，跨客户端实际行为可能受客户端版本差异影响。",
+          "评审为生成方自评，非独立审核。",
+          "包内 claude AGENT.md 保留了 canonical 的 permission 矩阵（该字段来源于 agent-creator 适配器输出）；Claude 侧实际生效主要依赖 tools 串。"
+        ],
+        "brief_requirements": {
+          "name_kept_bug_triager": true,
+          "chinese_subagent": true,
+          "read_only_no_code_fix_no_network_no_dispatch": true,
+          "tools_only_read_grep_glob": true,
+          "permission_default_deny_plus_three_reads": true,
+          "metadata_removed": true,
+          "color_quoted_2563EB": true,
+          "body_permission_consistent": true,
+          "must_do_refuse_do_present": true,
+          "escalation_path_present": true,
+          "verifiable_completion_criteria": true,
+          "follows_report_format_unknown_when_insufficient": true,
+          "canonical_dir_with_references": true,
+          "opencode_and_claude_packages": true,
+          "paths_resolvable_within_package": true,
+          "inputs_unmodified": true,
+          "no_real_client_install": true
+        }
+      },
+      "artifacts": [
+        {
+          "path": "outputs/artifacts/outputs/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/verification.json",
+          "hash_ok": true
+        }
+      ]
+    },
+    {
+      "task": "repair",
+      "variant": "without_skill",
+      "entry": {
+        "exists": true,
+        "frontmatter": {
+          "name": "bug-triager",
+          "description": "只读缺陷分诊子代理：依据证据判断严重性、影响、所需补充信息与交还对象，不修改代码、不执行修复、不联网、不派发任务。",
+          "mode": "subagent",
+          "tools": [
+            "read",
+            "grep",
+            "glob"
+          ],
+          "permission": {
+            "default": "deny",
+            "read": "allow",
+            "grep": "allow",
+            "glob": "allow"
+          },
+          "color": "#2563EB"
+        },
+        "body_chars": 1072,
+        "sha256": "7a90af27b990002c056b0bdf405843f9d9775b3e068dd4dcbe868e9f99a8bcce"
+      },
+      "source_exists": true,
+      "packages": {
+        "opencode": {
+          "exists": true,
+          "frontmatter": {
+            "name": "bug-triager",
+            "description": "只读缺陷分诊子代理：依据证据判断严重性、影响、所需补充信息与交还对象，不修改代码、不执行修复、不联网、不派发任务。",
+            "mode": "subagent",
+            "permission": {
+              "default": "deny",
+              "read": "allow",
+              "grep": "allow",
+              "glob": "allow"
+            },
+            "color": "#2563EB"
+          },
+          "body_chars": 1072,
+          "sha256": "1706b348d3356d33390252f961b479ada9564efcefcf72fd8a220d106a4cfead",
+          "reference_exists": true,
+          "post_check_passed": true
+        },
+        "claude": {
+          "exists": true,
+          "frontmatter": {
+            "name": "bug-triager",
+            "description": "只读缺陷分诊子代理：依据证据判断严重性、影响、所需补充信息与交还对象，不修改代码、不执行修复、不联网、不派发任务。",
+            "tools": "Read, Grep, Glob",
+            "color": "#2563EB"
+          },
+          "body_chars": 1072,
+          "sha256": "4c8be5459917e5f4a519e6d2bc1b1f74edb8445c45e691f1fbc602a7338b12fb",
+          "reference_exists": true,
+          "post_check_passed": true
+        }
+      },
+      "strict_returncode": 1,
+      "self_report": {
+        "agent": "bug-triager",
+        "task": "按 inputs/brief.md 修复 bug-triager 代理，并交付 OpenCode 与 Claude 两个客户端可分发包",
+        "generated_at": "2026-09-29",
+        "environment": {
+          "opencode_cli": "1.18.30（存在）",
+          "claude_cli": "缺失（Get-Command claude 为空）",
+          "node": "存在",
+          "powershell": "5.1.26100.8655"
+        },
+        "deliverables": [
+          "outputs/bug-triager/AGENT.md",
+          "outputs/bug-triager/references/report-format.md",
+          "outputs/packages/opencode/bug-triager/AGENT.md",
+          "outputs/packages/opencode/bug-triager/references/report-format.md",
+          "outputs/packages/claude/bug-triager/AGENT.md",
+          "outputs/packages/claude/bug-triager/references/report-format.md",
+          "outputs/verification.json"
+        ],
+        "checks_executed": [
+          {
+            "id": "deliverables_exist",
+            "method": "PowerShell Test-Path（逐文件）",
+            "executed": true,
+            "result": "pass",
+            "detail": "6 个交付文件（3 份 AGENT.md + 3 份 references/report-format.md）全部存在。"
+          },
+          {
+            "id": "canonical_frontmatter",
+            "method": "读取并解析 outputs/bug-triager/AGENT.md 的 YAML frontmatter",
+            "executed": true,
+            "result": "pass",
+            "detail": "name=bug-triager；mode=subagent；tools=[read, grep, glob]；permission.default=deny 且 read/grep/glob 均为 allow；color=\"#2563EB\"（带引号）。"
+          },
+          {
+            "id": "forbidden_metadata_removed",
+            "method": "正则检查 frontmatter 是否含 version/tags/tools_clients/source 键",
+            "executed": true,
+            "result": "pass",
+            "detail": "四个键均不存在。"
+          },
+          {
+            "id": "no_forbidden_tools",
+            "method": "全文检查是否引用 bash/edit/write/webfetch/task 等禁用工具",
+            "executed": true,
+            "result": "pass",
+            "detail": "正文与权限一致，仅声明 read/grep/glob 三种只读工具。"
+          },
+          {
+            "id": "body_sections",
+            "method": "读取 canonical 正文，确认中文并含角色定位/必须做/拒绝做/工作方式/升级路径/完成标准",
+            "executed": true,
+            "result": "pass",
+            "detail": "正文为中文；明确「必须做」与「拒绝做」；含升级路径与可验收完成标准；要求证据不足记 unknown、不得臆造根因。"
+          },
+          {
+            "id": "references_resolvable",
+            "method": "检查各目录内 references/report-format.md 是否存在，且 AGENT.md 相对引用可解析",
+            "executed": true,
+            "result": "pass",
+            "detail": "canonical、opencode、claude 三处均含 references/report-format.md，且 AGENT.md 引用 references/report-format.md。"
+          },
+          {
+            "id": "opencode_tools_to_permission",
+            "method": "解析 outputs/packages/opencode/bug-triager/AGENT.md 的 frontmatter",
+            "executed": true,
+            "result": "pass",
+            "detail": "规范 tools 数组已转为 permission 对象：default=deny，read/grep/glob=allow。"
+          },
+          {
+            "id": "opencode_native_load",
+            "method": "在本场景目录临时创建 .opencode/agent/bug-triager.md（内容取自 OpenCode 包），运行 `opencode agent list`（opencode 1.18.30），随后删除临时目录",
+            "executed": true,
+            "result": "pass",
+            "detail": "输出中出现 `bug-triager (subagent)`，配置被 OpenCode 原生接受并加载。"
+          },
+          {
+            "id": "canonical_native_load_probe",
+            "method": "将规范源文件 outputs/bug-triager/AGENT.md 临时放入 .opencode/agent/ 并运行 `opencode agent list`",
+            "executed": true,
+            "result": "expected-reject",
+            "detail": "报告 `Expected object | undefined, got [\"read\",\"grep\",\"glob\"] tools`。规范源文件按 brief 使用 tools 数组（归一化规范形态），OpenCode 原生不支持数组，故由可分发包转为 permission 对象；属预期行为，非缺陷。"
+          },
+          {
+            "id": "claude_tools_string",
+            "method": "解析 outputs/packages/claude/bug-triager/AGENT.md 的 frontmatter",
+            "executed": true,
+            "result": "pass",
+            "detail": "tools: Read, Grep, Glob（工具串）。"
+          },
+          {
+            "id": "inputs_unmodified",
+            "method": "运行期间未向 inputs/ 写入；复核 inputs/ 文件仍存在且内容未变",
+            "executed": true,
+            "result": "pass",
+            "detail": "inputs/brief.md、inputs/bug-triager/AGENT.md、inputs/bug-triager/references/report-format.md 保持只读未改。"
+          }
+        ],
+        "not_executed": [
+          {
+            "id": "claude_native_load",
+            "reason": "环境中未找到 claude CLI，无法执行 Claude 原生加载/解析；仅做静态结构检查。"
+          },
+          {
+            "id": "canonical_native_load_as_client_config",
+            "reason": "规范源文件按 brief 采用 tools 数组的归一化形态，OpenCode 原生不接受（见 canonical_native_load_probe）；可分发包才是各客户端原生可加载形态。"
+          },
+          {
+            "id": "independent_audit",
+            "reason": "未执行任何独立第三方审核。"
+          }
+        ],
+        "review": {
+          "method": "作者自检（self-review）：由同一修复执行者在本地以脚本断言 + OpenCode CLI 原生加载完成核对。",
+          "independent_audit": false,
+          "notes": "本报告不代表独立审核。OpenCode 侧为工具级原生加载验证；Claude 侧与规范源文件的原生加载未验证。"
+        },
+        "limitations": [
+          "未能执行 Claude Code 原生加载（CLI 缺失）。",
+          "OpenCode 权限的最终生效顺序会受调用方项目/全局配置影响；本验证仅确认包内 permission 对象可被解析并加载。",
+          "未安装到任何真实用户目录，未修改 inputs/ 或真实客户端配置。"
+        ]
+      },
+      "artifacts": [
+        {
+          "path": "outputs/artifacts/outputs/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md",
+          "hash_ok": true
+        },
+        {
+          "path": "outputs/artifacts/outputs/verification.json",
+          "hash_ok": true
+        }
+      ]
+    }
+  ],
+  "scope": "Current fixed validator/adaptor used equally on all outputs; not client runtime evidence."
+}

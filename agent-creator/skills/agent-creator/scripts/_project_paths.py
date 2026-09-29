@@ -22,5 +22,5 @@ def find_skill_root(source_file: str | Path) -> Path:
 
 
 def add_scripts_to_path() -> None:
-    """Allow direct imports of sibling modules from this scripts directory."""
+    """Allow direct imports of local modules from this scripts directory."""
     sys.path.insert(0, str(SCRIPT_DIR))

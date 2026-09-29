@@ -1,0 +1,34 @@
+{
+  "variant": "old_skill",
+  "status": "completed",
+  "model_called": true,
+  "error": null,
+  "native_discovery_passed": true,
+  "adapt_returncode": 0,
+  "returncode": 0,
+  "timed_out": false,
+  "duration_seconds": 13.547,
+  "model": null,
+  "models": [],
+  "total_tokens": 12757,
+  "tokens_source": "opencode_step_finish_total",
+  "total_tool_calls": 7,
+  "tool_calls_source": "structured_tool_events",
+  "observed_models": [
+    "deepseek/deepseek-flash"
+  ],
+  "actual_agents": [
+    {
+      "agent": "release-evidence-auditor",
+      "mode": "release-evidence-auditor"
+    },
+    {
+      "agent": "release-evidence-auditor",
+      "mode": "release-evidence-auditor"
+    },
+    {
+      "agent": "release-evidence-auditor",
+      "mode": "release-evidence-auditor"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+Validator passed in strict mode. Now let me write an independent stdlib check script that also captures real command output.
+Writing to the temp dir is blocked; I'll place the helper inside outputs and remove it after the run.
+完成。结果已就绪：
+
+- `outputs/asset-note/`：`references/checklist.md` 已改名为 `references/review-checklist.md`；`SKILL.md`（第22行）与 `README.md`（链接与资源行）的引用已同步更新，frontmatter、正文、清单内容均保留。
+- `outputs/verification.json`：`checks` 9 项全部 `passed`，`commands` 记录了实际执行的两条命令（bundled `skill_validate.py --strict`，退出码 0；Python 标准库自检脚本），`input_unchanged: true`。
+
+校验方式：优先运行随技能提供的 `skill-creator/scripts/skill_validate.py --dir outputs/asset-note --strict`（严格模式通过，仅有缺少 evals.json 的 advisory）；另用 Python 标准库独立校验新旧文件名、引用可解析、frontmatter/正文/资源内容不变及 inputs 未改动，全部通过。`inputs/` 未做任何写入。

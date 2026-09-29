@@ -1,163 +1,132 @@
-"""Repo-level independence gate for the two creators (skill-creator / agent-creator).
+"""Repository-level naming and independence gates for maintained workspaces.
 
-The repository ships two isomorphic creators that must be mutually independent:
-neither may reference, import, or otherwise depend on the other. "成品即源" means
-the shipped artifact directory is the source, so the independence contract is
-enforced against those directories, not the workspaces around them.
-
-Scan rules:
-  - authored text/code files only: .md/.py/.sh/.json/.yaml/.yml/.txt/.template
-    (templates/*.json.template and the like ship with the artifact too)
-  - token matching is case-insensitive: a cross-reference written as
-    "Agent-Creator" couples the artifacts just as much as the exact spelling
-  - skip examples/ (upstream learning samples) and evolutions/ (historical
-    cross-creator comparison/borrowing records). These DELIBERATELY name the
-    sibling — an evolution note exists to record "what we learned from the other
-    creator" — so scanning them would be a false-positive storm, not a contract
-    violation. This is an intentional exclusion, covered by a regression test.
-  - skip indexes/upstream.db (third-party index bytes — an external repo naming
-    one creator is data, not our cross-reference)
-  - the forbidden set is the sibling's repo-facing name in both languages
+Policy is kept outside the creators. Historical notes are maintained text;
+only explicitly registered third-party samples and index data are exempt.
 """
-
-import re
+import ast
 from pathlib import Path
+import re
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
-IMPORT_MODULE_RE = re.compile(r"^\s*(?:import|from)\s+([A-Za-z_][\w.]*)")
-
-CREATORS = {
-    "skill-creator": REPO_ROOT / "skill-creator" / "skills" / "skill-creator",
-    "agent-creator": REPO_ROOT / "agent-creator" / "skills" / "agent-creator",
+WORKSPACES = {name: REPO_ROOT / name for name in ("skill-creator", "agent-creator")}
+CREATORS = {name: root / "skills" / name for name, root in WORKSPACES.items()}
+SAMPLE_DIRS = ("brainstorming", "copywriting", "git-pushing", "loki-mode",
+               "react-best-practices", "systematic-debugging")
+SCAN_EXTS = {".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt", ".template", ".db"}
+RELATION_WORDS = {"孪生", "同构", "兄弟创建器", "另一创建器",
+                  "sibling creator", "twin creator", "mirror of"}
+LEGACY_MODULES = {
+    "agent-creator": ("adapt_agent", "package_agent", "validate_agents", "security_scan",
+                      "search_agent_index", "build_agent_index", "compare_agents", "create_agent"),
+    "skill-creator": ("aggregate_benchmark", "compare_skills", "create_skill", "package_skill",
+                      "run_eval", "run_loop", "run_scenario", "search_index", "build_index", "validate_skills"),
 }
 
-# artifact name -> tokens that must never appear in that artifact.
-# Covers the sibling's repo-facing name (both languages) AND the sibling's own
-# script/module names: naming the other creator's file is still a cross-reference
-# (and a maintenance coupling), even when no code import exists.
-FORBIDDEN = {
-    "skill-creator": (
-        "agent-creator", "代理创建器",
-        "adapt_agent", "package_agent", "validate_agents", "security_scan",
-        "search_agent_index", "build_agent_index", "compare_agents", "create_agent",
-    ),
-    "agent-creator": (
-        "skill-creator", "技能创建器",
-        "package_skill", "validate_skills", "search_index", "build_index",
-        "run_eval", "run_loop", "run_scenario", "compare_skills", "create_skill",
-        "aggregate_benchmark",
-    ),
-}
 
-SCAN_EXTS = {".md", ".py", ".sh", ".json", ".yaml", ".yml", ".txt", ".template"}
-SKIP_DIRS = {"examples", "evolutions", "__pycache__"}
-SKIP_FILES = {"upstream.db"}
+def _exclusions(name):
+    product = Path("skills") / name
+    excluded = [product / "indexes/upstream.db"]
+    if name == "skill-creator":
+        excluded += [product / "examples" / sample for sample in SAMPLE_DIRS]
+    return tuple(excluded)
 
 
-def _authored_files(artifact: Path):
-    for p in sorted(artifact.rglob("*")):
-        if not p.is_file():
+def _authored_files(root, excluded=()):
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
             continue
-        rel = p.relative_to(artifact)
-        if any(part in SKIP_DIRS for part in rel.parts):
+        rel = path.relative_to(root)
+        if {"__pycache__", ".pytest_cache"}.intersection(rel.parts):
             continue
-        if p.name in SKIP_FILES:
+        if any(rel == item or item in rel.parents for item in excluded):
             continue
-        if p.suffix.lower() not in SCAN_EXTS:
-            continue
-        yield p
+        if path.suffix.lower() in SCAN_EXTS:
+            yield path
 
 
-def _scan_for_tokens(artifact: Path, tokens) -> list[str]:
-    """Return one 'relpath: token' problem per authored file that names a token.
+def _peer_tokens(name):
+    peer = next(key for key in CREATORS if key != name)
+    tokens = {peer, peer.replace("-", "_"), peer.replace("-", " "),
+              "代理创建器" if peer == "agent-creator" else "技能创建器", *LEGACY_MODULES[peer]}
+    for folder, suffix in (("scripts", ".py"), ("agents", ".md"), ("references", ".md")):
+        own = {p.stem for p in (CREATORS[name] / folder).glob(f"*{suffix}")}
+        for path in (CREATORS[peer] / folder).glob(f"*{suffix}"):
+            if path.stem not in own:
+                tokens.add(path.stem if folder != "references" else path.name)
+                if path.stem.startswith(peer.split("-")[0] + "-"):
+                    tokens.add(path.stem)
+    return tokens | RELATION_WORDS
 
-    Case-insensitive; the artifact root is arbitrary so tests can point it at a
-    fixture dir as well as the real shipped artifact.
-    """
+
+def _scan_for_tokens(root, tokens, excluded=()):
     problems = []
-    lowered = [(t, t.lower()) for t in tokens]
-    for f in _authored_files(artifact):
-        text = f.read_text(encoding="utf-8", errors="replace").lower()
-        for token, token_lc in lowered:
-            if token_lc in text:
-                problems.append(f"{f.relative_to(artifact).as_posix()}: {token!r}")
+    patterns = [(token, re.compile(r"(?<![A-Za-z0-9_-])" + re.escape(token) + r"(?![A-Za-z0-9_-])", re.I)
+                 if token.isascii() else re.compile(re.escape(token))) for token in sorted(tokens)]
+    for path in _authored_files(root, excluded):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for token, pattern in patterns:
+            if pattern.search(text):
+                problems.append(f"{path.relative_to(root).as_posix()}: {token!r}")
     return problems
 
 
-def test_each_creator_is_self_contained():
-    for name, artifact in CREATORS.items():
-        assert artifact.is_dir(), f"artifact missing: {artifact}"
+@pytest.mark.parametrize("name", WORKSPACES)
+def test_workspace_has_no_cross_references(name):
+    assert CREATORS[name].is_dir()
+    problems = _scan_for_tokens(WORKSPACES[name], _peer_tokens(name), _exclusions(name))
+    assert not problems, f"{name} must describe and use its own resources:\n" + "\n".join(problems)
 
 
-def test_no_cross_references_between_creators():
-    problems = []
-    for name, artifact in CREATORS.items():
-        for p in _scan_for_tokens(artifact, FORBIDDEN[name]):
-            problems.append(f"{name}/.../{p}")
-    assert not problems, (
-        "creators must not cross-reference each other (strict independence):\n"
-        + "\n".join(problems)
-    )
+@pytest.mark.parametrize("relative", [
+    "README.md", "AGENTS.md", "INSTALL.md", "tests/test_contract.py",
+    "skills/demo/evolutions/2026-09-29-note.md", "templates/evals.json.template",
+    "examples/local/README.md", "upstream.db",
+])
+def test_maintained_text_has_no_history_or_directory_bypass(tmp_path, relative):
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("```text\nAGENT-CREATOR\n```", encoding="utf-8")
+    assert len(_scan_for_tokens(tmp_path, {"agent-creator"}, _exclusions("skill-creator"))) == 1
 
 
-def test_scan_catches_template_files_and_case_variants(tmp_path):
-    """`.template` files are authored artifacts, and a casing variant is still a
-    cross-reference — both must be caught (regression: they used to slip)."""
-    artifact = tmp_path / "art"
-    (artifact / "templates").mkdir(parents=True)
-    (artifact / "templates" / "x.json.template").write_text(
-        '{"skill_name": "AGENT-CREATOR"}', encoding="utf-8"
-    )
-    problems = _scan_for_tokens(artifact, FORBIDDEN["skill-creator"])
-    assert problems, "a sibling token in a .template file (different case) must be flagged"
-    assert any("x.json.template" in p for p in problems)
+def test_registered_upstream_data_is_not_scanned(tmp_path):
+    for relative in ("skills/skill-creator/examples/brainstorming/SKILL.md",
+                     "skills/skill-creator/indexes/upstream.db"):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("agent-creator", encoding="utf-8")
+    assert not _scan_for_tokens(tmp_path, {"agent-creator"}, _exclusions("skill-creator"))
+    overview = tmp_path / "skills/skill-creator/examples/README.md"
+    overview.write_text("agent-creator", encoding="utf-8")
+    assert len(_scan_for_tokens(tmp_path, {"agent-creator"}, _exclusions("skill-creator"))) == 1
 
 
-def test_scan_skips_evolutions_and_examples_by_design(tmp_path):
-    """Historical records and upstream samples intentionally name the sibling;
-    the scan must not treat them as contract violations."""
-    artifact = tmp_path / "art"
-    (artifact / "evolutions").mkdir(parents=True)
-    (artifact / "examples" / "sample").mkdir(parents=True)
-    (artifact / "evolutions" / "2026-01-01-adopt.md").write_text(
-        "learned from agent-creator", encoding="utf-8"
-    )
-    (artifact / "examples" / "sample" / "SKILL.md").write_text(
-        "compare against agent-creator", encoding="utf-8"
-    )
-    assert _scan_for_tokens(artifact, FORBIDDEN["skill-creator"]) == []
+@pytest.mark.parametrize("text", ["与Agent-Creator一致", "引用agent_validate.py", "遵循agent_reviewer.md"])
+def test_names_embedded_in_chinese_text_are_detected(tmp_path, text):
+    (tmp_path / "README.md").write_text(text, encoding="utf-8")
+    assert _scan_for_tokens(tmp_path, {"agent-creator", "agent_validate", "agent_reviewer"})
+
+
+@pytest.mark.parametrize("name", CREATORS)
+def test_scripts_and_agent_prompts_use_domain_prefix(name):
+    product = CREATORS[name]
+    prefix = name.split("-")[0]
+    for path in (product / "scripts").glob("*.py"):
+        if path.name != "_project_paths.py":
+            assert re.fullmatch(prefix + r"_[a-z0-9]+(?:_[a-z0-9]+)*\.py", path.name), path
+    for path in (product / "agents").glob("*.md"):
+        assert re.fullmatch(prefix + r"_[a-z0-9]+(?:_[a-z0-9]+)*\.md", path.name), path
 
 
 def test_no_cross_artifact_imports():
-    """No script may import a module that lives in the other creator's scripts/.
-
-    A real cross-artifact import cannot spell the sibling's hyphenated name
-    (invalid Python identifier), so the previous substring test was vacuously
-    true. This checks imported top-level module names against the sibling's
-    script module stems instead (excluding modules the checks' own creator also
-    ships, so importing one's local _project_paths.py is not a false positive).
-    """
-    problems = []
-    for name, artifact in CREATORS.items():
-        sibling = "agent-creator" if name == "skill-creator" else "skill-creator"
-        own_modules = {p.stem for p in (artifact / "scripts").glob("*.py")}
-        sibling_modules = (
-            {p.stem for p in (CREATORS[sibling] / "scripts").glob("*.py")} - own_modules
-        )
-        for f in _authored_files(artifact):
-            if f.suffix != ".py":
-                continue
-            for lineno, line in enumerate(
-                f.read_text(encoding="utf-8", errors="replace").splitlines(), 1
-            ):
-                m = IMPORT_MODULE_RE.match(line)
-                if not m:
-                    continue
-                mod = m.group(1).split(".")[0]
-                if mod in sibling_modules:
-                    problems.append(
-                        f"{name}/{f.relative_to(artifact).as_posix()}:{lineno}: "
-                        f"imports sibling module {mod!r}"
-                    )
-    assert not problems, "cross-artifact imports detected:\n" + "\n".join(problems)
+    for name, product in CREATORS.items():
+        peer = next(key for key in CREATORS if key != name)
+        own = {p.stem for p in (product / "scripts").glob("*.py")}
+        foreign = {p.stem for p in (CREATORS[peer] / "scripts").glob("*.py")} - own
+        for path in (product / "scripts").glob("*.py"):
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8-sig"))):
+                names = ([a.name for a in node.names] if isinstance(node, ast.Import)
+                         else [node.module or ""] if isinstance(node, ast.ImportFrom) else [])
+                assert not foreign.intersection(n.split(".")[0] for n in names), path

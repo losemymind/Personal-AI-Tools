@@ -1,0 +1,18 @@
+{
+  "eval_id": 2,
+  "eval_name": "repair",
+  "prompt": "按照 inputs/brief.md 修复 inputs/bug-triager 代理，并交付要求的两个客户端包及 outputs/verification.json。必须完成文件，不只给建议。不要改输入或真实客户端配置。需求已经给定，可自主完成这次修复。",
+  "assertions": [
+    "B1 规范代理与references/report-format.md均在指定目录，链接可解析且源参考内容保留",
+    "B2 name/mode/color正确，description针对分诊，移除version/tags/tools_clients/source等元数据",
+    "B3 tools只读三工具，permission默认deny加逐项allow，不保留全局allow或写/执行授权",
+    "B4 正文删除直接修复/猜根因/派发，补必须做/拒绝做、协作升级、完成标准",
+    "B5 缺证据为unknown，保留id/severity/impact/evidence/unknowns/owner/next_action汇报契约",
+    "B6 OpenCode包包含本地参考，frontmatter无tools数组，permission禁止未授权工具且post-check通过",
+    "B7 Claude包包含本地参考，tools为Read/Grep/Glob字符串且post-check通过",
+    "B8 规范产物agent_validate --strict实际通过（由测评器复核）",
+    "B9 verification.json有证据支撑实际校验，自评不冒充独立评审/真实客户端加载",
+    "B10 输入不变，无全局安装或工作区外创建器/验证器借用"
+  ],
+  "fixture_is_synthetic": true
+}

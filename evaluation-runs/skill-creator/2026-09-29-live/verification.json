@@ -1,0 +1,24 @@
+{
+  "skill_pytest": {
+    "passed": 315
+  },
+  "documentation_after_recording": {
+    "passed": 7
+  },
+  "product_strict": {
+    "checked": 1,
+    "passed": true
+  },
+  "diff_check": {
+    "passed": true
+  },
+  "live_trigger_gate": {
+    "passed": false,
+    "reason": "1 run_error; no label mismatches among 11 evaluable queries"
+  },
+  "scenario_aggregation_strict": {
+    "current_vs_old": true,
+    "current_vs_without": true
+  },
+  "product_code_or_description_changed_for_results": false
+}

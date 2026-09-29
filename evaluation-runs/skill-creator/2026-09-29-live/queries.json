@@ -1,0 +1,14 @@
+[
+  {"id":1,"query":"请创建一个 weekly-report 技能，把每周整理工作周报的流程沉淀下来：输入是本周完成事项和下周计划，输出按成果、风险、下周安排三个部分组织。保存到当前测试工作区的 outputs/weekly-report，缺少非关键细节时采用合理默认值。","should_trigger":true,"label":"从零创建"},
+  {"id":2,"query":"现有 report-check 技能经常漏掉核对表格合计数。请改进它的 SKILL.md，增加可执行的核对步骤和不通过时的处理规则，并给出对应的验证方法。","should_trigger":true,"label":"行为改进"},
+  {"id":3,"query":"当前技能目录把 references/checklist.md 改名为 references/review-checklist.md 后，正文还有旧路径。请同步修复 SKILL.md 和 README.md 中的引用，并检查引用是否可达。","should_trigger":true,"label":"局部引用修复"},
+  {"id":4,"query":"我的 invoice-audit 技能会在普通账单翻译请求上误触发。请设计包含相邻任务干扰项的触发查询集，并说明怎样把运行错误和描述过宽分开判断。","should_trigger":true,"label":"触发评估"},
+  {"id":5,"query":"请比较现有技能和修改前版本的任务效果：双方使用相同输入和模型，分别保存真实产物与失败状态，然后检查样本是否配对完整，再解释通过率和成本差异。","should_trigger":true,"label":"技能效果比较"},
+  {"id":6,"query":"请将 inputs/table-summary 这个已指定技能打包安装到当前测试项目的 .agents/skills/table-summary，目标客户端是 Codex，作用域仅当前项目；完成后检查安装目录和技能入口。","should_trigger":true,"label":"指定技能安装"},
+  {"id":7,"query":"使用已经安装的 PDF 技能，提取 inputs/invoice.pdf 中的发票号码、日期和金额，保存为 outputs/invoice.csv。","should_trigger":false,"label":"执行现有技能"},
+  {"id":8,"query":"列出当前环境可用的技能名称和各自用途，按文档处理、编程和数据分析分组，给我一张简短表格。","should_trigger":false,"label":"仅浏览技能目录"},
+  {"id":9,"query":"请审查这个 Python 函数的异常处理，找出会吞掉文件读取错误的分支，并提出最小修复建议。","should_trigger":false,"label":"通用代码审查"},
+  {"id":10,"query":"为售后聊天机器人写一段系统提示词：先确认订单编号，再区分物流查询和退款申请，输出直接可粘贴到聊天机器人配置中的提示词正文。","should_trigger":false,"label":"系统提示词编写"},
+  {"id":11,"query":"请按这份周报 SOP 整理下面的事项清单，输出本周成果、风险和下周安排，供我今天直接发给团队。","should_trigger":false,"label":"执行已有工作流"},
+  {"id":12,"query":"给这个命令行应用增加 --skill-dir 参数，用 pathlib 检查传入目录是否存在；请修改参数解析函数，并为不存在的路径补一个单元测试。","should_trigger":false,"label":"关键词干扰开发任务"}
+]

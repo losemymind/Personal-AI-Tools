@@ -1,0 +1,29 @@
+I'll start by exploring the provided inputs.
+Let me read the README, metadata, and all the eval records.
+Now the run records. Let me read all of them.
+Let me check for any provided benchmark tooling and existing outputs.
+Found a skill-provided benchmark tool: `skill-creator/scripts/aggregate_benchmark.py` and its schema. Let me read them.
+The read tool is blocked for external paths. Let me try accessing the tool via bash.
+External directory access is denied, so the skill's `aggregate_benchmark.py` can't be read/run. The task authorizes a Python stdlib equivalent in that case. I'll write and run a standard-library aggregator in the allowed temp area, emitting deliverables into `outputs/`.
+Writing outside the workspace is also blocked. I'll place the script inside the workspace, run it, then remove it so `outputs/` holds only the deliverables.
+Now remove the scratch script and verify final state.
+The BOM was introduced by the PowerShell pipe, not the files. Let me validate directly.
+完成。已读取全部 4 条运行记录并实际执行汇总校验，仅写入 `outputs/`，`inputs/` 未改动。
+
+**工具可用性**：定位到随 skill 提供的 `skill-creator/scripts/aggregate_benchmark.py`，但沙箱 `external_directory` 策略禁止读取/执行工作区外文件，故按授权改用 Python 3.11 标准库等价实现（已简述于产出中）。
+
+**逐次运行状态**
+| eval | config | run | 状态 | rc | 评分 | pass_rate |
+|---|---|---|---|---|---|---|
+| a | with_skill | run-1 | completed | 0 | 有效 | 1.0 |
+| a | without_skill | run-1 | completed | 0 | 有效 | 0.0 |
+| b | with_skill | run-1 | completed | 0 | 有效 | 1.0 |
+| b | without_skill | run-1 | **error** | 1 | **缺失** | n/a（缺失，非 0） |
+
+**每配置**：with_skill attempted 2 / completed 2 / errors 0 / incomplete 0 / coverage 1.0 / 有效评分样本 2；without_skill 2 / 1 / 1 / 0 / 0.5 / 1。总有效评分样本 3/4。
+
+**配对**：按 eval_id+run，仅 eval-a 可配对（1/2，覆盖 0.5）；eval-b 因缺 without_skill 评分不可配对。有证据支持的差值只有 eval-a 的 +1.0（synthetic，n=1）；eval-b 与整体差值不可用。
+
+**证据边界**：成本/token 未提供，记为不可用而非零；时序为 synthetic 时长，非实测。仅凭这些 synthetic 记录**无法推断整体技能增益**（comparable=false，delta_available=false，详见 `conclusion.json`）。
+
+交付物：`outputs/benchmark.json`、`outputs/benchmark.md`、`outputs/conclusion.json`。

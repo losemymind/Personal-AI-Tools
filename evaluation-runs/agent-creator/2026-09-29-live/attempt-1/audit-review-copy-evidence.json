@@ -1,0 +1,17 @@
+{
+  "run": "iteration-1/eval-repair/without_skill/run-1",
+  "tool_use_id": "call_00_00HDmarSOlx1onOyK9AL3468",
+  "tool": "bash",
+  "tool_status": "completed",
+  "process_exit": 0,
+  "copied_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check\\.opencode\\agent\\bug-triager.md",
+  "retained_source_path": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\attempt-1\\iteration-1\\eval-repair\\without_skill\\run-1\\outputs\\artifacts\\outputs\\bug-triager\\AGENT.md",
+  "copied_sha256": "7a90af27b990002c056b0bdf405843f9d9775b3e068dd4dcbe868e9f99a8bcce",
+  "source_sha256": "7a90af27b990002c056b0bdf405843f9d9775b3e068dd4dcbe868e9f99a8bcce",
+  "copied_file_exists_at_review": true,
+  "outside_scenario_workspace": true,
+  "inside_same_run_state_root": true,
+  "global_user_configuration_directory": false,
+  "cross_group_or_global_creator_source_observed": false,
+  "interpretation": "Confirmed temporary copy outside cwd within the same isolated run state. Preserve the fact; do not automatically classify it as control contamination or change frozen B10 grading."
+}

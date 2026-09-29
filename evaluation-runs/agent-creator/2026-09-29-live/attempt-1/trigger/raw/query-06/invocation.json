@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "run",
+    "--format",
+    "json",
+    "-m",
+    "deepseek/deepseek-flash",
+    "帮我直接审查这段 Python：def first(xs): return xs[0]。指出一个边界问题并给修正建议，不需要创建任何代理或角色定义。"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-_rivbez_\\workspace",
+  "timeout_seconds": 90,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:33:14.709154+00:00"
+}

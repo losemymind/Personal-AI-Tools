@@ -1,0 +1,27 @@
+{
+  "id": 4,
+  "query": "把 inputs/sample-agent.md 的代理定义适配为 OpenCode 能加载的格式，输出 outputs/log-reader.md，只生成文件，不安装到全局。",
+  "should_trigger": true,
+  "passed": true,
+  "scorable": true,
+  "dispatch": true,
+  "target_read": false,
+  "combined": true,
+  "status": "completed",
+  "error": null,
+  "combined_rule": "dispatch OR target_read",
+  "dispatch_evidence": [
+    {
+      "tool": "skill",
+      "input": {
+        "name": "agent-creator"
+      },
+      "tool_use_id": "call_00_nftDUUE4XkSDNbQYXEIg9499",
+      "status": "completed"
+    }
+  ],
+  "target_read_evidence": [],
+  "target_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-cbty8q_q\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+  "timed_out": false,
+  "returncode": 0
+}

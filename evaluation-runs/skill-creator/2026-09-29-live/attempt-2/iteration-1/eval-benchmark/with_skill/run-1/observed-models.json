@@ -1,0 +1,114 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "messages": [
+    {
+      "message_id": "msg_0ecb085f8001EgT16GmDU0nvGx",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb09154001QF0fGaupH3uNhM",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0999d001j0FF4jK61ChMzc",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0a9e2001u8WPd1yOYAsp4Y",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0b72b0011oZG1wT4EqAWdb",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0c150001PUwxWxNG32LSPU",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0e874001o8dibJqg83yDQm",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0f1f1001oWtb2pmJNXSQcg",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb0f944001CIdzIH3sBNIote",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb12247001t04WgC3s8W8pKm",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb12e820011cjO703cmfDWfd",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb1398e001qGToQXtZzzbwPR",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb1446d001DgyALcJ3J6WX8s",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb16749001xAoDZdSxqNY67T",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb171f4001WjHRfqpivg82Yg",
+      "session_id": "ses_f134f7d0fffeZt5oEc0aUxu205",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "stop"
+    }
+  ],
+  "billing": "unknown; client cost=0 is not a billing statement"
+}

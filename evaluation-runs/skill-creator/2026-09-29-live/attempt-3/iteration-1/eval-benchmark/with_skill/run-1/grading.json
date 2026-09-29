@@ -1,0 +1,100 @@
+{
+  "expectations": [
+    {
+      "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+      "passed": true,
+      "evidence": "三个指定产物实际存在且JSON可解析；benchmark.md Summary/Coverage数据与benchmark.json.run_summary一致，transcript:50实际解析两个JSON成功。"
+    },
+    {
+      "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+      "passed": true,
+      "evidence": "benchmark.json.runs有4次尝试；with_skill attempted/completed/errors=2/2/0；without_skill=2/1/1；b/without_skill保留status=error、returncode=1与缺grading原因，pass_rate=null。"
+    },
+    {
+      "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+      "passed": true,
+      "evidence": "run_summary.coverage分别为1.0和0.5；a无技能execution_status=completed但pass_rate=0，b无技能execution_status=error而无有效评分。"
+    },
+    {
+      "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+      "passed": true,
+      "evidence": "delta.expected_pairs=2、paired_samples=1、coverage=0.5；conclusion.pairing.paired_keys仅a/run_number1，unpaired_keys明确b/run1。"
+    },
+    {
+      "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+      "passed": true,
+      "evidence": "run_summary.delta.pass_rate/time_seconds/tokens=null，Markdown N/A；conclusion说明单对a的差值不是整体估计且overall_skill_gain_inferable=false。"
+    },
+    {
+      "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+      "passed": true,
+      "evidence": "全部4项result.tokens=null；两配置tokens.n=0且mean/stddev/min/max=null，Markdown为N/A (n=0)，未估算token。"
+    },
+    {
+      "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+      "passed": true,
+      "evidence": "四run保留10/8/12/5秒，基线失败的5秒计入6.5秒均值；conclusion.synthetic=true且limitations说明所有时间与记录均为人工夹具，不代表真实成本。"
+    },
+    {
+      "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+      "passed": true,
+      "evidence": "conclusion synthetic=true/comparable=false/delta_available=false，reason/limitations明确1/2配对、错误基线、无token、synthetic与单样本限制，不推断整体收益或显著性。"
+    },
+    {
+      "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+      "passed": true,
+      "evidence": "input-integrity source/after与冻结15文件路径及SHA-256相同。transcript:40实跑工作区内新版聚合器--strict并保留EXITCODE=1报告，50复核JSON；全部15个工具调用局限本工作区内容与已安装本地Python，无全局技能发现、网络、安装、另起模型或越界写入。"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "client": "opencode",
+    "model": "deepseek/deepseek-flash",
+    "models": [],
+    "total_tokens": 243462,
+    "tokens_source": "opencode_step_finish_total",
+    "total_tool_calls": 15,
+    "tool_calls_source": "structured_tool_events",
+    "model_source": "requested",
+    "requested_model": "deepseek/deepseek-flash",
+    "skill": "skill-creator",
+    "returncode": 0,
+    "timed_out": false,
+    "output_chars": 230783,
+    "status": "completed",
+    "error": null,
+    "artifact_count": 3,
+    "artifact_collection_errors": 0
+  },
+  "timing": {
+    "total_duration_seconds": 45.497,
+    "timed_out": false
+  },
+  "user_notes_summary": {
+    "uncertainties": [
+      "固定synthetic夹具的一次真实模型执行；CLI metrics的model_source为requested，另有session审计确认deepseek/deepseek-flash。"
+    ],
+    "needs_review": [],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "严格退出1对应输入不完整，模型正确保留报告并得出不可比结论；9项冻结断言通过。"
+  },
+  "grading_metadata": {
+    "reviewer": "benchmark subagent",
+    "reviewed_at": "2026-09-29T10:31:07.534767+00:00",
+    "scenario_id": 2,
+    "configuration": "with_skill",
+    "assertions_frozen": true,
+    "input_records_synthetic": true,
+    "live_model_run": true,
+    "global_tool_contamination_observed": false,
+    "session_model_audit": "evidence-audit.json: deepseek/deepseek-flash"
+  }
+}

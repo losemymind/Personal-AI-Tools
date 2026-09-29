@@ -1,0 +1,11 @@
+There's a skill-provided benchmark tool. Let me load the skill and inspect the relevant scripts.
+I have the skill's benchmark tool. Let me verify Python and run the tool (writing to a temp path so `inputs/` stays untouched).
+The tool ran and exposed the data gaps (it silently dropped the errored baseline run and zeroed missing tokens). Now I'll build the enhanced, gap-aware aggregation with Python stdlib.
+Now cleaning up intermediate files so `outputs/` contains only the deliverables.
+完成。已用随技能提供的 `aggregate_benchmark.py` 实跑校验（输出到临时文件后清理），并因其会静默丢弃错误运行、把缺失 token 记 0、以 2v1 不平衡样本给出假 delta，改用 Python 标准库做了缺口感知汇总。
+
+产物（`outputs/`，输入未改动）：
+- `benchmark.json` / `benchmark.md`：逐次运行状态（eval-b without_skill = error/returncode 1/无 grading）；每配置 attempted/completed/errors/incomplete/coverage（with_skill 2/2/0/0/1.0，without_skill 2/1/1/0/0.5）；有效样本 pass_rate 2 vs 1、time 2 vs 2、tokens 0 vs 0（缺失，非零）；配对 1/2，覆盖 0.5；仅配对 eval-a 的差值有证据，聚合差值标记为不可用。
+- `conclusion.json`：`synthetic=true`、`comparable=false`、`delta_available=false`、`overall_skill_gain_inferable=false`，附原因、限制与证据边界。
+
+证据边界：仅能支持「eval-a 单次 synthetic 断言中 with_skill 过、without_skill 不过」；因 1/2 基线运行失败、token 缺失、每格仅 1 run/1 断言，无法据此推断整体技能增益。

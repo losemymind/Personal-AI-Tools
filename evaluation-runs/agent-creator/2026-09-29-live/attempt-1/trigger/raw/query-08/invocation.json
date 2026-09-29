@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "run",
+    "--format",
+    "json",
+    "-m",
+    "deepseek/deepseek-flash",
+    "把“检查失败后交还负责人决定”翻译成自然英文，并给一个更简短版本。"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-d9f0jfvj\\workspace",
+  "timeout_seconds": 90,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:33:21.087554+00:00"
+}

@@ -1,0 +1,45 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "messages": [
+    {
+      "message_id": "msg_0ecf071d5001w7ydfANwXX8Kut",
+      "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecf07c23001BkLdcEsV5ixmnN",
+      "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecf084fb001hPYVB9I5ucU5Cy",
+      "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecf091f4001zsgTbVXnp2n84K",
+      "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecf097f3001pua3RTYnOL2TGc",
+      "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "stop"
+    }
+  ],
+  "billing": "unknown; client cost=0 is not a billing statement",
+  "error": null
+}

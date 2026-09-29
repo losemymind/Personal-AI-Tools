@@ -1,0 +1,16 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "messages": [
+    {
+      "message_id": "msg_0ecb26f14001CL3Gyh9N5hARnG",
+      "session_id": "ses_f134d9266ffeaefMFm0RGDG4pd",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "stop"
+    }
+  ],
+  "billing": "unknown; client cost=0 is not a billing statement"
+}

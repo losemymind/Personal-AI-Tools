@@ -1,0 +1,123 @@
+{
+  "agent": "bug-triager",
+  "task": "按 inputs/brief.md 修复 bug-triager 代理，并交付 OpenCode 与 Claude 两个客户端可分发包",
+  "generated_at": "2026-09-29",
+  "environment": {
+    "opencode_cli": "1.18.30（存在）",
+    "claude_cli": "缺失（Get-Command claude 为空）",
+    "node": "存在",
+    "powershell": "5.1.26100.8655"
+  },
+  "deliverables": [
+    "outputs/bug-triager/AGENT.md",
+    "outputs/bug-triager/references/report-format.md",
+    "outputs/packages/opencode/bug-triager/AGENT.md",
+    "outputs/packages/opencode/bug-triager/references/report-format.md",
+    "outputs/packages/claude/bug-triager/AGENT.md",
+    "outputs/packages/claude/bug-triager/references/report-format.md",
+    "outputs/verification.json"
+  ],
+  "checks_executed": [
+    {
+      "id": "deliverables_exist",
+      "method": "PowerShell Test-Path（逐文件）",
+      "executed": true,
+      "result": "pass",
+      "detail": "6 个交付文件（3 份 AGENT.md + 3 份 references/report-format.md）全部存在。"
+    },
+    {
+      "id": "canonical_frontmatter",
+      "method": "读取并解析 outputs/bug-triager/AGENT.md 的 YAML frontmatter",
+      "executed": true,
+      "result": "pass",
+      "detail": "name=bug-triager；mode=subagent；tools=[read, grep, glob]；permission.default=deny 且 read/grep/glob 均为 allow；color=\"#2563EB\"（带引号）。"
+    },
+    {
+      "id": "forbidden_metadata_removed",
+      "method": "正则检查 frontmatter 是否含 version/tags/tools_clients/source 键",
+      "executed": true,
+      "result": "pass",
+      "detail": "四个键均不存在。"
+    },
+    {
+      "id": "no_forbidden_tools",
+      "method": "全文检查是否引用 bash/edit/write/webfetch/task 等禁用工具",
+      "executed": true,
+      "result": "pass",
+      "detail": "正文与权限一致，仅声明 read/grep/glob 三种只读工具。"
+    },
+    {
+      "id": "body_sections",
+      "method": "读取 canonical 正文，确认中文并含角色定位/必须做/拒绝做/工作方式/升级路径/完成标准",
+      "executed": true,
+      "result": "pass",
+      "detail": "正文为中文；明确「必须做」与「拒绝做」；含升级路径与可验收完成标准；要求证据不足记 unknown、不得臆造根因。"
+    },
+    {
+      "id": "references_resolvable",
+      "method": "检查各目录内 references/report-format.md 是否存在，且 AGENT.md 相对引用可解析",
+      "executed": true,
+      "result": "pass",
+      "detail": "canonical、opencode、claude 三处均含 references/report-format.md，且 AGENT.md 引用 references/report-format.md。"
+    },
+    {
+      "id": "opencode_tools_to_permission",
+      "method": "解析 outputs/packages/opencode/bug-triager/AGENT.md 的 frontmatter",
+      "executed": true,
+      "result": "pass",
+      "detail": "规范 tools 数组已转为 permission 对象：default=deny，read/grep/glob=allow。"
+    },
+    {
+      "id": "opencode_native_load",
+      "method": "在本场景目录临时创建 .opencode/agent/bug-triager.md（内容取自 OpenCode 包），运行 `opencode agent list`（opencode 1.18.30），随后删除临时目录",
+      "executed": true,
+      "result": "pass",
+      "detail": "输出中出现 `bug-triager (subagent)`，配置被 OpenCode 原生接受并加载。"
+    },
+    {
+      "id": "canonical_native_load_probe",
+      "method": "将规范源文件 outputs/bug-triager/AGENT.md 临时放入 .opencode/agent/ 并运行 `opencode agent list`",
+      "executed": true,
+      "result": "expected-reject",
+      "detail": "报告 `Expected object | undefined, got [\"read\",\"grep\",\"glob\"] tools`。规范源文件按 brief 使用 tools 数组（归一化规范形态），OpenCode 原生不支持数组，故由可分发包转为 permission 对象；属预期行为，非缺陷。"
+    },
+    {
+      "id": "claude_tools_string",
+      "method": "解析 outputs/packages/claude/bug-triager/AGENT.md 的 frontmatter",
+      "executed": true,
+      "result": "pass",
+      "detail": "tools: Read, Grep, Glob（工具串）。"
+    },
+    {
+      "id": "inputs_unmodified",
+      "method": "运行期间未向 inputs/ 写入；复核 inputs/ 文件仍存在且内容未变",
+      "executed": true,
+      "result": "pass",
+      "detail": "inputs/brief.md、inputs/bug-triager/AGENT.md、inputs/bug-triager/references/report-format.md 保持只读未改。"
+    }
+  ],
+  "not_executed": [
+    {
+      "id": "claude_native_load",
+      "reason": "环境中未找到 claude CLI，无法执行 Claude 原生加载/解析；仅做静态结构检查。"
+    },
+    {
+      "id": "canonical_native_load_as_client_config",
+      "reason": "规范源文件按 brief 采用 tools 数组的归一化形态，OpenCode 原生不接受（见 canonical_native_load_probe）；可分发包才是各客户端原生可加载形态。"
+    },
+    {
+      "id": "independent_audit",
+      "reason": "未执行任何独立第三方审核。"
+    }
+  ],
+  "review": {
+    "method": "作者自检（self-review）：由同一修复执行者在本地以脚本断言 + OpenCode CLI 原生加载完成核对。",
+    "independent_audit": false,
+    "notes": "本报告不代表独立审核。OpenCode 侧为工具级原生加载验证；Claude 侧与规范源文件的原生加载未验证。"
+  },
+  "limitations": [
+    "未能执行 Claude Code 原生加载（CLI 缺失）。",
+    "OpenCode 权限的最终生效顺序会受调用方项目/全局配置影响；本验证仅确认包内 permission 对象可被解析并加载。",
+    "未安装到任何真实用户目录，未修改 inputs/ 或真实客户端配置。"
+  ]
+}

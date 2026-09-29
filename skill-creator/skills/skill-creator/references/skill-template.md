@@ -23,9 +23,9 @@ allowed-tools: [Read, Grep, Glob] # 可选：最小权限白名单（Claude 工�
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一（新技能避免 `unknown`）
 
 **可选字段：**
-- `allowed-tools`：最小权限白名单（Claude 工具名列表，如 `[Read, Grep, Glob, Bash, WebFetch]`）。只有需要限制工具的技能才写；不写 = 该端不限制。打包时按端映射（claude 保留、opencode 反查为逐工具 `permission`、codex/deepseek 透传；见阶段 9）。
+- `allowed-tools`：最小权限白名单（Claude 工具名列表，如 `[Read, Grep, Glob, Bash, WebFetch]`）。只有需要限制工具的技能才写；不写 = 该端不限制。打包时按端映射（claude 保留、opencode 反查为逐工具 `permission`、codex/deepseek 透传；见入口的安装路径）。
 
-**来源/作者/日期/版本不进 frontmatter**：打包前技能**客户端中立、内容自足**，`source`/`source_repo`/`source_type`/`author`/`date_added`/`version` 一律不写 `SKILL.md`，来源与创建元数据集中登记在技能库根的**创建记录账本**（`create_skill.py --records` 追加；见 SKILL.md「创建记录账本」），版本以 git 提交历史为准。
+**来源/作者/日期/版本不进 frontmatter**：打包前技能**客户端中立、内容自足**，`source`/`source_repo`/`source_type`/`author`/`date_added`/`version` 一律不写 `SKILL.md`，来源与创建元数据集中登记在技能库根的**创建记录账本**（`skill_create.py --records` 追加；见 SKILL.md「创建记录账本」），版本以 git 提交历史为准。
 
 ## 技能分类列表
 
@@ -85,5 +85,5 @@ allowed-tools: [Read, Grep, Glob] # 可选：最小权限白名单（Claude 工�
 
 - 目录名 = 技能名（小写-连字符），文件名固定为 `SKILL.md`
 - 目录结构：按功能归入分类 `<分类>/<skill-name>/SKILL.md`（规则 4；分类不存在先创建）+ `examples/` `scripts/` `templates/` `references/`（可选）
-- 运行验证：`python scripts/validate_skills.py`（或 `--strict`）
+- 运行验证：`python scripts/skill_validate.py`（或 `--strict`）
 - 验证通过 + 真实任务试跑通过后才提交到仓库 `skills/`

@@ -1,0 +1,135 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "messages": [
+    {
+      "message_id": "msg_0ecb5a5ed001qB4lP059Bciytz",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb5b1a9001C9sd7rS4zAlIxv",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb5b982001X7d38sEVthor5g",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb5c853001JmDNJ11UQgsyoQ",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb5fa470015sLy9KVd8utsPU",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb60b2b001Q52V0NzHCJz7jm",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb6202a001wxI9spMZJ8u0rn",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb62da5001g8rajQ5C4FsR2G",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb6e809001ksK5PDfkv1WEsc",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb6f0b0001xr2hah2VB2WrPs",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb73214001qoKjTHDNi2Y21n",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb76d50001abMkHh9OjdYKdp",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb77ac9001cEf1Tfczic3sbf",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb786a4001s6y3aI08gA5uQI",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb78f9d001DV9oQ2ur9dfliC",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb796330016PwI5GPQsyNJox",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb7a1b70013yfq9AwKEwAX3H",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb7ab16001dZT86HP6VQY7qo",
+      "session_id": "ses_f134a5bc0ffeJyTBNsxFS6Hnot",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "stop"
+    }
+  ],
+  "billing": "unknown; client cost=0 is not a billing statement"
+}

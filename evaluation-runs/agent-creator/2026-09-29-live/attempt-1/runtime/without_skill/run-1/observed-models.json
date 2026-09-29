@@ -1,0 +1,7 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [],
+  "messages": [],
+  "billing": "unknown; client cost=0 is not a billing statement",
+  "error": "ValueError: No local session database was created"
+}

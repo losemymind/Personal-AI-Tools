@@ -1,0 +1,7 @@
+{
+  "status": "preflight_failed",
+  "model_calls": 0,
+  "reason": "Windows 8.3 temporary cwd and long discovery location compared lexically; same directory rejected before invocation. One discovery subprocess also returned nonzero with stderr not captured in initial harness.",
+  "discovery_note": "Installed examples are also discovered; the new frozen config excludes their skill dispatch via permission whitelist.",
+  "retry": "attempt-2; queries and source unchanged; resolve paths and use independent client state per run."
+}

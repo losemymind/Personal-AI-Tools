@@ -111,18 +111,18 @@ def test_install_agent_to_opencode_workspace(tmp_path, make_agent):
 
 
 def test_install_creator_product(tmp_path):
-    # skill-creator is itself a skill; installing it is a package_skill op.
+    # skill-creator is itself a skill; installing it is a skill_package op.
     r = run_install("--creator", "skill-creator", "--client", "claude",
                     "--scope", "workspace", "--dest", str(tmp_path))
     assert r.returncode == 0, r.stdout + r.stderr
     target = tmp_path / ".claude" / "skills" / "skill-creator"
     assert (target / "SKILL.md").is_file()
     # creator products carry their own validator + index; install must self-check.
-    assert (target / "scripts" / "validate_skills.py").is_file()
+    assert (target / "scripts" / "skill_validate.py").is_file()
 
 
 def test_install_agent_creator_product(tmp_path):
-    # agent-creator is a skill-shaped creator that BUNDLES validate_agents.py
+    # agent-creator is a skill-shaped creator that BUNDLES agent_validate.py
     # (for AGENT libraries) but has no AGENT.md itself. Install must not run the
     # agent validator against the creator dir (regression: it used to fail with
     # "no agent definitions found" and roll back).
@@ -131,7 +131,7 @@ def test_install_agent_creator_product(tmp_path):
     assert r.returncode == 0, r.stdout + r.stderr
     target = tmp_path / ".opencode" / "skills" / "agent-creator"
     assert (target / "SKILL.md").is_file()
-    assert (target / "scripts" / "validate_agents.py").is_file()
+    assert (target / "scripts" / "agent_validate.py").is_file()
     assert not (target / "AGENT.md").exists()
 
 
@@ -188,18 +188,44 @@ def test_force_backs_up_existing_landing(tmp_path, make_skill):
 # --- validation rollback ----------------------------------------------------
 
 
-def test_validation_failure_rolls_back(tmp_path):
-    # A fake skill shipping its own failing validator must not be landed.
+@pytest.mark.parametrize("checker", [
+    "skill_validate.py", "validate_skills.py",
+    "skill_index_search.py", "search_index.py",
+])
+def test_validation_failure_rolls_back(tmp_path, checker):
+    # Both current and legacy package checks must run and prevent a bad install.
     src = tmp_path / "bad-skill"
     (src / "scripts").mkdir(parents=True)
     (src / "SKILL.md").write_text(
         "---\nname: bad-skill\ndescription: \"d\"\ncategory: testing\nrisk: safe\n---\n\n# x\n",
         encoding="utf-8",
     )
-    (src / "scripts" / "validate_skills.py").write_text("import sys; sys.exit(1)\n", encoding="utf-8")
+    (src / "scripts" / checker).write_text("import sys; sys.exit(1)\n", encoding="utf-8")
+    if "search" in checker:
+        (src / "indexes").mkdir()
+        (src / "indexes" / "upstream.db").write_bytes(b"invalid index")
     r = run_install(str(src), "--client", "claude", "--scope", "workspace", "--dest", str(tmp_path))
     assert r.returncode == 1
+    assert checker in r.stderr
     assert not (tmp_path / ".claude" / "skills" / "bad-skill").exists()
+
+
+@pytest.mark.parametrize("checker", [
+    "agent_validate.py", "validate_agents.py",
+    "agent_index_search.py", "search_agent_index.py",
+])
+def test_agent_validation_failure_rolls_back(tmp_path, make_agent, checker):
+    """Renamed and legacy bundled checks both participate in installation rollback."""
+    src = make_agent("bad-agent")
+    (src / "scripts").mkdir()
+    (src / "scripts" / checker).write_text("import sys; sys.exit(1)\n", encoding="utf-8")
+    if "search" in checker:
+        (src / "indexes").mkdir()
+        (src / "indexes" / "upstream.db").write_bytes(b"invalid index")
+    r = run_install(str(src), "--client", "opencode", "--scope", "workspace", "--dest", str(tmp_path))
+    assert r.returncode == 1
+    assert checker in r.stderr
+    assert not (tmp_path / ".opencode" / "agent" / "bad-agent").exists()
 
 
 # --- auto-detection via env -------------------------------------------------

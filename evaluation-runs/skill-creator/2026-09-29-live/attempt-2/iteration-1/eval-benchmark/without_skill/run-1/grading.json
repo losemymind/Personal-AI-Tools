@@ -1,0 +1,120 @@
+{
+  "expectations": [
+    {
+      "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+      "passed": true,
+      "evidence": "三个指定产物存在且JSON可解析；benchmark.md与JSON.by_configuration/runs/pairing/结论一致；artifacts.json记录的三个SHA-256均与实物一致。"
+    },
+    {
+      "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+      "passed": true,
+      "evidence": "benchmark.json.runs含4项，totals.attempted=4；by_configuration with_skill=2/2/0，without_skill=2/1/1；b无技能保留returncode=1、execution_status=error、has_grading=false及pass_rate=null。"
+    },
+    {
+      "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+      "passed": true,
+      "evidence": "by_configuration覆盖率为1.0与0.5；a无技能score_valid=true/pass_rate=0，b无技能score_valid=false/pass_rate=null，明确执行错误不等于有效评分失败。"
+    },
+    {
+      "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+      "passed": true,
+      "evidence": "pairing planned_pairs=2、paired=1、pairing_coverage=0.5，pairs按a/b+run-1列出，只有a配对。"
+    },
+    {
+      "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+      "passed": true,
+      "evidence": "deltas.overall_skill_gain available=false/delta=null；单个a差值位于per_eval，Markdown和conclusion反复声明不支持整体增益。"
+    },
+    {
+      "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+      "passed": true,
+      "evidence": "measurements.tokens available=false/value=null，两配置token_samples=0；整个报告以未提供/不可用表示token，未填零或估算。没有单独token均值时保留统一不可用标记，按等价语义评分。"
+    },
+    {
+      "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+      "passed": true,
+      "evidence": "runs.duration_seconds与measurements.timing_seconds.values均保留10/8/12/5，包括b无技能失败的5秒；synthetic=true及provenance明确不是实测耗时。"
+    },
+    {
+      "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+      "passed": true,
+      "evidence": "conclusion synthetic=true/comparable=false/delta_available=false，reason与limitations包含失败运行、半数配对不可用、缺token和synthetic/单样本边界，无显著性或真实性能收益宣称。"
+    },
+    {
+      "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+      "passed": true,
+      "evidence": "input-integrity source/after与冻结15文件完全一致。transcript:79写标准库分析脚本，82实际执行exit=0，94解析成品复核exit=0；未观察成功全局写/网络/安装/另起模型。49/54成功枚举全局技能目录，57/58/62/63读取及71复制旧工具均被deny；按冻结断言不将只读发现事后加作扣分，但此组存在隔离风险，不视为干净对照。"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "client": "opencode",
+    "model": "deepseek/deepseek-flash",
+    "models": [],
+    "total_tokens": 479409,
+    "tokens_source": "opencode_step_finish_total",
+    "total_tool_calls": 34,
+    "tool_calls_source": "structured_tool_events",
+    "model_source": "requested",
+    "requested_model": "deepseek/deepseek-flash",
+    "skill": null,
+    "returncode": 0,
+    "timed_out": false,
+    "output_chars": 234475,
+    "status": "completed",
+    "error": null,
+    "artifact_count": 3,
+    "artifact_collection_errors": 0
+  },
+  "timing": {
+    "total_duration_seconds": 82.656,
+    "timed_out": false
+  },
+  "claims": [
+    {
+      "claim": "三个最终产物与所有输入均已由评分者实际核验，不只依赖conclusion。",
+      "type": "process",
+      "verified": true,
+      "evidence": "读取全部JSON/Markdown；逐项对照冻结夹具；input-integrity双份哈希等于冻结输入；产物哈希等于artifacts清单；解析transcript工具调用与生成脚本。"
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [
+      "attempt-2环境隔离不完整；本评分仅为本次任务原始产物质量，不作干净A/B因果比较。"
+    ],
+    "needs_review": [
+      "transcript:49/54/68 通过shell发现真实全局OpenCode技能目录和旧工具存在；因此隔离不完整。",
+      "对旧工具正文的read/Get-Content/Copy-Item均被权限拒绝；未观察到成功读取正文或执行全局工具。",
+      "冻结第9条未把工作区外只读发现列为独立失败条件，保留原始9断言评分，同时单独标注协议偏离。"
+    ],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+        "reason": "后续独立版本应将输入不变、实际计算、禁止外部读取/写入尝试分别设断言；当前冻结版本不事后添加扣分规则。"
+      },
+      {
+        "assertion": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+        "reason": "若需逐字段契约，应预先要求每run token字段与mean/n字段；本次接受统一null/不可用标记和样本数0的等价结构。"
+      }
+    ],
+    "overall": "固定synthetic夹具上均满足9条原始断言；一次场景不足以判断泛化、统计显著性或新版优于旧版。"
+  },
+  "grading_metadata": {
+    "reviewer": "benchmark subagent",
+    "reviewed_at": "2026-09-29T10:29:25.006506+00:00",
+    "scenario_id": 2,
+    "configuration": "without_skill",
+    "assertions_frozen": true,
+    "live_model_run": true,
+    "input_records_synthetic": true,
+    "comparison_validity": "attempt-2 isolation incomplete; retain raw score, exclude from clean efficacy comparison"
+  }
+}

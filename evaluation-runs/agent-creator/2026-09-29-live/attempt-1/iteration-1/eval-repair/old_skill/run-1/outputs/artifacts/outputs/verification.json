@@ -1,0 +1,107 @@
+{
+  "agent": "bug-triager",
+  "date": "2026-09-29",
+  "scope": "修复 inputs/bug-triager 草稿为只读中文 subagent，并交付 OpenCode / Claude 可分发包",
+  "deliverables": [
+    "outputs/bug-triager/AGENT.md",
+    "outputs/bug-triager/references/report-format.md",
+    "outputs/packages/opencode/bug-triager/AGENT.md",
+    "outputs/packages/opencode/bug-triager/references/report-format.md",
+    "outputs/packages/claude/bug-triager/AGENT.md",
+    "outputs/packages/claude/bug-triager/references/report-format.md"
+  ],
+  "environment": {
+    "python": "3.11.8",
+    "pyyaml": "6.0.3",
+    "notes": "使用随场景提供的 agent-creator 技能脚本；未安装任何东西到真实用户目录，未修改 inputs。"
+  },
+  "executed_validations": [
+    {
+      "name": "package_generation",
+      "method": "executed",
+      "tool": "agent-creator/scripts/package_agent.py --client opencode --client claude",
+      "result": "pass",
+      "exit_code": 0,
+      "evidence": "生成 outputs/packages/opencode/bug-triager 与 outputs/packages/claude/bug-triager（含 AGENT.md 与 references/report-format.md）；脚本日志确认 opencode tools 白名单已物化为 permission（read/grep/glob allow，其余 deny），claude tools 转为 \"Read, Grep, Glob\"。"
+    },
+    {
+      "name": "canonical_validate_strict",
+      "method": "executed",
+      "tool": "agent-creator/scripts/validate_agents.py --strict --dir outputs/bug-triager",
+      "result": "pass",
+      "exit_code": 0,
+      "evidence": "Checked 1 agent；无 error、无 warning、无 advisory。"
+    },
+    {
+      "name": "opencode_package_validate_strict",
+      "method": "executed",
+      "tool": "agent-creator/scripts/validate_agents.py --strict --dir outputs/packages/opencode",
+      "result": "pass",
+      "exit_code": 0,
+      "evidence": "Checked 1 agent；无 error/warning/advisory。"
+    },
+    {
+      "name": "claude_package_validate_strict",
+      "method": "executed",
+      "tool": "agent-creator/scripts/validate_agents.py --strict --dir outputs/packages/claude",
+      "result": "pass",
+      "exit_code": 0,
+      "evidence": "Checked 1 agent；无 error/warning/advisory。"
+    },
+    {
+      "name": "frontmatter_and_reference_audit",
+      "method": "executed",
+      "tool": "临时 Python 脚本（PyYAML 解析三个 AGENT.md）",
+      "result": "pass",
+      "exit_code": 0,
+      "evidence": "三个目标全部通过：name=bug-triager；color==\"#2563EB\"；无 version/tags/tools_clients/source/author/date_added；含职责范围（必须做/拒绝做）、工具与权限、协作协议（含升级）、完成标准；正文引用 references/report-format.md 且该文件在各自包内存在；canonical tools==[read,grep,glob] 且 permission 默认 \"*\": deny、read/grep/glob=allow、edit/bash/task/webfetch/websearch=deny；opencode 包已移除 tools 且 permission 同上；claude 包 tools==\"Read, Grep, Glob\"。all_pass=true。"
+    }
+  ],
+  "not_executed": [
+    {
+      "name": "opencode_native_load",
+      "method": "not_executed",
+      "reason": "本环境无 OpenCode 运行时/客户端，无法实际加载 agent 并触发一次分诊调用；仅做了 schema 级 post-check 与静态校验。"
+    },
+    {
+      "name": "claude_native_load",
+      "method": "not_executed",
+      "reason": "本环境无 Claude Code 客户端，无法原生加载 subagent；仅验证了 frontmatter 形态（tools 为逗号分隔的 Claude 工具名）。"
+    },
+    {
+      "name": "independent_review",
+      "method": "not_executed",
+      "reason": "未启用 agent-creator 的独立评审子代理（agents/reviewer.md），未产生独立 review.json。"
+    }
+  ],
+  "review": {
+    "performed": true,
+    "independent": false,
+    "method": "self-review",
+    "description": "由本次修复会话（生成方）自评，核对 brief 各项要求；这不是独立审核，不能等同于第三方评审。"
+  },
+  "limitations": [
+    "客户端原生加载未执行，跨客户端实际行为可能受客户端版本差异影响。",
+    "评审为生成方自评，非独立审核。",
+    "包内 claude AGENT.md 保留了 canonical 的 permission 矩阵（该字段来源于 agent-creator 适配器输出）；Claude 侧实际生效主要依赖 tools 串。"
+  ],
+  "brief_requirements": {
+    "name_kept_bug_triager": true,
+    "chinese_subagent": true,
+    "read_only_no_code_fix_no_network_no_dispatch": true,
+    "tools_only_read_grep_glob": true,
+    "permission_default_deny_plus_three_reads": true,
+    "metadata_removed": true,
+    "color_quoted_2563EB": true,
+    "body_permission_consistent": true,
+    "must_do_refuse_do_present": true,
+    "escalation_path_present": true,
+    "verifiable_completion_criteria": true,
+    "follows_report_format_unknown_when_insufficient": true,
+    "canonical_dir_with_references": true,
+    "opencode_and_claude_packages": true,
+    "paths_resolvable_within_package": true,
+    "inputs_unmodified": true,
+    "no_real_client_install": true
+  }
+}

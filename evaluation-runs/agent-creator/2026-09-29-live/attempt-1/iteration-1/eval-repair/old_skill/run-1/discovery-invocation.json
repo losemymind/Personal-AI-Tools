@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "debug",
+    "skill"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-smontqus\\temp\\scenario-511idx89",
+  "timeout_seconds": 40,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:37:01.036890+00:00"
+}

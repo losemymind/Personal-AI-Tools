@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "output_dir": "outputs",
+  "files": [
+    {
+      "source_path": "outputs/asset-note/README.md",
+      "path": "outputs/artifacts/outputs/asset-note/README.md",
+      "bytes": 294,
+      "sha256": "5f2e34a6e485881ea296990b85b15c4f100bbc51fc8421852bb5688abb9e4196",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/asset-note/SKILL.md",
+      "path": "outputs/artifacts/outputs/asset-note/SKILL.md",
+      "bytes": 1150,
+      "sha256": "3799c9fe17dea1ed3847d4a62ec6cc648e645e890c99c94ee4c1421198cc7768",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/asset-note/references/review-checklist.md",
+      "path": "outputs/artifacts/outputs/asset-note/references/review-checklist.md",
+      "bytes": 257,
+      "sha256": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/verification.json",
+      "path": "outputs/artifacts/outputs/verification.json",
+      "bytes": 4794,
+      "sha256": "41b047e2de388c1bb577170559760b715c4b79ee6631ff9ab7b285006eae5f28",
+      "declared_output": true
+    }
+  ],
+  "skipped": [
+    {
+      "source_path": ".opencode",
+      "reason": "input_or_runtime_metadata"
+    },
+    {
+      "source_path": "inputs",
+      "reason": "input_or_runtime_metadata"
+    }
+  ],
+  "errors": []
+}

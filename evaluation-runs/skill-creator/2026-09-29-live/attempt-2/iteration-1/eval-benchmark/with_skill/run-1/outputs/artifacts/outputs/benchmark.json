@@ -1,0 +1,286 @@
+{
+  "schema_version": 2,
+  "metadata": {
+    "skill_name": "synthetic-fixture (not a real skill)",
+    "skill_path": null,
+    "executor_model": "synthetic-fixture-model",
+    "executor_models": [
+      "synthetic-fixture-model"
+    ],
+    "clients": [
+      "synthetic-client"
+    ],
+    "unknown_model_runs": 0,
+    "unknown_client_runs": 0,
+    "timestamp": "2026-09-29T10:23:52Z",
+    "evals_run": [
+      "a",
+      "b"
+    ],
+    "runs_per_configuration": 2,
+    "primary_configuration": "with_skill",
+    "baseline_configuration": "without_skill"
+  },
+  "runs": [
+    {
+      "eval_id": "a",
+      "run_number": 1,
+      "run_path": "eval-a/with_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "synthetic-client",
+      "model": "synthetic-fixture-model",
+      "models": [
+        "synthetic-fixture-model"
+      ],
+      "model_source": "synthetic_fixture",
+      "requested_model": null,
+      "tokens_source": null,
+      "tool_calls_source": null,
+      "measurement_sources": {
+        "tokens": null,
+        "tool_calls": null,
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "Synthetic task a summary is correct.",
+          "passed": true,
+          "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+        }
+      ],
+      "notes": [],
+      "configuration": "with_skill",
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "failed": 0,
+        "total": 1,
+        "time_seconds": 10.0,
+        "tokens": null,
+        "tool_calls": null
+      }
+    },
+    {
+      "eval_id": "b",
+      "run_number": 1,
+      "run_path": "eval-b/with_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "synthetic-client",
+      "model": "synthetic-fixture-model",
+      "models": [
+        "synthetic-fixture-model"
+      ],
+      "model_source": "synthetic_fixture",
+      "requested_model": null,
+      "tokens_source": null,
+      "tool_calls_source": null,
+      "measurement_sources": {
+        "tokens": null,
+        "tool_calls": null,
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "Synthetic task b summary is correct.",
+          "passed": true,
+          "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+        }
+      ],
+      "notes": [],
+      "configuration": "with_skill",
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 1,
+        "failed": 0,
+        "total": 1,
+        "time_seconds": 12.0,
+        "tokens": null,
+        "tool_calls": null
+      }
+    },
+    {
+      "eval_id": "a",
+      "run_number": 1,
+      "run_path": "eval-a/without_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "synthetic-client",
+      "model": "synthetic-fixture-model",
+      "models": [
+        "synthetic-fixture-model"
+      ],
+      "model_source": "synthetic_fixture",
+      "requested_model": null,
+      "tokens_source": null,
+      "tool_calls_source": null,
+      "measurement_sources": {
+        "tokens": null,
+        "tool_calls": null,
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "Synthetic task a summary is correct.",
+          "passed": false,
+          "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+        }
+      ],
+      "notes": [],
+      "configuration": "without_skill",
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 1,
+        "total": 1,
+        "time_seconds": 8.0,
+        "tokens": null,
+        "tool_calls": null
+      }
+    },
+    {
+      "eval_id": "b",
+      "run_number": 1,
+      "run_path": "eval-b/without_skill/run-1",
+      "status": "error",
+      "issues": [
+        {
+          "code": "missing_artifact",
+          "path": "grading.json"
+        },
+        {
+          "code": "invalid_grading",
+          "detail": "missing summary object"
+        },
+        {
+          "code": "invalid_grading",
+          "detail": "inconsistent counts or pass_rate"
+        },
+        {
+          "code": "execution_failed",
+          "path": "metrics.json",
+          "returncode": 1
+        },
+        {
+          "code": "execution_failed",
+          "path": "metrics.json"
+        }
+      ],
+      "execution_status": "error",
+      "client": "synthetic-client",
+      "model": "synthetic-fixture-model",
+      "models": [
+        "synthetic-fixture-model"
+      ],
+      "model_source": "synthetic_fixture",
+      "requested_model": null,
+      "tokens_source": null,
+      "tool_calls_source": null,
+      "measurement_sources": {
+        "tokens": null,
+        "tool_calls": null,
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [],
+      "notes": [],
+      "configuration": "without_skill",
+      "result": {
+        "pass_rate": null,
+        "passed": null,
+        "failed": null,
+        "total": null,
+        "time_seconds": 5.0,
+        "tokens": null,
+        "tool_calls": null
+      }
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "runs": 2,
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "coverage": 1.0,
+      "pass_rate": {
+        "n": 2,
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "n": 2,
+        "mean": 11.0,
+        "stddev": 1.4142,
+        "min": 10.0,
+        "max": 12.0
+      },
+      "tokens": {
+        "n": 0,
+        "mean": null,
+        "stddev": null,
+        "min": null,
+        "max": null
+      }
+    },
+    "without_skill": {
+      "runs": 2,
+      "attempted": 2,
+      "completed": 1,
+      "errors": 1,
+      "incomplete": 0,
+      "coverage": 0.5,
+      "pass_rate": {
+        "n": 1,
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "time_seconds": {
+        "n": 2,
+        "mean": 6.5,
+        "stddev": 2.1213,
+        "min": 5.0,
+        "max": 8.0
+      },
+      "tokens": {
+        "n": 0,
+        "mean": null,
+        "stddev": null,
+        "min": null,
+        "max": null
+      }
+    },
+    "delta": {
+      "primary": "with_skill",
+      "baseline": "without_skill",
+      "expected_pairs": 2,
+      "paired_samples": 1,
+      "coverage": 0.5,
+      "duplicate_keys": [],
+      "identity_mismatches": [],
+      "metric_pairs": {
+        "pass_rate": 1,
+        "time_seconds": 1,
+        "tokens": 0
+      },
+      "pass_rate": null,
+      "time_seconds": null,
+      "tokens": null,
+      "note": "delta unavailable: every observed eval_id + run_number needs one completed run per configuration with no known model/client mismatch"
+    }
+  },
+  "notes": [
+    "All runs, grades, timings, and model/client names are synthetic fixtures (inputs/README.md, inputs/fixture_metadata.json); they are not real measurements or executed client telemetry.",
+    "eval-b/without_skill run-1 failed (metrics.json: status=error, returncode=1) and produced no grading.json; it is counted as an error attempt, not skipped and not as a zero score.",
+    "Token measurements were not supplied anywhere; token statistics are unavailable (n=0), not zero.",
+    "Only 1 of 2 observed eval_id+run_number pairs (eval-a) has a completed run in both configurations, so pass-rate/time/token deltas are unavailable."
+  ]
+}

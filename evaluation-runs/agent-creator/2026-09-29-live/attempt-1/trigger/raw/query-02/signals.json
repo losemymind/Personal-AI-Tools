@@ -1,0 +1,18 @@
+{
+  "dispatch": true,
+  "target_read": false,
+  "combined": true,
+  "combined_rule": "dispatch OR target_read",
+  "dispatch_evidence": [
+    {
+      "tool": "skill",
+      "input": {
+        "name": "agent-creator"
+      },
+      "tool_use_id": "call_01_eACx8G6tYsoZ9ttq96jk2688",
+      "status": "completed"
+    }
+  ],
+  "target_read_evidence": [],
+  "target_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-b6qt_wiy\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md"
+}

@@ -1,0 +1,15 @@
+Now update the references in the copied skill files.
+Now let me write and run the verification script. First, check whether the external skill validator is actually runnable in this sandbox.
+The available validator passed in strict mode. Now let me capture exact input bytes and build the stdlib verification.
+External temp is sandboxed. I'll place the helper inside `outputs/`, run it, then remove it.
+完成。
+
+**结果**
+- `outputs/asset-note/` 已生成：`references/checklist.md` 改名为 `references/review-checklist.md`，`SKILL.md` 与 `README.md` 中的两处引用已同步。
+- 保留原 frontmatter、技能正文与清单内容，仅改动路径引用。
+
+**校验**（`outputs/verification.json`，`all_passed=true`，`input_unchanged=true`）
+- 严格技能验证器实际运行：`validate_skills.py --strict --dir outputs`，exit 0，仅 1 条 advisory（无 evals.json）。
+- Python 标准库检查 11 项全部通过：旧文件不存在、新文件存在、引用可解析、无残留旧引用、frontmatter 不变、正文/README 仅路径改动、资源内容 SHA256 一致、inputs 三项哈希与基线一致且仍保留旧名。
+
+夹具为 synthetic 合成数据，未作为真实测量。

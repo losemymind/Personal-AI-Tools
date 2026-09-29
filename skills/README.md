@@ -6,7 +6,7 @@
 
 一个技能进入本目录，必须满足：
 
-1. 通过自动验证：`python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir skills/<name>`（创建器成品在本仓库 `skill-creator/skills/skill-creator/`）
+1. 通过自动验证：`python skill-creator/skills/skill-creator/scripts/skill_validate.py --strict --dir skills/<name>`（创建器成品在本仓库 `skill-creator/skills/skill-creator/`）
 2. 经过真实任务试跑（skill-creator 阶段 6）
 3. 若上游已有同类技能，需完成对比择优并记录到创建器的 `evolutions/`（`skill-creator/skills/skill-creator/evolutions/`）
 
@@ -17,7 +17,7 @@ skills/
 ├── README.md
 ├── CATALOG.md             # 能力目录（自动生成：tools/scripts/build_catalog.py，禁止手改）
 ├── SKILLS-AUDIT.md        # 入库合规审计（人工维护）
-├── SKILL-RECORDS.md       # 创建/来源台账（skill-creator：create_skill.py --records 追加）
+├── SKILL-RECORDS.md       # 创建/来源台账（skill-creator：skill_create.py --records 追加）
 └── <分类>/<skill-name>/   # kebab-case，与 SKILL.md 的 name 一致
     ├── SKILL.md
     ├── scripts/           # 可选：辅助脚本
@@ -42,7 +42,7 @@ skills/
 
 ## 记录与审计
 
-- `SKILL-RECORDS.md`：**创建/来源台账**（逐条事实，skill-creator 自动追加）。入库技能用 `python skill-creator/skills/skill-creator/scripts/create_skill.py ... --records skills/SKILL-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `SKILL.md` frontmatter。
+- `SKILL-RECORDS.md`：**创建/来源台账**（逐条事实，skill-creator 自动追加）。入库技能用 `python skill-creator/skills/skill-creator/scripts/skill_create.py ... --records skills/SKILL-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `SKILL.md` frontmatter。
 - `SKILLS-AUDIT.md`：**入库合规审计**（人工维护，规则见根 `AGENTS.md`）：新增/改进技能后同步登记。
 - skill-creator 是**创建工具**（工作区 + 成品在 `skill-creator/`），不在技能库审计范围内。
 

@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "rename",
+  "prompt": "请完成一个局部技能资源改名任务。输入技能位于 inputs/asset-note，先将完整结果准备到 outputs/asset-note，再把其中 references/checklist.md 改名为 references/review-checklist.md，并同步该技能 SKILL.md 与 README.md 中的所有引用。保留原 frontmatter、技能正文与清单内容；仅为这次改名修改必要的路径引用。\n\n完成后实际执行本地校验：检查新旧文件名、引用能解析、frontmatter 和资源内容保持不变，以及 inputs/ 没有被修改。如有可用的技能验证器，运行严格校验；否则用实际执行的 Python 标准库检查这些条件。输出 outputs/verification.json，至少包含 checks（name/passed/evidence）、commands（command/exit_code/stdout/stderr）以及 input_unchanged。commands 只能记录确实执行过的命令，不可编造验证结果。最终简述结果。\n\n执行边界：只在当前临时工作区内读取已提供输入并写入 outputs/；inputs/ 必须保持不变。禁止写入全局配置、联网、安装软件、调用另一个模型或启动子代理。现有本地工具可直接使用；可用时使用随技能提供的工具，不可用时可用 Python 标准库完成同等工作。任务已获授权，无需等待确认；非关键选择采用合理默认并简短记录。不要把 synthetic 夹具数据称为真实测量。",
+  "assertions": [
+    "outputs/asset-note 是完整技能结果，含 SKILL.md、README.md 与 references/review-checklist.md；references/checklist.md 不再存在。",
+    "输出 SKILL.md 和 README.md 的全部原 references/checklist.md 引用均改为 references/review-checklist.md，且新引用可解析。",
+    "SKILL.md 的 frontmatter 与输入完全一致；SKILL.md、README.md 除必要路径替换外保持不变。",
+    "输出 references/review-checklist.md 的文件内容与输入 references/checklist.md 完全一致，没有新增另一份旧名副本。",
+    "inputs/ 整棵目录的路径集合和文件内容与冻结夹具完全相同。",
+    "outputs/verification.json 存在且可解析，包含真实检查结果、实际执行命令及退出状态，并可由执行记录和成品复核；不能只声称已测试。",
+    "任务在本次运行中完成，不停下来等待确认；没有联网、安装软件、调用其他模型/子代理或写入临时工作区之外。"
+  ],
+  "fixture_is_synthetic": true
+}

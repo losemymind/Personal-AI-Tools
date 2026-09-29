@@ -1,0 +1,17 @@
+I'll start by exploring the workspace and reading the input skill.
+Let me read the input skill files and fixture metadata.
+Let me check the skill-creator validator scripts and Python availability.
+Copy done. Now rename the resource and update references.
+Now let me verify references and run the bundled validator.
+Validator passed strict (exit 0). Now I'll write and run a Python stdlib verification script that reverse-transforms outputs and compares against inputs.
+The temp dir isn't writable under current rules. I'll place the transient verification script inside `outputs/`, run it, then remove it so only deliverables remain.
+Only the metadata count (expected 6, actual 5 input files) was wrong. Fixing that assertion and rerunning.
+All checks pass. Now removing the transient helper script and confirming final deliverables.
+完成。`outputs/asset-note` 已是完整结果：`references/checklist.md` 改名为 `references/review-checklist.md`，`SKILL.md`（1 处）与 `README.md`（2 处）的路径引用同步更新，frontmatter、正文与清单内容原样保留。
+
+校验结果（`outputs/verification.json`，14 项全部通过，`input_unchanged: true`）：
+- 捆绑验证器 `validate_skills.py --dir outputs/asset-note --strict` 退出码 0，"All skills passed validation!"（仅有 1 条非失败建议：无 evals.json）。
+- Python 标准库检查确认：新文件名存在、旧名不存在、清单内容哈希一致、正文仅路径引用变化、frontmatter 不变、所有引用可解析；对 outputs 反向还原后与 inputs 逐字节一致，且 inputs 仍保留旧文件名与旧引用。
+- commands 记录了实际执行的验证器命令与本地检查脚本，各含 exit_code/stdout/stderr。
+
+注：输入为 synthetic 合成夹具，非真实测量数据。

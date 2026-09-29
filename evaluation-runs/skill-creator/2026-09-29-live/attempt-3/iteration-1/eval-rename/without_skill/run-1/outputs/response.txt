@@ -1,0 +1,8 @@
+Now I'll write a verification script (in the pre-approved temp dir) that recreates the deliverable via a real command, runs all checks, and emits `verification.json`.
+完成。
+
+- `outputs/asset-note/`：`references/checklist.md` 已改名为 `references/review-checklist.md`；`SKILL.md` 第22行与 `README.md` 两处引用已同步为 `references/review-checklist.md`；frontmatter、正文、清单内容均原样保留（仅改路径引用）。
+- 验证：环境中未发现可用的专用技能验证器，故按授权使用 Python 3.11 标准库执行校验（`python outputs\_verify.py`，exit 0），8/8 通过：新旧文件名、引用可解析、frontmatter/正文/资源内容不变、`inputs/` 未修改。
+- `outputs/verification.json` 已生成，含 `checks`(8项 name/passed/evidence)、`commands`（2条真实执行命令及 exit_code/stdout/stderr）、`input_unchanged: true`。辅助脚本 `outputs/_verify.py` 保留以便复现。
+
+注：输入为 synthetic 合成夹具，以上为本地校验结果，非真实测量。

@@ -1,0 +1,17 @@
+{
+  "synthetic": true,
+  "expectations": [
+    {
+      "text": "Synthetic task a summary is correct.",
+      "passed": false,
+      "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 1,
+    "total": 1,
+    "pass_rate": 0.0
+  },
+  "provenance": "Artificial grade for analysis testing only."
+}

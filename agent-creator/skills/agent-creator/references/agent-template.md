@@ -30,7 +30,7 @@ permission:                   # ← permission 尽量全：默认拒绝("*") + �
 ---
 ```
 
-**安装时注意事项**：此形是仓库内使用的**规范形式**。安装到不同客户端时必须转换（见下方矩阵与适配规则）。例如 `tools: [...]` 数组形式的列表在 opencode AgentConfig schema（要求 `object<str,bool>`）下会导致加载失败——用 `scripts/adapt_agent.py --client <端>` 自动转换为对应客户端的合法形态。**切勿**将带 `tools: []` 的仓库规范文件直接粘贴到客户端目录。
+**安装时注意事项**：此形是仓库内使用的**规范形式**。安装到不同客户端时必须转换（见下方矩阵与适配规则）。例如 `tools: [...]` 数组形式的列表在 opencode AgentConfig schema（要求 `object<str,bool>`）下会导致加载失败——用 `scripts/agent_adapt.py --client <端>` 自动转换为对应客户端的合法形态。**切勿**将带 `tools: []` 的仓库规范文件直接粘贴到客户端目录。
 
 ## 字段说明
 
@@ -63,7 +63,7 @@ permission:                   # ← permission 尽量全：默认拒绝("*") + �
 | `color` | ⚠️ 透传（无原生样式） | ✅（hex/主题名，样式化） | ⚠️ 透传 | ⚠️ 透传 |
 | `maturity` | 忽略（自定义） | ⚠️ | ⚠️ | ⚠️ |
 
-**兼容策略**：仓库内保持规范形式（`tools: [read, ...]` 数组白名单），**安装时用 `scripts/adapt_agent.py` 做 frontmatter 适配**自动转换为对应客户端的合法形态并执行 post-check：
+**兼容策略**：仓库内保持规范形式（`tools: [read, ...]` 数组白名单），**安装时用 `scripts/agent_adapt.py` 做 frontmatter 适配**自动转换为对应客户端的合法形态并执行 post-check：
 
 | 操作 | 效果 |
 |---|---|
@@ -71,9 +71,9 @@ permission:                   # ← permission 尽量全：默认拒绝("*") + �
 | claude | `tools` 数组 → 转为逗号分隔字符串（小写名映射为 Claude 工具名，如 `read` → `Read`；未映射名标记丢弃）；`model` 前缀形式（如 `anthropic/claude-sonnet-4-6`）→ 简化为 alias（`sonnet`/`opus`/`haiku`/`inherit`） |
 | codex / deepseek | 无官方 agent frontmatter schema → YAML 语法检查通过后逐字节保留 |
 
-任何客户端 post-check 不通过时适配器**拒绝产出/写盘**（fail loudly）。具体转换规则由 `scripts/adapt_agent.py` 实现（移植自 personal-workflow `tools/scripts/agent_format.py`，原为 install/update launcher 的适配层；本仓库无 launcher，故作为复制前的转换步骤）。
+任何客户端 post-check 不通过时适配器**拒绝产出/写盘**（fail loudly）。具体转换规则由 `scripts/agent_adapt.py` 实现（移植自 personal-workflow `tools/scripts/agent_format.py`，原为 install/update launcher 的适配层；本仓库无 launcher，故作为复制前的转换步骤）。
 
-**整目录打包**：需要把同一个代理目录一次产出多端（并复制整棵目录、附同名压缩包）时，用 `scripts/package_agent.py <代理目录|AGENT.md> --client <端>… --out <产物目录> [--zip]`（用法见 SKILL.md 阶段 7）。它复用上表的适配与 post-check；注意其 opencode 转换对 `tools` 白名单与 `permission` **字符串简写**并存的情况会**丢弃简写**（保留会放大权限），把白名单物化为逐工具 `permission`——这是相对 `adapt_agent.py` 的权限放大修复。
+**整目录打包**：需要把同一个代理目录一次产出多端（并复制整棵目录、附同名压缩包）时，用 `scripts/agent_package.py <代理目录|AGENT.md> --client <端>… --out <产物目录> [--zip]`（用法见 SKILL.md 阶段 7）。它复用上表的适配与 post-check；注意其 opencode 转换对 `tools` 白名单与 `permission` **字符串简写**并存的情况会**丢弃简写**（保留会放大权限），把白名单物化为逐工具 `permission`——这是相对 `agent_adapt.py` 的权限放大修复。
 
 ## 章节要求（AGENT.md 主体）
 
@@ -89,4 +89,4 @@ permission:                   # ← permission 尽量全：默认拒绝("*") + �
 - [ ] 有升级路径（何时交还人类）
 - [ ] 完成标准可验证
 - [ ] `color` 若存在须为 `#RRGGBB`（带引号，如 `"#DC2626"`）或主题名
-- [ ] 通过 `validate_agents.py --strict`
+- [ ] 通过 `agent_validate.py --strict`

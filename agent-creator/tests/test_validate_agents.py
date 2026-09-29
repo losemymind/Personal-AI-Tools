@@ -1,11 +1,11 @@
-"""Tests for validate_agents.py."""
+"""Tests for agent_validate.py."""
 
 
 def test_valid_agent_passes(temp_agent):
     from conftest import run_script
 
     r = run_script(
-        "scripts/validate_agents.py",
+        "scripts/agent_validate.py",
         "--strict",
         "--dir",
         str(temp_agent),
@@ -22,7 +22,7 @@ def test_missing_boundary_fails_strict(temp_agent):
     (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
 
     r = run_script(
-        "scripts/validate_agents.py",
+        "scripts/agent_validate.py",
         "--strict",
         "--dir",
         str(temp_agent),
@@ -42,7 +42,7 @@ def test_tools_declaration_required(temp_agent):
     (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
 
     r = run_script(
-        "scripts/validate_agents.py",
+        "scripts/agent_validate.py",
         "--strict",
         "--dir",
         str(temp_agent),
@@ -61,7 +61,7 @@ def test_audit_file_is_exempt(temp_agent):
     )
 
     r = run_script(
-        "scripts/validate_agents.py",
+        "scripts/agent_validate.py",
         "--strict",
         "--dir",
         str(temp_agent),
@@ -77,7 +77,7 @@ def test_nonexistent_dir_fails(tmp_path):
     from conftest import run_script
 
     r = run_script(
-        "scripts/validate_agents.py",
+        "scripts/agent_validate.py",
         "--strict",
         "--dir",
         str(tmp_path / "no-such-agent-dir"),
@@ -89,7 +89,7 @@ def test_nonexistent_dir_fails(tmp_path):
 
 def test_description_angle_bracket_advisory(temp_agent):
     """Angle-bracket placeholders in description distort trigger matching; flagged
-    as advisory (never a failure), mirroring validate_skills.py discipline."""
+    as advisory (never a failure)."""
     from conftest import run_script
 
     content = (temp_agent / "AGENT.md").read_text(encoding="utf-8")
@@ -98,7 +98,7 @@ def test_description_angle_bracket_advisory(temp_agent):
     )
     (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
 
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr
     assert "placeholder" in r.stdout
 
@@ -111,7 +111,7 @@ def test_description_multiline_advisory(temp_agent):
     content = content.replace('description: "测试代理"', 'description: "首行\\n次行"')
     (temp_agent / "AGENT.md").write_text(content, encoding="utf-8")
 
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr
     assert "multi-line" in r.stdout
 
@@ -127,7 +127,7 @@ def test_hex_color_passes(temp_agent):
     from conftest import run_script
 
     _with_color(temp_agent, 'color: "#DC2626"\n')
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr
 
 
@@ -136,7 +136,7 @@ def test_theme_color_passes(temp_agent):
     from conftest import run_script
 
     _with_color(temp_agent, "color: accent\n")
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr
 
 
@@ -145,7 +145,7 @@ def test_invalid_color_fails(temp_agent):
     from conftest import run_script
 
     _with_color(temp_agent, 'color: "red"\n')
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 1
     assert "color" in r.stdout
 
@@ -156,7 +156,7 @@ def test_unquoted_hex_color_fails(temp_agent):
     from conftest import run_script
 
     _with_color(temp_agent, color_line="color: #DC2626\n")
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 1
     assert "color" in r.stdout
 
@@ -166,7 +166,7 @@ def test_sparse_permission_advises_full_matrix(temp_agent):
     (never a failure), nudging toward the full permission matrix."""
     from conftest import run_script
 
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr
     assert "默认拒绝" in r.stdout
 
@@ -176,5 +176,5 @@ def test_no_color_is_fine(temp_agent):
     field's value is validated when present."""
     from conftest import run_script
 
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(temp_agent))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(temp_agent))
     assert r.returncode == 0, r.stdout + r.stderr

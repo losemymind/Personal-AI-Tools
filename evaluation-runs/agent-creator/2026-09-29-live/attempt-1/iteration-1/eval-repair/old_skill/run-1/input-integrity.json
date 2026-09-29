@@ -1,0 +1,20 @@
+{
+  "source_path": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\fixtures\\repair",
+  "source_before": {
+    "brief.md": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+    "bug-triager/AGENT.md": "3a30e9303e5921e8e51c73bc39fae81f4e1e97793a55aecaa814549382c6f031",
+    "bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+  },
+  "source": {
+    "brief.md": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+    "bug-triager/AGENT.md": "3a30e9303e5921e8e51c73bc39fae81f4e1e97793a55aecaa814549382c6f031",
+    "bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+  },
+  "after": {
+    "brief.md": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+    "bug-triager/AGENT.md": "3a30e9303e5921e8e51c73bc39fae81f4e1e97793a55aecaa814549382c6f031",
+    "bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+  },
+  "source_unchanged": true,
+  "unchanged": true
+}

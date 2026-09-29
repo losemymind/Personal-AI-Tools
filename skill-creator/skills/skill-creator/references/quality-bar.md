@@ -1,6 +1,6 @@
 # 质量标准与验证标准（Quality Bar）
 
-基于 agentic-awesome-skills 的 `quality-bar.md` 适配。技能必须达到以下 **8 项质量检查** 才能视为合格。其中部分由 `scripts/validate_skills.py` 自动执行（标注「自动」），其余由**评审子代理**（`agents/reviewer.md`）评审。
+基于 agentic-awesome-skills 的 `quality-bar.md` 适配。技能必须达到以下 **8 项质量检查** 才能视为合格。其中部分由 `scripts/skill_validate.py` 自动执行（标注「自动」），其余由**评审子代理**（`agents/skill_reviewer.md`）评审。
 
 ## 8 项质量检查
 
@@ -12,7 +12,7 @@
 - `description`：≤1024 字符（验证器上限 1024），**单行、无 `<`/`>` 占位符、触发场景优先 + 一句能力定位**，不写执行步骤/流程阶段摘要；`description` 是唯一无条件加载的触发面，须**自足**覆盖触发场景（触发面规律见 SKILL.md「读取规则」中的写作规律文档 §6）
 - `risk`：`none` / `safe` / `critical` / `offensive` / `unknown` 之一
 - `category`：推荐（验证器给出提示）
-- `allowed-tools`：可选最小权限白名单（Claude 工具名；形状由验证器自动校验，打包时按端映射，见阶段 9）
+- `allowed-tools`：可选最小权限白名单（Claude 工具名；形状由验证器自动校验，打包时按端映射，见入口的安装路径）
 - 来源/作者/日期/版本（`source`/`source_repo`/`source_type`/`author`/`date_added`/`version`）**不进 frontmatter**，来源登记在技能库根的创建记录账本（见 SKILL.md「创建记录账本」），版本以 git 提交历史为准
 
 ### 2. 清晰的触发条件（自动）
@@ -64,15 +64,16 @@
 - references 只从 SKILL.md **一层深**引用，references 之间不互链成图
 - 单文件 >100 行顶部加**目录**；超大文件（>10k 词）在 SKILL.md 引用处附 **grep 模式**
 - 触发用例（`evals.json`/场景）随技能沉淀；入库前 secret 扫描 + 基线失败记录留存
+- 触发评测必须标注 heuristic/cli、运行覆盖率和错误数；描述优化的开发验证分与独立最终测试分分别记录。静态结构分用于筛查，择优还需同场景任务证据。
 
 ## 验证器使用
 
 ```bash
 # 标准模式（警告不阻断，有错误时退出码 1）
-python scripts/validate_skills.py [--dir <skills目录>]
+python scripts/skill_validate.py [--dir <skills目录>]
 
 # 严格模式（警告即失败，适合 CI）
-python scripts/validate_skills.py --strict
+python scripts/skill_validate.py --strict
 ```
 
 ## 验证器检查项一览

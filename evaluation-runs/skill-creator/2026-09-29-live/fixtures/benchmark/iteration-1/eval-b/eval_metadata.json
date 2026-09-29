@@ -1,0 +1,7 @@
+{
+  "eval_id": "b",
+  "name": "synthetic scenario b",
+  "synthetic": true,
+  "query": "Synthetic task b: produce the expected local summary.",
+  "provenance": "Artificial benchmark fixture; not a real model run."
+}

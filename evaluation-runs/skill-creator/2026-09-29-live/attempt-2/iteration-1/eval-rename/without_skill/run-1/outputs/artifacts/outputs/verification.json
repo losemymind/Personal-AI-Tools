@@ -1,0 +1,78 @@
+{
+  "skill": "asset-note",
+  "task": "rename references/checklist.md -> references/review-checklist.md",
+  "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-a5f_4_4w",
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "old_resource_removed",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/checklist.md exists=False"
+    },
+    {
+      "name": "new_resource_exists",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/review-checklist.md is_file=True"
+    },
+    {
+      "name": "skill_reference_resolves",
+      "passed": true,
+      "evidence": "SKILL.md references references/review-checklist.md and target exists"
+    },
+    {
+      "name": "readme_reference_resolves",
+      "passed": true,
+      "evidence": "README.md reference targets=['references/review-checklist.md'] resolve"
+    },
+    {
+      "name": "no_stale_references",
+      "passed": true,
+      "evidence": "stale=[]"
+    },
+    {
+      "name": "frontmatter_unchanged",
+      "passed": true,
+      "evidence": "outputs SKILL.md frontmatter byte-equal to inputs"
+    },
+    {
+      "name": "skill_body_only_path_changed",
+      "passed": true,
+      "evidence": "outputs SKILL.md == inputs SKILL.md with old path replaced by new path"
+    },
+    {
+      "name": "readme_only_path_changed",
+      "passed": true,
+      "evidence": "outputs README.md == inputs README.md with old path replaced by new path"
+    },
+    {
+      "name": "resource_content_unchanged",
+      "passed": true,
+      "evidence": "sha256 equal: 7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60 == 7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60"
+    },
+    {
+      "name": "input_tree_hashes_match_baseline",
+      "passed": true,
+      "evidence": "{\"expected\": {\"README.md\": \"307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2\", \"SKILL.md\": \"1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963\", \"references/checklist.md\": \"7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60\"}, \"actual\": {\"README.md\": \"307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2\", \"references/checklist.md\": \"7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60\", \"SKILL.md\": \"1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963\"}}"
+    },
+    {
+      "name": "input_untouched_semantics",
+      "passed": true,
+      "evidence": "inputs old resource present=True, inputs docs still reference old path=True"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python \"C:\\Users\\Administrator\\.config\\opencode\\skills\\skill-creator\\scripts\\validate_skills.py\" --strict --dir \"outputs\"",
+      "exit_code": 0,
+      "stdout": "Validating skills in: outputs\nMode: STRICT (CI)\nChecked 1 skills.\nFound 1 Advisories:\nasset-note\\SKILL.md: No evals.json found (recommended: ship trigger tests with the skill).\nAll skills passed validation!",
+      "stderr": ""
+    },
+    {
+      "command": "python outputs\\_verify_asset_note.py",
+      "exit_code": 0,
+      "stdout": "checks executed: old_resource_removed, new_resource_exists, skill_reference_resolves, readme_reference_resolves, no_stale_references, frontmatter_unchanged, skill_body_only_path_changed, readme_only_path_changed, resource_content_unchanged, input_tree_hashes_match_baseline, input_untouched_semantics",
+      "stderr": ""
+    }
+  ],
+  "input_unchanged": true
+}

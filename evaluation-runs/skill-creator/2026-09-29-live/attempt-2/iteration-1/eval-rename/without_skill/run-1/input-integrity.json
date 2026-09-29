@@ -1,0 +1,17 @@
+{
+  "source": {
+    "asset-note/README.md": "307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2",
+    "asset-note/references/checklist.md": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60",
+    "asset-note/SKILL.md": "1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963",
+    "fixture_metadata.json": "e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99",
+    "README.md": "336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d"
+  },
+  "after": {
+    "asset-note/README.md": "307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2",
+    "asset-note/references/checklist.md": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60",
+    "asset-note/SKILL.md": "1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963",
+    "fixture_metadata.json": "e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99",
+    "README.md": "336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d"
+  },
+  "unchanged": true
+}

@@ -1,0 +1,50 @@
+{
+  "head": "f68cfc8da398e76a8f344cffc0e6ae8729af364c",
+  "protocol": {
+    "protocol.md": "33eaeb459d1f167db6f0585e8e2566f5375283c458c4526831cceafccb44092d",
+    "queries.json": "7f03d56c9fc0e5cc82a2b1bee122988b2f5e1357b4538fb1f8b129dab2112d0d",
+    "scenarios.json": "2ce1b038e7685fcafaf80b68ee5a6102384509943178fc4e3a9f3e754133b828",
+    "runtime.json": "c209f55406f7cd86fa0c4635c7790d1ad0648a60ce372c88650c631230dcf95e"
+  },
+  "fixtures": {
+    "creation/brief.md": "cdb08584c941e8e3f621253350edab17f5e289eeae34c0b4b3f221f46ff41d4c",
+    "repair/brief.md": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+    "repair/bug-triager/AGENT.md": "3a30e9303e5921e8e51c73bc39fae81f4e1e97793a55aecaa814549382c6f031",
+    "repair/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "runtime/integration-417.txt": "689e9565a8cb4963c4200ea81d14f1832c712c04e726f2ab6aa7553c3eaf7fc2",
+    "runtime/release-notes.md": "a276b6dab98b6bce38d28cd701c0e6cff4a1b36fd93a3463816bc3b3fe44e1b1",
+    "runtime/release.json": "598aa5f62f2d6dd98667e3f9219624b53692d798b83deff6bf810d511bf44ade",
+    "runtime/sentinel.txt": "b8c97ddaf0d32992a9e1ea1b3e4caee8cf1b43c2230ea9e3a54b49b930c6f187",
+    "runtime/unit-417.txt": "cd9b66ea3386e3c4dfff7862f4b4e608a3edde336fa7c9ba42e915231caa8cdf",
+    "trigger/sample-agent.md": "81e58aca2e6ced356795ada6532a3dcbd03c449fcddd107bb3a6382653cf0964"
+  },
+  "product": {
+    "agents/agent_reviewer.md": "dadeae1c0865b3c9f1da54fe4462d0118547cfb354ed8c3dd0a37aac88a45699",
+    "evolutions/distribution.md": "76e41cc6748ac56ee761a75ce502e515c9c06608bdf86f05fa99c61e152c5068",
+    "evolutions/indexing.md": "bb5771d98e457f765292f37b182a2450836de36d004b8f2ba0cd5f53590a6971",
+    "evolutions/library-decisions.md": "fc3702991a2383c448d12eab64f9986b10b5cb0c901737f8f2d82cd7fc0a3803",
+    "evolutions/methodology.md": "9bb4dd4b6851e7980030c917388fdad31d376a49c16604edc6f9a8ee578df027",
+    "evolutions/README.md": "1f6770707c3fe1be23b27a5c6299badc1d00c748224f059863a71be574523689",
+    "evolutions/record-map.md": "5630abfcc9f19b7f426cde56c9da406d3b1a4ecd5579c87772fdb879bb1bc456",
+    "evolutions/validation.md": "e3b19c1746dc64d324f692837337242820352199af64271f8c2c7cf891352353",
+    "indexes/upstream.db": "98ab40a989939bcdf99256b4d40731f1f5a0e753a5adf9a2ee18bfe4e4138be9",
+    "README.md": "30428337dfb2692f1d62f2049048f5c2b78b5046c795e77de43f0882eeae9c69",
+    "references/agent-anatomy.md": "fd3110d2acc2685ce8a479159501ccf9187011b451fdee4042acf59c72d2bccc",
+    "references/agent-comparison.md": "b51a2d3df9d28dd468be11ce13cd9cae3c51b55fdc1efe6ae0b80ec438b6aaf8",
+    "references/agent-index.md": "be3265a720378c1d7424b17ea26f350e6b3378cb714e6af7fe95eae5197d3cac",
+    "references/agent-quality-bar.md": "790f2c30e893941b5f8521fa72d72713252ada0b725690060238d1faa48fd1c8",
+    "references/agent-template.md": "a88947c0e80498d32fe61ae0ab16e7d009d918a14e0670772acb141ffa9b8611",
+    "scripts/_project_paths.py": "081c6539fd296d882f2231bc0e845b97116dbbb8ac3b580fd0eee6473ed8af6c",
+    "scripts/agent_adapt.py": "529a68ca53f2f33b1618ee8d85eadab13393cf657939a88cd6094d164f184b09",
+    "scripts/agent_compare.py": "db1d8d8be185fc1fd44f20a59c4e32105f51dd21c5d7451e5a8b04755f312d99",
+    "scripts/agent_create.py": "6ec17c57bf705bca61d05d3a817d0e9a89402945383ba9cb34c63c158259aebc",
+    "scripts/agent_index_build.py": "99f03c2c8c5bfdb3f13c2e131f6cd22b59a115a0a0aef50d8f7645f0183dcaf8",
+    "scripts/agent_index_search.py": "ce347760e9d523f39474acfab55fa1390910d46219dd5ba9d4e6b011a77133f1",
+    "scripts/agent_package.py": "06ba880e62b3e40718298e2c0636e4893e5057e4a195990c7cb4bf8cd8bafc57",
+    "scripts/agent_security.py": "4ec20fa38794bb60a8b1b79976d68bf92c20585d447a33e023e0dca902555a97",
+    "scripts/agent_validate.py": "43fea97417855aaeb459ac26a468f52da2a6b7285a9e1bc4243e4f1ad39795e0",
+    "SKILL.md": "0feaf8e1c7f62ed932e706b3a78a0a4f26526b64bb4dd4842cd67bff1d9b8683",
+    "templates/AGENT.template.md": "1242abd983f5a17a627a4f233ac1494cf0dabd4c05b9387c6cf06fa4aaf8c380"
+  },
+  "review": "Independent protocol review passed before model execution."
+}

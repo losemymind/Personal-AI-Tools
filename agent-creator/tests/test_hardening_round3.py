@@ -60,7 +60,7 @@ def _write_agent(tmp_path, content: str, name: str = "demo-agent"):
 
 
 def _load(module_file: str):
-    # validate_agents.py imports its sibling `_project_paths`, so the scripts dir
+    # agent_validate.py imports the local `_project_paths`, so the scripts dir
     # must be importable while the module executes.
     if str(SCRIPT_DIR) not in sys.path:
         sys.path.insert(0, str(SCRIPT_DIR))
@@ -83,7 +83,7 @@ def test_line_continuation_bypasses_flagged(tmp_path):
     for i, snippet in enumerate(snippets):
         nm = f"cont-{i}"
         d = _write_agent(tmp_path, _agent_md(snippet, name=nm), name=nm)
-        r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(d))
+        r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(d))
         assert r.returncode == 1, f"not flagged: {snippet!r}\n" + r.stdout
         assert "Dangerous remote-execution pipe" in r.stdout
 
@@ -94,7 +94,7 @@ def test_quoted_and_subshell_shell_token_flagged(tmp_path):
     ):
         nm = f"quoted-{i}"
         d = _write_agent(tmp_path, _agent_md(snippet, name=nm), name=nm)
-        r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(d))
+        r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(d))
         assert r.returncode == 1, f"not flagged: {snippet!r}\n" + r.stdout
         assert "Dangerous remote-execution pipe" in r.stdout
 
@@ -105,7 +105,7 @@ def test_benign_non_shell_pipe_not_flagged(tmp_path):
         _agent_md('```\ncurl https://x | grep "(bash)"\n```', name="benign-pipe"),
         name="benign-pipe",
     )
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(d))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(d))
     assert r.returncode == 0, r.stdout + r.stderr
 
 
@@ -113,7 +113,7 @@ def test_benign_non_shell_pipe_not_flagged(tmp_path):
 
 
 def test_hidden_dir_credentials_are_scanned(tmp_path):
-    va = _load("validate_agents.py")
+    va = _load("agent_validate.py")
     agent_dir = tmp_path / "agent"
     (agent_dir / ".ssh").mkdir(parents=True)
     (agent_dir / ".ssh" / "id_rsa").write_text(
@@ -137,6 +137,6 @@ def test_backtick_ref_does_not_borrow_skill_root(tmp_path):
         _agent_md("参考 `references/agent-anatomy.md` 获取细节。", name="dangling-agent"),
         name="dangling-agent",
     )
-    r = run_script("scripts/validate_agents.py", "--strict", "--dir", str(d))
+    r = run_script("scripts/agent_validate.py", "--strict", "--dir", str(d))
     assert r.returncode == 1, r.stdout + r.stderr
     assert "Backtick reference" in r.stdout

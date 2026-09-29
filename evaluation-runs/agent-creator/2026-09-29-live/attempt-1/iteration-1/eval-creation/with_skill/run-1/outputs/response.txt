@@ -1,0 +1,6 @@
+完成。产出两个文件：
+
+- `outputs/agents/release-evidence-auditor.md` — primary、中文、扁平文件；`tools: [read, grep, glob]`，`permission` 默认拒绝并显式拒绝 edit/bash/联网/派发；含固定 decision/evidence/gaps/escalation 汇报结构、BLOCKED 升级与「缺失即不通过」规则、反注入与反夸大条款。
+- `outputs/verification.json` — 记录 `agent_validate.py --strict` 通过（1 agent，0 error/warning）、逐项静态核对、评审方式（**降级内联、非独立评审**）及未验证项。
+
+未验证（如实标注）：无独立评审（环境无子代理派发能力）、无真实发布包端到端试跑（inputs 仅 brief.md）、未安装真实客户端、上游索引 0 命中故无全文对比。inputs/ 未改，未触碰真实客户端配置。

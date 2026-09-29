@@ -1,0 +1,6 @@
+完成。
+
+- `outputs/agents/release-evidence-auditor.md`：只读发布证据审查员，mode: primary，tools `[read, grep, glob]` + `"*": deny` 全量 permission 矩阵，含身份/必须做·拒绝做/核对维度（版本一致、必需检查有结果、失败、回滚验证）/固定 decision·evidence·gaps·escalation/升级路径/完成标准/限制；含提示注入防护，只回对话不写文件，不返回已发布或自动批准。
+- `outputs/verification.json`：如实记录已完成的 9 项验证（含 `validate_agents.py --strict` 通过，退出码 0）、评审方式与未验证项。
+
+未验证项：无真实发布包试运行、无独立评审（本会话无子代理派发，按 brief 降级为内联自评、非独立）、未做客户端加载/安装、上游对比仅限索引元信息（未伪造全文对比）。未改 inputs，未动真实客户端配置。

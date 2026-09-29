@@ -1,0 +1,37 @@
+{
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-zlyf9luq",
+  "isolated_user_directories": true,
+  "public_config": {
+    "model": "deepseek/deepseek-flash",
+    "small_model": "deepseek/deepseek-flash",
+    "share": "disabled",
+    "autoupdate": false,
+    "mcp": {},
+    "plugin": [],
+    "agent": {
+      "build": {
+        "steps": 12
+      },
+      "release-evidence-auditor": {
+        "steps": 12
+      }
+    },
+    "permission": {
+      "*": "allow",
+      "webfetch": "deny",
+      "websearch": "deny",
+      "question": "deny",
+      "task": "deny",
+      "external_directory": "deny",
+      "skill": {
+        "*": "deny",
+        "agent-creator": "allow",
+        "customize-opencode": "deny"
+      }
+    }
+  },
+  "credential_storage": "child environment only",
+  "limitations": "Discovery/home isolation is not an operating-system sandbox",
+  "workspace": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-zlyf9luq\\runtime-workspace",
+  "source": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\attempt-1\\iteration-1\\eval-creation\\without_skill\\run-1\\outputs\\artifacts\\outputs\\agents\\release-evidence-auditor.md"
+}

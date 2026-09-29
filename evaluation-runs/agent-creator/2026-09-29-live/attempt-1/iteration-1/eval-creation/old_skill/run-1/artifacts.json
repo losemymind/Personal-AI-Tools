@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "output_dir": "outputs",
+  "files": [
+    {
+      "source_path": "outputs/agents/release-evidence-auditor.md",
+      "path": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+      "bytes": 6081,
+      "sha256": "83e29c14ee471cce8241829b5f4040f398736ef57b255b2a81f491916322ed17",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/verification.json",
+      "path": "outputs/artifacts/outputs/verification.json",
+      "bytes": 6340,
+      "sha256": "1c225293f6f4e05fd5b9a2fa1041a722aa1932ee0da181203c11f14a5af42822",
+      "declared_output": true
+    }
+  ],
+  "skipped": [
+    {
+      "source_path": ".opencode",
+      "reason": "input_or_runtime_metadata"
+    },
+    {
+      "source_path": "inputs",
+      "reason": "input_or_runtime_metadata"
+    }
+  ],
+  "errors": []
+}

@@ -56,11 +56,11 @@ risk: safe
 
 本技能是**自包含完整体**：内部所有引用（`scripts/`、`references/`、`templates/`、`agents/`、`indexes/upstream.db`、`evolutions/`）一律以 **agent-creator 目录自身为根**书写，不依赖任何外部布局。脚本调用：在本技能目录内执行 `python scripts/xxx.py ...`；不在技能目录内执行时加目录前缀 `python "<技能目录>/scripts/xxx.py" ...`。定位本技能目录的方法：codex 的技能列表自带文件路径，直接使用；claude/opencode 按存在性依次探测——工作区候选 `<项目>/.claude/skills/agent-creator/`、`<项目>/.opencode/skills/agent-creator/`、`<项目>/.agents/skills/agent-creator/`；全局候选 `~/.claude/skills/agent-creator/`、`~/.config/opencode/skills/agent-creator/`、`~/.agents/skills/agent-creator/`。
 
-读取规则：references 文档**按需读取**；需要字段/四端差异时读 `references/agent-template.md`，需要结构规范时读 `references/agent-anatomy.md`，需要质量标准时读 `references/agent-quality-bar.md`，需要检索上游/索引细节时读 `references/agent-index.md`，进行对比择优时读 `references/agent-comparison.md`。评审子代理指令在 `agents/`（按需拉起，不自动加载）：需要评分/审核时读 `agents/reviewer.md`（产出 `pass`/`revise` + `review.json`）。
+读取规则：references 文档**按需读取**；需要字段/四端差异时读 `references/agent-template.md`，需要结构规范时读 `references/agent-anatomy.md`，需要质量标准时读 `references/agent-quality-bar.md`，需要检索上游/索引细节时读 `references/agent-index.md`，进行对比择优时读 `references/agent-comparison.md`。评审子代理指令在 `agents/`（按需拉起，不自动加载）：需要评分/审核时读 `agents/agent_reviewer.md`（产出 `pass`/`revise` + `review.json`）。
 
 ## 代理文件解剖（Anatomy）
 
-代理定义有两种等价形态，`validate_agents.py` 两种都接受：
+代理定义有两种等价形态，`agent_validate.py` 两种都接受：
 
 ```
 # 扁平单文件（默认，--layout flat）：多数客户端 agent 目录/扁平库直接加载
@@ -108,12 +108,12 @@ temperature: 0.2                # 可选
 
 ### 创建记录账本
 
-frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作者/日期等创建元数据集中写入**创建记录账本**——代理库根的一个 Markdown 文件（本仓库约定 `AGENTS-RECORDS.md`），由 `create_agent.py --records <文件>` 在创建/导入时追加一行：
+frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作者/日期等创建元数据集中写入**创建记录账本**——代理库根的一个 Markdown 文件（本仓库约定 `AGENTS-RECORDS.md`），由 `agent_create.py --records <文件>` 在创建/导入时追加一行：
 
 | 代理 | mode | created | author | source | source_repo | method | evolutions |
 |---|---|---|---|---|---|---|---|
 
-- `create_agent.py` 传 `--records` 即自动追加一行；`--author` / `--source`（默认 `self`）/ `--source-repo` / `--method`（默认 `created`）提供各列值。不传 `--records` 则不写账本（任意目录脚手架保持干净）。
+- `agent_create.py` 传 `--records` 即自动追加一行；`--author` / `--source`（默认 `self`）/ `--source-repo` / `--method`（默认 `created`）提供各列值。不传 `--records` 则不写账本（任意目录脚手架保持干净）。
 - 导入/迁移上游代理时 `method` 记 `imported`/`migrated`，`source` 记 `community`/`official`/`external`，`source_repo` 记 `OWNER/REPO` 或本地来源名。
 - 账本是**逐条创建/来源的可查询台账**；与库的**入库审计**文件（`AGENTS-AUDIT.md`）互补：账本记事实，审计记合规结论。
 
@@ -159,14 +159,14 @@ frontmatter 只承载**打包前必需且客户端中立**的字段。来源/作
 先在**本技能自带的上游代理索引**中检索是否有可参考/采纳的现成代理，避免重复造轮子：
 
 ```bash
-python scripts/search_agent_index.py "<需求关键词>" [--source agency|ccgs|agency-zh] [--category X] [--limit 10]
-python scripts/search_agent_index.py --stats               # 索引状态
-python scripts/search_agent_index.py --list-categories     # 分类（division）分布
+python scripts/agent_index_search.py "<需求关键词>" [--source agency|ccgs|agency-zh] [--category X] [--limit 10]
+python scripts/agent_index_search.py --stats               # 索引状态
+python scripts/agent_index_search.py --list-categories     # 分类（division）分布
 ```
 
 - 索引文件 `indexes/upstream.db` 已随技能分发，无需联网即可检索。
 - 覆盖三个上游代理仓库（msitarzewski/agency-agents、Donchitos/Claude-Code-Game-Studios、jnMetaCode/agency-agents-zh），含中文代理（`agency-zh`）；英文/中文关键词均可检索。索引细节见 `references/agent-index.md`。
-- 索引落后于上游时运行 `python scripts/build_agent_index.py` 重建。
+- 索引落后于上游时运行 `python scripts/agent_index_build.py` 重建。
 
 **决策分支：**
 - **有匹配候选** → 记录候选；照常创建（阶段 1-4），随后在阶段 5.5 与候选对比择优取最优。
@@ -193,7 +193,7 @@ python scripts/search_agent_index.py --list-categories     # 分类（division�
 ### 阶段 3：设计与脚手架
 
 - 参考 `references/agent-template.md` 的四端字段兼容矩阵与 `references/agent-anatomy.md` 的结构规范；研究上游候选（阶段 0 命中）的身份表述、边界与协作写法作为范本。
-- 使用 `templates/AGENT.template.md` 骨架（或 `python scripts/create_agent.py --name <名> --mode subagent --out <父目录>`）。脚手架默认输出**扁平单文件** `<父目录>/<名>.md`；当目标库以 `AGENT.md` 为键、或代理需捆绑 `references/` 时加 `--layout dir` 输出 `<父目录>/<名>/AGENT.md`。`--out` 是**父/分类目录**（脚手架自行追加名字），误传成代理自身目录会 fail loudly。
+- 使用 `templates/AGENT.template.md` 骨架（或 `python scripts/agent_create.py --name <名> --mode subagent --out <父目录>`）。脚手架默认输出**扁平单文件** `<父目录>/<名>.md`；当目标库以 `AGENT.md` 为键、或代理需捆绑 `references/` 时加 `--layout dir` 输出 `<父目录>/<名>/AGENT.md`。`--out` 是**父/分类目录**（脚手架自行追加名字），误传成代理自身目录会 fail loudly。
 - 按「身份先于指令」与「最小权限」确定职责边界与工具列表。
 
 ### 阶段 4：编写 AGENT.md
@@ -203,7 +203,7 @@ python scripts/search_agent_index.py --list-categories     # 分类（division�
 ### 阶段 5：运行自动验证
 
 ```bash
-python scripts/validate_agents.py [--dir <agents目录>] [--strict]
+python scripts/agent_validate.py [--dir <agents目录>] [--strict]
 ```
 
 不带 `--dir` 时默认扫描**当前工作目录（CWD）**——在代理库/代理目录根运行即可自然生效；`--dir` 指定其他目录。**无论目标来自哪里，扫到 0 个代理定义都会 fail-loud（退出码 1）**，避免空跑全绿。
@@ -212,14 +212,14 @@ python scripts/validate_agents.py [--dir <agents目录>] [--strict]
 
 ### 阶段 5.5：与上游候选对比择优
 
-若阶段 0 检索到匹配候选，将自建代理与上游候选进行结构化对比（使用 `compare_agents.py`，实现 **质量 7 维 + 结构 4 维** 评分）：
+若阶段 0 检索到匹配候选，将自建代理与上游候选进行结构化对比（使用 `agent_compare.py`，实现 **质量 7 维 + 结构 4 维** 评分）：
 
 ```bash
 # 对比单个代理
-python scripts/compare_agents.py <自建目录> <上游候选目录>
+python scripts/agent_compare.py <自建目录> <上游候选目录>
 
 # 对比某上游目录下的全部候选
-python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
+python scripts/agent_compare.py <自建目录> <上游目录> --all-candidates
 ```
 
 评分维度（详见 `references/agent-comparison.md`）：
@@ -229,13 +229,13 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 **决策：**
 - **上游更优** → 分析上游优势维度，提炼学习点，改进 agent-creator 方法论（记录到 `evolutions/`，形成反馈闭环）；必要时直接采纳上游代理。
 - **自建更优或持平** → 采纳自建版本，继续阶段 6。
-- 对比报告保存至 `evolutions/<日期>-compare-<代理名>.md`。
+- 对比结论优先更新 `evolutions/` 对应主题，保留日期、来源、证据与边界；独立新事件可先记日期文件，合并时维护旧记录映射。读取与记录规范见 `evolutions/README.md`。
 
 ### 阶段 6：测试与迭代
 
 提出 2-3 个该代理会被调用的真实场景，让代理实际跑一次：验证身份表述、边界执行、权限遵守、汇报格式。根据结果迭代 AGENT.md。
 
-**AI 评审闭环（agent1 ↔ agent2，无人工）**：把代理产物交给**评审子代理**（agent2，读 `agents/reviewer.md`）独立评审，产出 `review.json`（`verdict: pass|revise` + 可执行 `issues[]`）。`revise` 时由作者代理（agent1）按 `issues[]` 逐条修订，再交评审；**`pass` 或达 `max-iterations`（默认 5）即停**。评审者与作者分离——**别让 agent 自评自改闭环自嗨**；客观结构/元数据先过 `validate_agents.py --strict`，主观质量与纪律合规交 reviewer。`review.json` 随迭代目录版本化，下一轮用 `previous_review_path` 核验上轮问题是否修复。客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/reviewer.md` 内联扮演评审者。
+**AI 评审闭环（agent1 ↔ agent2，无人工）**：把代理产物交给**评审子代理**（agent2，读 `agents/agent_reviewer.md`）独立评审，产出 `review.json`（`verdict: pass|revise` + 可执行 `issues[]`）。`revise` 时由作者代理（agent1）按 `issues[]` 逐条修订，再交评审；**`pass` 或达 `max-iterations`（默认 5）即停**。评审者与作者分离——**别让 agent 自评自改闭环自嗨**；客观结构/元数据先过 `agent_validate.py --strict`，主观质量与纪律合规交 reviewer。`review.json` 随迭代目录版本化，下一轮用 `previous_review_path` 核验上轮问题是否修复。客户端无子代理派发能力时**降级不跳过**：由主持会话按同一份 `agents/agent_reviewer.md` 内联扮演评审者。
 
 **触发失败分类（改前先归因）**：被调用行为不符预期时，先归因再决定改哪里——**假阴性**（该出现未出现 → description 漏触发词/说法没覆盖）、**假阳性**（不该出现却乱入 → description 过度泛化/兜底词过多）、**run_error**（被正确调用但运行失败 → 客户端格式/工具/环境问题，与 description 无关别乱改）。三类混改会把「改错病」当成「改好病」。
 
@@ -245,18 +245,18 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 
 - **先按目标客户端转换 frontmatter**：仓库内保持规范形式（`tools: [...]` 白名单 + provider 前缀 model），安装前用本技能适配器转为目标客户端合法形态再放置（各端转换规则与 post-check 见 `references/agent-template.md`）：
   ```bash
-  python scripts/adapt_agent.py <代理目录> --client opencode --out <落点>/AGENT.md
-  python scripts/adapt_agent.py <代理目录> --client claude  --out <落点>/AGENT.md
+  python scripts/agent_adapt.py <代理目录> --client opencode --out <落点>/AGENT.md
+  python scripts/agent_adapt.py <代理目录> --client claude  --out <落点>/AGENT.md
   # codex / deepseek：无官方 frontmatter 规范，适配器仅做 YAML 校验后逐字节原样输出
   ```
 - **直接放置**：转换产物按目标客户端官方文档说明放入 agents 目录（兼容矩阵与落点见「多客户端安装指引」）。
 - **整目录打包（多端产物）**：需要把**同一个代理目录**适配给多个客户端时，用打包器一键生成各端产物（自动复制整棵代理目录 + frontmatter 适配 + 该端 post-check，避免手改漂移）：
 
   ```bash
-  python scripts/package_agent.py <代理目录|AGENT.md> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]
+  python scripts/agent_package.py <代理目录|AGENT.md> --client claude --client opencode --client codex --client deepseek --out <产物目录> [--zip]
   ```
 
-  产物布局为 `<产物目录>/<客户端>/<代理名>/`（`--zip` 另出同名压缩包，代理名取 frontmatter `name`，缺失时回退目录名/文件名），把该目录放到目标客户端的 agents 目录即可。与单文件适配器 `scripts/adapt_agent.py` 的关系：`adapt_agent.py` 只转换**一个** AGENT.md（写文件/标准输出），`package_agent.py` 则转换**并复制整棵代理目录**、一次产出多端并做同名压缩。关键适配：opencode 端把 `tools` 工具白名单合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；claude 端把工具白名单转成逗号分隔的 Claude 工具名、把 provider 前缀 `model` 简化为 alias（无法映射则丢弃）；`tools: [claude, opencode, …]` 这类「支持客户端」元数据不会被误当成工具白名单。各端适配结果均过该端 post-check，不合格不出包。
+  产物布局为 `<产物目录>/<客户端>/<代理名>/`（`--zip` 另出同名压缩包，代理名取 frontmatter `name`，缺失时回退目录名/文件名），把该目录放到目标客户端的 agents 目录即可。与单文件适配器 `scripts/agent_adapt.py` 的关系：`agent_adapt.py` 只转换**一个** AGENT.md（写文件/标准输出），`agent_package.py` 则转换**并复制整棵代理目录**、一次产出多端并做同名压缩。关键适配：opencode 端把 `tools` 工具白名单合并进逐工具 `permission`（白名单→allow、其余工具类→deny、显式 permission 优先；**不保留可能放大权限的全局 `permission` 字符串简写**）；claude 端把工具白名单转成逗号分隔的 Claude 工具名、把 provider 前缀 `model` 简化为 alias（无法映射则丢弃）；`tools: [claude, opencode, …]` 这类「支持客户端」元数据不会被误当成工具白名单。各端适配结果均过该端 post-check，不合格不出包。
 
 ### 阶段 8：沉淀稳定代理
 
@@ -316,13 +316,13 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 1. **定位本技能目录**：按「资源路径基准」的探测顺序定位（codex 用技能列表自带路径）。
 2. **选定作用域与端**（先问用户）：全局（默认）或工作区（**必须落到 git 仓库根**）。
 3. **放置**：把本技能目录**整体**复制到目标客户端的 **skills** 目录（矩阵见上一段），排除 `__pycache__/` 等缓存。
-4. **安装后自检**（本技能工具链自包含，逐项确认可用）：`python scripts/search_agent_index.py --stats`（索引来源与条数）；再跑一次脚手架→验证往返：`python scripts/create_agent.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp`，随后 `python scripts/validate_agents.py --strict --dir ./install-check-tmp`，通过后删除临时目录。注意：**不要对技能根目录直接跑 `validate_agents.py`**——它是技能形态（无 AGENT.md），会 fail-loud 报「No agent definitions found」，与源目录是否完整无关；代理验证只针对 `create_agent` 产物或代理库目录。
+4. **安装后自检**（本技能工具链自包含，逐项确认可用）：`python scripts/agent_index_search.py --stats`（索引来源与条数）；再跑一次脚手架→验证往返：`python scripts/agent_create.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp`，随后 `python scripts/agent_validate.py --strict --dir ./install-check-tmp`，通过后删除临时目录。注意：**不要对技能根目录直接跑 `agent_validate.py`**——它是技能形态（无 AGENT.md），会 fail-loud 报「No agent definitions found」，与源目录是否完整无关；代理验证只针对 `agent_create` 产物或代理库目录。
 5. **清理缓存**：删除安装目录内的 `__pycache__/`。
 6. **交付**：提示重启客户端，用真实代理请求触发一次，并输出确切安装路径。
 
 > 覆盖更新：备份已装目录 → 新版本整目录覆盖（目录名不变）→ 重跑第 4 步；卸载 = 删除安装目录（只删本技能副本）。
 
-产出的**代理**本体是单文件 `AGENT.md`（或含 references 的目录 `agents/<name>/`）。安装 = 用 `scripts/adapt_agent.py` 按目标客户端转换 frontmatter → 放到目标客户端的 agents 目录 → 重启客户端生效：
+产出的**代理**本体是单文件 `AGENT.md`（或含 references 的目录 `agents/<name>/`）。安装 = 用 `scripts/agent_adapt.py` 按目标客户端转换 frontmatter → 放到目标客户端的 agents 目录 → 重启客户端生效：
 
 | 端 | 代理目录（全局） | 代理目录（工作区） |
 |---|---|---|
@@ -331,7 +331,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 | codex | 代理放置无官方约定（best-effort，以官方文档为准） | 同左 |
 | deepseek | 随版本，`DEEPSEEK_HARNESS_ROOT` 兜底 | 同左 |
 
-不同客户端对代理的字段支持不同（兼容矩阵见 `references/agent-template.md`）；仓库规范形 → 目标客户端形的前置转换由 `scripts/adapt_agent.py` 完成（转换失败即退出、不产出无法加载的文件）。
+不同客户端对代理的字段支持不同（兼容矩阵见 `references/agent-template.md`）；仓库规范形 → 目标客户端形的前置转换由 `scripts/agent_adapt.py` 完成（转换失败即退出、不产出无法加载的文件）。
 
 ## 常见问题
 
@@ -339,7 +339,7 @@ python scripts/compare_agents.py <自建目录> <上游目录> --all-candidates
 A: 需要常驻角色、权限、协作协议 → 代理；只是一次性步骤流程 → 技能。技能是代理的「工具包」。
 
 **Q: 四端 frontmatter 不兼容怎么办？**
-A: 仓库内保持规范形式（name/description/mode + `tools: [...]` 白名单，来源进创建记录账本）；安装时用 `scripts/adapt_agent.py --client <端>` 转换（claude/opencode 自动适配 + post-check，codex/deepseek 原样校验后输出）。
+A: 仓库内保持规范形式（name/description/mode + `tools: [...]` 白名单，来源进创建记录账本）；安装时用 `scripts/agent_adapt.py --client <端>` 转换（claude/opencode 自动适配 + post-check，codex/deepseek 原样校验后输出）。
 
 **Q: 代理需要跨多个职责？**
 A: 保持单一职责——一个代理一件事，协作流程解决多角色需求（多个代理通过协作协议互相调用）。

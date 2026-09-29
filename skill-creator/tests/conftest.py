@@ -55,7 +55,7 @@ risk: safe
 def run_script(script: str, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
     """Run one of the artifact's CLI scripts and capture output.
 
-    `script` is artifact-relative, e.g. "scripts/validate_skills.py".
+    `script` is artifact-relative, e.g. "scripts/skill_validate.py".
     """
     return subprocess.run(
         [sys.executable, str(ARTIFACT / script), *args],

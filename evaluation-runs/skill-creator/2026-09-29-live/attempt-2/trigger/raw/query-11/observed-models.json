@@ -1,0 +1,23 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "messages": [
+    {
+      "message_id": "msg_0ecb28aef001Fd7vk6TI53qphI",
+      "session_id": "ses_f134d769bffeRwD9IiqWHzqB7M",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb295400010b256z0NZAfVcg",
+      "session_id": "ses_f134d769bffeRwD9IiqWHzqB7M",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "stop"
+    }
+  ],
+  "billing": "unknown; client cost=0 is not a billing statement"
+}

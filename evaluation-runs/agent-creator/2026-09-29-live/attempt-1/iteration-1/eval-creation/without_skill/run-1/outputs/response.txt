@@ -1,0 +1,8 @@
+I'll create the agent file and verification record. Let me first check the client agent format conventions if any exist locally.
+Now the verification record.
+已创建两个真实交付物：
+
+- `outputs/agents/release-evidence-auditor.md` — primary 只读审查员，frontmatter 含 name/description/mode/color/tools/permission，权限默认拒绝、仅放行 read/grep/glob；正文含身份、必须做/拒绝做、材料处理规则、升级、固定 decision/evidence/gaps/escalation 结构、完成标准与限制。
+- `outputs/verification.json` — 如实记录已完成静态核对、评审方式（作者自评，非独立评审）与未验证项（未在真实客户端运行、无真实发布包、未做 YAML 解析/运行时权限验证）。
+
+inputs/ 未改动，未安装到真实客户端配置。

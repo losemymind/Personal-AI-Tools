@@ -1,0 +1,13 @@
+The stock tool silently treats the eval-b baseline error as a full 0% and reports tokens as 0. Let me verify input hashes, then write an evidence-preserving analysis.
+完成。审查了 `inputs/iteration-1` 全部 4 个 run（含未评分的错误 run），并用随技能提供的 `aggregate_benchmark.py` 作数值骨架、以标准库补全状态/覆盖审计。
+
+**关键发现**
+- 逐次运行：eval-a/with=completed(1.0,10s)、eval-a/without=completed(0.0,8s)、eval-b/with=completed(1.0,12s)、**eval-b/without=error(returncode 1, status=error, 无 grading.json)**。
+- 每配置 attempted/completed/errors/incomplete/coverage：with_skill 2/2/0/0/100%；without_skill 2/1/1/1/50%（错误与不完整为同一 run，重叠）。
+- 有效指标样本：pass_rate 2 vs 1；time_seconds 2 vs 1（4 个 timing 文件均存在，但错误 run 的 5s 不计入性能样本）；**tokens 与 tool_calls 均为 0 个样本（fixture 明确 “not supplied”），记为 null 而非 0**。
+- 按 (eval_id, run) 配对：可能 2 对，有效 1 对，覆盖 50%；eval-b 因基线错误无有效评分，不计为 0 分。
+- 有证据支持的差值：pass_rate +1.00（仅基于 eval-a 单对/完成 run）、time_seconds +3.0s（完成 run）；tokens 差值不可用。`conclusion.json`: `comparable=false`、`delta_available=true`（仅 pass_rate/time，范围受限）、`overall_skill_gain_inferable=false`。
+
+**证据边界**：数据全为 synthetic 夹具，非真实测量；每组仅 1 run；仅 1/2 场景可配对；成本数据完全缺失。因此**不能**据此推断整体技能增益，观察到的单对差异仅与“可能有益”一致。随技能工具会静默丢弃错误 run、把缺失 tokens 当 0 并报 +0——已在产物中修正。
+
+产物：`outputs/benchmark.json`、`outputs/benchmark.md`、`outputs/conclusion.json`；`inputs/` 哈希前后一致，未改动。

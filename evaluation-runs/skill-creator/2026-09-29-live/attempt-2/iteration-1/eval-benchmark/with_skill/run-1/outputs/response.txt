@@ -1,0 +1,24 @@
+I'll start by exploring the workspace and understanding the inputs.
+Now let me read all the input JSON files.
+Let me check the skill-creator for any provided benchmark tooling.
+Found the provided benchmark tool. Let me read it and its schema reference.
+I found the provided benchmark tool (`skill_benchmark.py`) and its schema. Let me verify Python and run the aggregation against the read-only inputs, writing to `outputs/`.
+Python is available and `outputs/` is empty. Now let me run the provided benchmark tool.
+The aggregation ran. Let me read the generated outputs.
+Tool output is complete and consistent with the raw JSON. Let me regenerate with a `--notes` file (documenting the synthetic nature and evidence gaps) so the artifacts are self-describing.
+External temp is blocked; I'll use a scratch file inside `outputs/` and remove it after.
+Now I'll write `conclusion.json` with the required fields.
+Let me validate all outputs parse and confirm inputs are untouched.
+Done. Ran the skill-provided benchmark tool (`skill_benchmark.py`) over the read-only `inputs/iteration-1`; inputs unchanged (15 files, hashes verified), outputs contain exactly the 3 deliverables.
+
+**Findings (all input data is synthetic fixture data, not real measurements):**
+- Attempts 4, completed 3, errors 1, incomplete 0.
+- `with_skill`: 2/2 completed, coverage 100%, pass 100% (n=2), time 11.0s ±1.4 (n=2), tokens n=0.
+- `without_skill`: 1/2 completed, coverage 50%, errors=1, pass 0% (n=1), time 6.5s (n=2 — the failed attempt's 5s is retained, not zeroed), tokens n=0.
+- Pairing by `eval_id`+`run_number`: 1/2 (50%). `eval-b/without_skill/run-1` failed (`status=error`, returncode=1, no `grading.json`), so `eval-b` is unpairable. All aggregate deltas (`pass_rate`, `time_seconds`, `tokens`) are therefore **null/unavailable** — the observed 100% vs 0% is driven by unequal completion, not evidence of a gain.
+
+**Deliverables:**
+- `outputs/benchmark.json` / `outputs/benchmark.md` — per-run status+issues, per-config attempted/completed/errors/incomplete/coverage, valid metric n, pair coverage, and null deltas with a note.
+- `outputs/conclusion.json` — `synthetic=true`, `comparable=false`, `delta_available=false`, reason, limitations, plus `overall_skill_gain_inferable=false`.
+
+**Evidence boundary:** no overall skill gain can be inferred. Only one synthetic pair is complete (n=1), tokens were never supplied (unavailable, not zero), one run errored, and single repetitions make any significance or causal claim unsupported.

@@ -1,0 +1,11 @@
+🔍 Validating agents in: E:\GitHub\Personal-AI-Tools\evaluation-runs\agent-creator\2026-09-29-live\attempt-1\iteration-1\eval-repair\without_skill\run-1\outputs\artifacts\outputs\bug-triager
+⚙️  Mode: STRICT (CI)
+
+📊 Checked 1 agents.
+
+ℹ️  Found 1 Advisories:
+ℹ️  AGENT.md: permission 缺默认拒绝 `"*": deny`——建议用全量矩阵 (默认拒绝 + 逐键显式 allow/deny，见 references/agent-template.md)
+
+❌ Found 2 Critical Errors:
+❌  AGENT.md: Missing '## 职责范围' section (identity boundary required)
+❌  AGENT.md: Missing '## 协作协议' section (when called / how to report)

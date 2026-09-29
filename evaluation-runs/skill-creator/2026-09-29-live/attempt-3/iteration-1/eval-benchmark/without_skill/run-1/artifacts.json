@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "output_dir": "outputs",
+  "files": [
+    {
+      "source_path": "outputs/benchmark.json",
+      "path": "outputs/artifacts/outputs/benchmark.json",
+      "bytes": 6926,
+      "sha256": "32c9ba3cdbb95fc02bcbbc5f28838c0e6d1ecd04b3f5dd3ec99e3a507841cfba",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/benchmark.md",
+      "path": "outputs/artifacts/outputs/benchmark.md",
+      "bytes": 3730,
+      "sha256": "65910d030b7ce341752bb296148e737d65d4eb944129cf37cbac83c9c367855c",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/conclusion.json",
+      "path": "outputs/artifacts/outputs/conclusion.json",
+      "bytes": 2162,
+      "sha256": "99167d81ddcc92ae8785846dd8290675d5451e589c63544e1e94337b2b796e49",
+      "declared_output": true
+    }
+  ],
+  "skipped": [
+    {
+      "source_path": "inputs",
+      "reason": "input_or_runtime_metadata"
+    }
+  ],
+  "errors": []
+}

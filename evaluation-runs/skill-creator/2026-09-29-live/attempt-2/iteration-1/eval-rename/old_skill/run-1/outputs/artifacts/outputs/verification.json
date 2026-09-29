@@ -1,0 +1,99 @@
+{
+  "task": "local resource rename of asset-note/references/checklist.md -> review-checklist.md",
+  "synthetic_fixture": true,
+  "input_unchanged": true,
+  "all_checks_passed": true,
+  "checks": [
+    {
+      "name": "new_resource_present",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/review-checklist.md exists=True"
+    },
+    {
+      "name": "old_resource_absent",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/checklist.md exists=False"
+    },
+    {
+      "name": "resource_content_unchanged",
+      "passed": true,
+      "evidence": "sha256(new)=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60 sha256(input checklist)=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60"
+    },
+    {
+      "name": "frontmatter_unchanged",
+      "passed": true,
+      "evidence": "frontmatter byte-identical=True"
+    },
+    {
+      "name": "skill_only_path_refs_changed",
+      "passed": true,
+      "evidence": "SKILL.md equals input with only 'references/checklist.md'->'references/review-checklist.md'"
+    },
+    {
+      "name": "readme_only_path_refs_changed",
+      "passed": true,
+      "evidence": "README.md equals input with only 'references/checklist.md'->'references/review-checklist.md'"
+    },
+    {
+      "name": "references_resolve",
+      "passed": true,
+      "evidence": "referenced=['references/review-checklist.md']; {\"references/review-checklist.md\": \"exists=True\"}"
+    },
+    {
+      "name": "no_stale_old_reference",
+      "passed": true,
+      "evidence": "occurrences of old path in outputs text=0"
+    },
+    {
+      "name": "output_file_set_matches_rename",
+      "passed": true,
+      "evidence": "outputs files=['README.md', 'SKILL.md', 'references/review-checklist.md']"
+    },
+    {
+      "name": "inputs_unchanged",
+      "passed": true,
+      "evidence": "before==after sha256 map: True"
+    },
+    {
+      "name": "skill_validator_strict_passed",
+      "passed": true,
+      "evidence": "exit_code=0; stdout contains 'All skills passed validation'=True"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python \"outputs\\_verify\\hash_tree.py\" \"inputs\" > \"outputs\\_verify\\inputs_before.json\"",
+      "exit_code": 0,
+      "stdout": "{\r\n  \"README.md\": \"336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d\",\r\n  \"asset-note/README.md\": \"307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2\",\r\n  \"asset-note/SKILL.md\": \"1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963\",\r\n  \"asset-note/references/checklist.md\": \"7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60\",\r\n  \"fixture_metadata.json\": \"e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99\"\r\n}\r\n",
+      "stderr": ""
+    },
+    {
+      "command": "Copy-Item -LiteralPath \"inputs\\asset-note\" -Destination \"outputs\\asset-note\" -Recurse -Force",
+      "exit_code": 0,
+      "stdout": "outputs/asset-note/references\noutputs/asset-note/README.md\noutputs/asset-note/SKILL.md\noutputs/asset-note/references/checklist.md",
+      "stderr": ""
+    },
+    {
+      "command": "Rename-Item -LiteralPath \"outputs\\asset-note\\references\\checklist.md\" -NewName \"review-checklist.md\"",
+      "exit_code": 0,
+      "stdout": "review-checklist.md",
+      "stderr": ""
+    },
+    {
+      "command": "python \".opencode\\skills\\skill-creator\\scripts\\validate_skills.py\" --strict --dir \"outputs\\asset-note\"",
+      "exit_code": 0,
+      "stdout": "🔍 Validating skills in: outputs\\asset-note\r\n⚙️  Mode: STRICT (CI)\r\n\r\n📊 Checked 1 skills.\r\n\r\nℹ️  Found 1 Advisories:\r\nℹ️  SKILL.md: No evals.json found (recommended: ship trigger tests with the skill).\r\n\r\n✨ All skills passed validation!\r\n",
+      "stderr": ""
+    },
+    {
+      "command": "python \"outputs\\_verify\\verify_rename.py\"",
+      "exit_code": 0,
+      "stdout": "{\"commands_recorded\": 5, \"failed_checks\": [], \"input_unchanged\": true, \"passed\": true, \"total_checks\": 11}",
+      "stderr": ""
+    }
+  ],
+  "notes": [
+    "All inputs under inputs/ are synthetic fixtures; results are verifier output, not real-world measurements.",
+    "Only path references were changed; frontmatter, body prose and checklist content are byte-identical to the inputs."
+  ]
+}

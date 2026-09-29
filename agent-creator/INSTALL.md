@@ -36,15 +36,15 @@ cd skills/agent-creator     # 成品目录（在 agent-creator 工作区根执�
 python -c "import yaml; print('PyYAML OK')"
 
 # 脚手架 + 验证器链路：生成临时代理并通过严格验证
-python scripts/create_agent.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp
-python scripts/validate_agents.py --strict --dir ./install-check-tmp
+python scripts/agent_create.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp
+python scripts/agent_validate.py --strict --dir ./install-check-tmp
 #    通过后删除临时目录：Remove-Item -Recurse .\install-check-tmp（Unix: rm -r ./install-check-tmp）
 
 # 索引完整性：应显示 3 个来源共 568 个代理（离线可用，无需联网）
-python scripts/search_agent_index.py --stats
+python scripts/agent_index_search.py --stats
 ```
 
-完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（9 个脚本，含 `package_agent.py`）、`indexes/upstream.db`、`references/`、`templates/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db`）都会导致方法论不完整。
+完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（9 个脚本，含 `agent_package.py`）、`indexes/upstream.db`、`references/`、`templates/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db`）都会导致方法论不完整。
 
 ## 2. 安装（放置目录）
 
@@ -68,20 +68,20 @@ Copy-Item -Recurse skills/agent-creator "$root\.opencode\skills\agent-creator"
 cd <安装目录>     # 例如 ~/.claude/skills/agent-creator
 
 # 1) 脚手架 + 验证器链路：生成临时代理并通过严格验证（--dir . 以本目录为根）
-python scripts/create_agent.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp
-python scripts/validate_agents.py --strict --dir ./install-check-tmp
+python scripts/agent_create.py --name install-check --mode subagent --no-interactive --out ./install-check-tmp
+python scripts/agent_validate.py --strict --dir ./install-check-tmp
 #    通过后删除临时目录：Remove-Item -Recurse .\install-check-tmp（Unix: rm -r ./install-check-tmp）
 
 # 2) 索引完整性：应显示 3 个来源共 568 个代理（离线可用，无需联网）
-python scripts/search_agent_index.py --stats
+python scripts/agent_index_search.py --stats
 
 # 3) 关键资源就位
-python -c "from pathlib import Path; [print(p, p.exists()) for p in map(Path, ['indexes/upstream.db','references','templates','scripts/validate_agents.py'])]"
+python -c "from pathlib import Path; [print(p, p.exists()) for p in map(Path, ['indexes/upstream.db','references','templates','scripts/agent_validate.py'])]"
 ```
 
 任一项失败：删除该安装目录，修复来源后重新放置，不要带病交付。
 
-> **验证后清理缓存**：关卡 1 运行 create_agent.py / validate_agents.py 会在安装目录内生成 `__pycache__/`。交付前删除它，保持安装副本与源一致（Windows: `Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force`；Unix: `find . -name __pycache__ -type d -exec rm -r {} +`）。
+> **验证后清理缓存**：关卡 1 运行 agent_create.py / agent_validate.py 会在安装目录内生成 `__pycache__/`。交付前删除它，保持安装副本与源一致（Windows: `Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force`；Unix: `find . -name __pycache__ -type d -exec rm -r {} +`）。
 
 ## 4. 交付（重启 + 触发测试 + 告知路径）
 

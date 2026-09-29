@@ -1,0 +1,19 @@
+{
+  "adapter_rc": 0,
+  "model_called": false,
+  "debug_rc": 0,
+  "keys": [
+    "name",
+    "mode",
+    "permission",
+    "options",
+    "native",
+    "prompt",
+    "description",
+    "color",
+    "tools"
+  ],
+  "name": "release-evidence-auditor",
+  "mode": "primary",
+  "prompt_found": true
+}

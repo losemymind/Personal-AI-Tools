@@ -1,0 +1,136 @@
+{
+  "scenario": "修复 inputs/bug-triager 代理并交付 opencode/claude 可分发包",
+  "generated_at": "2026-09-29",
+  "summary": "已重写 bug-triager 为中文只读 subagent（tools 仅 read/grep/glob，permission 默认拒绝并放行三种读取工具），保留并引用 references/report-format.md，移除 version/tags/tools_clients/source 元数据；交付 opencode 与 claude 两个包，所有路径引用在包内可解析。结构校验与打包 post-check 实际执行并通过；客户端原生加载与独立评审未执行，详见下。",
+  "deliverables": [
+    {
+      "path": "outputs/bug-triager/AGENT.md",
+      "role": "规范源文件（目录形态），客户端中立"
+    },
+    {
+      "path": "outputs/bug-triager/references/report-format.md",
+      "role": "既定汇报格式，从 inputs 逐字节复制"
+    },
+    {
+      "path": "outputs/packages/opencode/bug-triager/AGENT.md",
+      "role": "OpenCode 分发包：tools 白名单已转为 permission 对象"
+    },
+    {
+      "path": "outputs/packages/opencode/bug-triager/references/report-format.md",
+      "role": "OpenCode 包内 report-format.md"
+    },
+    {
+      "path": "outputs/packages/claude/bug-triager/AGENT.md",
+      "role": "Claude 分发包：tools 已转为 \"Read, Grep, Glob\" 工具串"
+    },
+    {
+      "path": "outputs/packages/claude/bug-triager/references/report-format.md",
+      "role": "Claude 包内 report-format.md"
+    }
+  ],
+  "executed_checks": [
+    {
+      "id": "canonical-strict-validation",
+      "method": "python .opencode/skills/agent-creator/scripts/agent_validate.py --strict --dir outputs/bug-triager",
+      "executed": true,
+      "result": "exit 0；Checked 1 agents；All agents passed validation",
+      "scope": "客观结构/元数据：frontmatter、章节（职责范围/工具与权限/协作协议/完成标准）、引用不悬空、security 扫描"
+    },
+    {
+      "id": "all-outputs-strict-validation",
+      "method": "python .opencode/skills/agent-creator/scripts/agent_validate.py --strict --dir outputs",
+      "executed": true,
+      "result": "exit 0；Checked 3 agents；All agents passed validation（规范文件 + 两个包）",
+      "scope": "规范文件与两个分发包的 AGENT.md 均通过结构校验"
+    },
+    {
+      "id": "opencode-package-postcheck",
+      "method": "python .opencode/skills/agent-creator/scripts/agent_package.py outputs/bug-triager --client opencode --client claude --out outputs/packages",
+      "executed": true,
+      "result": "exit 0；两包均写出；opencode 端日志: tools whitelist -> permission (glob, grep, read allow; deny edit, list, bash, task, webfetch, websearch, todowrite, question, skill)",
+      "scope": "打包器内置各端 schema post-check（不合格不出包）"
+    },
+    {
+      "id": "opencode-permission-object-assertion",
+      "method": "人工读取 outputs/packages/opencode/bug-triager/AGENT.md frontmatter；Select-String 确认包内无 'tools:' 行",
+      "executed": true,
+      "result": "opencode 包无 tools 数组；permission 为对象：'*': deny；read/glob/grep: allow；list/skill/webfetch/websearch/question/edit/bash/task/lsp/external_directory/todowrite: deny",
+      "scope": "满足「规范工具数组转 permission 对象」要求"
+    },
+    {
+      "id": "claude-tool-string-assertion",
+      "method": "人工读取 outputs/packages/claude/bug-triager/AGENT.md frontmatter",
+      "executed": true,
+      "result": "tools: Read, Grep, Glob",
+      "scope": "满足「Claude 用 Read, Grep, Glob 工具串」要求"
+    },
+    {
+      "id": "reference-integrity",
+      "method": "python hashlib.sha256 比对输入副本与三处输出的 report-format.md",
+      "executed": true,
+      "result": "输入 sha256=6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20；规范文件/opencode 包/claude 包三副本全部逐字节一致 (True)",
+      "scope": "references/report-format.md 被保留且未被篡改"
+    },
+    {
+      "id": "path-reference-resolution",
+      "method": "agent_validate.py 的 backtick 本地引用检查 + 目录列举",
+      "executed": true,
+      "result": "`references/report-format.md` 在 outputs/bug-triager、outputs/packages/opencode/bug-triager、outputs/packages/claude/bug-triager 三个代理根下均存在，无悬空引用",
+      "scope": "所有路径引用在包内可解析"
+    },
+    {
+      "id": "readonly-boundary-assertion",
+      "method": "人工核对 frontmatter 与正文一致性",
+      "executed": true,
+      "result": "tools=[read, grep, glob]；permission 仅 read/grep/glob=allow，edit/bash/task/webfetch/websearch 等=deny；正文「拒绝做」与「工具与权限」和权限矩阵一致，无写/执行/联网/派发授权",
+      "scope": "生成角色保持只读，正文与权限一致"
+    }
+  ],
+  "not_executed": [
+    {
+      "id": "opencode-native-load",
+      "description": "OpenCode 客户端对分发包的原生加载/解析（AgentConfig schema 实机加载）",
+      "executed": false,
+      "reason": "本环境无 OpenCode 客户端运行时或会话，无法实机加载验证；仅以打包器内置 schema post-check 代替，二者不等价。"
+    },
+    {
+      "id": "claude-native-load",
+      "description": "Claude Code 客户端 subagent 注册/原生加载",
+      "executed": false,
+      "reason": "本环境无 Claude Code 客户端运行时，未做实机注册与触发验证。"
+    },
+    {
+      "id": "live-scenario-trial",
+      "description": "阶段 6 真实场景试跑（把真实缺陷记录交给代理跑一次，验证身份/边界/权限/汇报格式）",
+      "executed": false,
+      "reason": "无真实客户端可被调用；未执行试运行，未取得「试运行验证」级别。"
+    },
+    {
+      "id": "independent-review",
+      "description": "由独立评审子代理（agents/agent_reviewer.md）出具 review.json 的独立审核",
+      "executed": false,
+      "reason": "本环境未派发独立评审子代理；仅由本次修复会话内联自评，自评不等于独立审核，故 verdict 不宣称已通过独立评审。"
+    }
+  ],
+  "review": {
+    "method": "authoring-session self-review（同一次修复会话内联对照 agent-quality-bar.md 7 项与 agent_reviewer.md 准则）",
+    "independent": false,
+    "reviewer": "本次修复会话自身（与作者同一主体）",
+    "independent_audit_claim": false,
+    "self_assessed_verdict": "pass",
+    "note": "按 brief 要求，自评不作为独立审核结论；独立审核未执行，见 not_executed.independent-review。"
+  },
+  "constraints_respected": {
+    "inputs_modified": false,
+    "real_user_dirs_modified": false,
+    "installed_to_real_client": false,
+    "write_scope": "仅写 outputs/（修复方模型有写 outputs 授权）；生成角色 bug-triager 保持只读",
+    "external_network_used": false,
+    "local_materials_only": true
+  },
+  "environment_limitations": [
+    "PowerShell 会话缺少 Get-FileHash cmdlet；改用 Python hashlib 完成完整性比对，不影响结论。",
+    "无 OpenCode/Claude 客户端运行时，客户端原生加载与真实触发均未执行。",
+    "无独立评审子代理派发通道，评审为内联自评而非独立审核。"
+  ]
+}

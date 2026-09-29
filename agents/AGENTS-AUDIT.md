@@ -5,9 +5,11 @@
 > 依据：本仓库根 `AGENTS.md`「能力库准入与审计」（规则 1：代理入库**无论参考本地文件还是远程仓库，必须经过 agent-creator**；规则 3：**参考外部仓库的代理必须在创建记录台账 `AGENTS-RECORDS.md` 标注数据来源**；规则 4：**代理按功能归入分类目录 `agents/<顶层分类>/<name>/`，分类不存在则创建；无「留顶层」例外**）。来源/作者/日期**不进** `AGENT.md` frontmatter，集中登记于 `AGENTS-RECORDS.md`（`version`/`tools_clients` 亦不写 frontmatter，版本以 git 为准）。
 > 本次审计日期：2026-09-03
 > 2026-09-03 更新：academic×5 已逐一执行 agent-creator 对比择优（上游同名 academic 代理比对），结论为「自建（迁移版）更优/持平」→ **已转合规**。
-> 2026-09-09 更新：agent-creator 已在**本仓库** `agent-creator/skills/agent-creator/`；`agents/` 库校验用其 `scripts/validate_agents.py`。
-> 2026-09-12 更新：全部 7 代理 frontmatter 增加 `color`（UI 显示色，`color: "#RRGGBB"` 引号形态）：code-quality 二代理补齐（code-reviewer `#DC2626` / code-simplifier `#2563EB`），academic×5 迁入时已自带；`validate_agents.py --strict` 对颜色做格式校验（hex 或主题名，缺省不报错），并对缺 `"*": deny` 的稀疏 permission 给 advisory 提示。
+> 2026-09-09 更新：agent-creator 已在**本仓库** `agent-creator/skills/agent-creator/`；`agents/` 库校验用其 `scripts/agent_validate.py`。
+> 2026-09-12 更新：全部 7 代理 frontmatter 增加 `color`（UI 显示色，`color: "#RRGGBB"` 引号形态）：code-quality 二代理补齐（code-reviewer `#DC2626` / code-simplifier `#2563EB`），academic×5 迁入时已自带；`agent_validate.py --strict` 对颜色做格式校验（hex 或主题名，缺省不报错），并对缺 `"*": deny` 的稀疏 permission 给 advisory 提示。
 > 2026-09-12 更新：code-quality 二代理 permission 升级为**全量矩阵**（`"*": deny` 默认拒绝 + 逐键显式 allow/deny，按各自 `tools` 白名单生成，与 academic×5 既有形态一致）。
+
+> 2026-09-29 证据导航更新：code-simplifier 的旧日期记录已归并到 [导入摘要](../agent-creator/skills/agent-creator/evolutions/library-decisions.md#code-simplifier)。保留原来源与静态验证结论，未新增真实任务验证。
 
 ## 1. 审计结论摘要
 
@@ -61,7 +63,7 @@
 ## 5. 维护要求
 
 - 新增/迁移/改进代理入库后，**必须更新本文件**：登记数据来源（规则 3）与是否经 agent-creator（规则 1）。
-- 逐条创建/来源事实记入 `AGENTS-RECORDS.md`（`create_agent.py --records` 自动追加）；本文件记合规结论。
+- 逐条创建/来源事实记入 `AGENTS-RECORDS.md`（`agent_create.py --records` 自动追加）；本文件记合规结论。
 - 审计状态变化（如 academic 迁移代理补走 agent-creator 后转合规）应及时在「审计结论摘要」中刷新。
 - 本文件与 `skills/SKILLS-AUDIT.md` 同构（互为镜像，随各自能力库目录存放），均为数据来源的唯一记录入口。
 

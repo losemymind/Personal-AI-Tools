@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "run",
+    "--format",
+    "json",
+    "-m",
+    "deepseek/deepseek-flash",
+    "请把只读日志审查员这个角色做成可复用的代理，放 outputs/log-reader.md。只允许 read/grep/glob，负责找异常证据，缺数据交还调用者，不允许修代码。已授权你创建这个定义文件。"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-nogd7oe2\\workspace",
+  "timeout_seconds": 90,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:32:31.475819+00:00"
+}

@@ -1,0 +1,23 @@
+{
+  "synthetic": true,
+  "comparable": false,
+  "delta_available": false,
+  "reason": "Records are synthetic fixtures with one run per scenario/configuration. Both planned evals exist, but eval-b/without_skill failed (status=error, returncode=1) and produced no grading, so only eval-a can be paired (pairing coverage 0.5; valid grading samples 3/4). With n=1 per arm and half the planned pairs missing, no overall skill gain is estimable. A single internally consistent difference exists for eval-a (with_skill 1.0 vs without_skill 0.0, delta +1.0) but it is synthetic and only one eval, so it does not support an overall skill-gain claim.",
+  "evidence_boundary": "Evidence supports only: per-run execution statuses, that eval-b/without_skill errored and has no score (missing, not zero), and one synthetic paired difference for eval-a. It does not support token/cost claims (not supplied) or any overall/aggregate delta.",
+  "limitations": [
+    "All records are synthetic fixtures; no real model performance, telemetry, or cost.",
+    "Each scenario/configuration has a single run (n=1); no variance or significance can be computed.",
+    "eval-b/without_skill failed (status=error, returncode=1) and produced no grading; its score is missing, not zero.",
+    "Only 1 of 2 planned eval pairs has valid scores (eval-a); pairing coverage is 0.5.",
+    "No token or cost measurements are supplied; they are treated as unavailable, never zero.",
+    "Overall skill-gain delta is therefore not estimable from these records."
+  ],
+  "supporting": {
+    "valid_grading_samples": 3,
+    "total_attempted": 4,
+    "paired": 1,
+    "planned_pairs": 2,
+    "errors": 1,
+    "incomplete": 0
+  }
+}

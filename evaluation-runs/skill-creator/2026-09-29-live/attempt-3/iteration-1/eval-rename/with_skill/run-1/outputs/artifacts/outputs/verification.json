@@ -1,0 +1,78 @@
+{
+  "task": "rename references/checklist.md -> references/review-checklist.md in asset-note",
+  "synthetic_fixture": true,
+  "checks": [
+    {
+      "name": "skill_validator_strict_passed",
+      "passed": true,
+      "evidence": "skill_validate.py --dir outputs/asset-note --strict exit_code=0"
+    },
+    {
+      "name": "new_resource_name_present",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/review-checklist.md exists=True"
+    },
+    {
+      "name": "old_resource_name_absent",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/checklist.md exists=False"
+    },
+    {
+      "name": "references_resolve",
+      "passed": true,
+      "evidence": "refs=['references/review-checklist.md'] resolved={'references/review-checklist.md': True}"
+    },
+    {
+      "name": "no_stale_checklist_refs",
+      "passed": true,
+      "evidence": "stale_refs=[]"
+    },
+    {
+      "name": "frontmatter_unchanged",
+      "passed": true,
+      "evidence": "input_fm_sha256=a671519b138b77bd79ec712ed8ecb648189a98fa16a261ecb99f37d96b489e4d output_fm_sha256=a671519b138b77bd79ec712ed8ecb648189a98fa16a261ecb99f37d96b489e4d"
+    },
+    {
+      "name": "resource_content_unchanged",
+      "passed": true,
+      "evidence": "input_checklist_sha256=6ff74725e128accd858ff10ab402d1aa396d9b663831000dcccd514635c65e51 output_review_checklist_sha256=6ff74725e128accd858ff10ab402d1aa396d9b663831000dcccd514635c65e51"
+    },
+    {
+      "name": "skill_body_preserved_except_refs",
+      "passed": true,
+      "evidence": "SKILL.md 在将新引用还原为旧引用后与输入逐字节一致"
+    },
+    {
+      "name": "readme_preserved_except_refs",
+      "passed": true,
+      "evidence": "README.md 在将新引用还原为旧引用后与输入逐字节一致"
+    },
+    {
+      "name": "inputs_unmodified_since_task_start",
+      "passed": true,
+      "evidence": "input_file_count=5 newer_than_task_start=[] input_sha256={'asset-note/README.md': '307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2', 'asset-note/references/checklist.md': '7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60', 'asset-note/SKILL.md': '1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963', 'fixture_metadata.json': 'e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99', 'README.md': '336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d'}"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python .opencode/skills/skill-creator/scripts/skill_validate.py --dir outputs/asset-note --strict",
+      "exit_code": 0,
+      "stdout": "🔍 Validating skills in: C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-xy3kmy8q\\outputs\\asset-note\n⚙️  Mode: STRICT (CI)\n\n📊 Checked 1 skills.\n\nℹ️  Found 1 Advisories:\nℹ️  SKILL.md: No evals.json found (recommended: ship trigger tests with the skill).\n\n✨ All skills passed validation!",
+      "stderr": ""
+    },
+    {
+      "command": "python --version",
+      "exit_code": 0,
+      "stdout": "Python 3.11.8",
+      "stderr": ""
+    }
+  ],
+  "input_unchanged": true,
+  "input_hashes": {
+    "asset-note/README.md": "307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2",
+    "asset-note/references/checklist.md": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60",
+    "asset-note/SKILL.md": "1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963",
+    "fixture_metadata.json": "e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99",
+    "README.md": "336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d"
+  }
+}

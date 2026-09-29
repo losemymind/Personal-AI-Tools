@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "fixture_id": "rename-resource-v1",
+  "purpose": "Synthetic local resource-rename task; only the live model execution is evaluated.",
+  "source_skill": "asset-note",
+  "resource_before": "references/checklist.md",
+  "resource_after": "references/review-checklist.md"
+}

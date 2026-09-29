@@ -1,0 +1,271 @@
+{
+  "metadata": {
+    "skill_name": "incomplete-benchmark-v1",
+    "fixture_id": "incomplete-benchmark-v1",
+    "skill_path": "inputs/iteration-1",
+    "source": "inputs/iteration-1",
+    "synthetic": true,
+    "executor_model": null,
+    "model_source": "synthetic_fixture",
+    "timestamp": "2026-09-29T10:24:23Z",
+    "evals_planned": [
+      "a",
+      "b"
+    ],
+    "configurations": [
+      "with_skill",
+      "without_skill"
+    ],
+    "primary_configuration": "with_skill",
+    "baseline_configuration": "without_skill",
+    "provenance": "All run records/scores/timings/models are synthetic fixtures; not real telemetry."
+  },
+  "run_attempts": [
+    {
+      "eval_id": "a",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "path": "inputs/iteration-1/eval-a/with_skill/run-1",
+      "attempted": true,
+      "execution_status": "completed",
+      "fixture_status_field": "completed",
+      "returncode": 0,
+      "error": null,
+      "grading_present": true,
+      "grading_error": null,
+      "valid_grade": true,
+      "passed": 1.0,
+      "failed": 0.0,
+      "total": 1.0,
+      "pass_rate": 1.0,
+      "time_seconds": 10.0,
+      "time_source": "timing.json",
+      "tokens": null,
+      "token_source": null,
+      "tool_calls": null,
+      "expectations": [
+        {
+          "text": "Synthetic task a summary is correct.",
+          "passed": true,
+          "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+        }
+      ]
+    },
+    {
+      "eval_id": "a",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "path": "inputs/iteration-1/eval-a/without_skill/run-1",
+      "attempted": true,
+      "execution_status": "completed",
+      "fixture_status_field": "completed",
+      "returncode": 0,
+      "error": null,
+      "grading_present": true,
+      "grading_error": null,
+      "valid_grade": true,
+      "passed": 0.0,
+      "failed": 1.0,
+      "total": 1.0,
+      "pass_rate": 0.0,
+      "time_seconds": 8.0,
+      "time_source": "timing.json",
+      "tokens": null,
+      "token_source": null,
+      "tool_calls": null,
+      "expectations": [
+        {
+          "text": "Synthetic task a summary is correct.",
+          "passed": false,
+          "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+        }
+      ]
+    },
+    {
+      "eval_id": "b",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "path": "inputs/iteration-1/eval-b/with_skill/run-1",
+      "attempted": true,
+      "execution_status": "completed",
+      "fixture_status_field": "completed",
+      "returncode": 0,
+      "error": null,
+      "grading_present": true,
+      "grading_error": null,
+      "valid_grade": true,
+      "passed": 1.0,
+      "failed": 0.0,
+      "total": 1.0,
+      "pass_rate": 1.0,
+      "time_seconds": 12.0,
+      "time_source": "timing.json",
+      "tokens": null,
+      "token_source": null,
+      "tool_calls": null,
+      "expectations": [
+        {
+          "text": "Synthetic task b summary is correct.",
+          "passed": true,
+          "evidence": "Synthetic fixture assertion outcome; not a real artifact inspection."
+        }
+      ]
+    },
+    {
+      "eval_id": "b",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "path": "inputs/iteration-1/eval-b/without_skill/run-1",
+      "attempted": true,
+      "execution_status": "error",
+      "fixture_status_field": "error",
+      "returncode": 1,
+      "error": "Synthetic execution failure; grading was not produced.",
+      "grading_present": false,
+      "grading_error": "missing",
+      "valid_grade": false,
+      "passed": null,
+      "failed": null,
+      "total": null,
+      "pass_rate": null,
+      "time_seconds": 5.0,
+      "time_source": "timing.json",
+      "tokens": null,
+      "token_source": null,
+      "tool_calls": null,
+      "expectations": []
+    }
+  ],
+  "per_configuration": {
+    "with_skill": {
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "graded_valid": 2,
+      "grade_coverage": 1.0,
+      "pass_rate_samples": 2,
+      "time_samples": 2,
+      "token_samples": 0
+    },
+    "without_skill": {
+      "attempted": 2,
+      "completed": 1,
+      "errors": 1,
+      "incomplete": 0,
+      "graded_valid": 1,
+      "grade_coverage": 0.5,
+      "pass_rate_samples": 1,
+      "time_samples": 2,
+      "token_samples": 0
+    }
+  },
+  "valid_metric_samples": {
+    "pass_rate": {
+      "with_skill": 2,
+      "without_skill": 1
+    },
+    "time_seconds": {
+      "with_skill": 2,
+      "without_skill": 2
+    },
+    "tokens": {
+      "with_skill": 0,
+      "without_skill": 0
+    },
+    "note": "tokens were never supplied by the fixture; unavailable, not zero"
+  },
+  "pairing": {
+    "planned_pairs": 2,
+    "paired_count": 1,
+    "pair_coverage": 0.5,
+    "pairs": [
+      {
+        "eval_id": "a",
+        "run_number": 1,
+        "with_skill_present": true,
+        "without_skill_present": true,
+        "with_skill_valid_grade": true,
+        "without_skill_valid_grade": true,
+        "paired": true,
+        "reason": null
+      },
+      {
+        "eval_id": "b",
+        "run_number": 1,
+        "with_skill_present": true,
+        "without_skill_present": true,
+        "with_skill_valid_grade": true,
+        "without_skill_valid_grade": false,
+        "paired": false,
+        "reason": "baseline run has no valid grading (run error / missing grading.json)"
+      }
+    ]
+  },
+  "evidence_supported_deltas": {
+    "paired": {
+      "pass_rate": {
+        "n_pairs": 1,
+        "mean_delta": 1.0,
+        "values": [
+          1.0
+        ]
+      },
+      "time_seconds": {
+        "n_pairs": 1,
+        "mean_delta": 2.0,
+        "values": [
+          2.0
+        ]
+      }
+    },
+    "note": "Paired deltas use only eval/run keys with a valid grade on both sides."
+  },
+  "unsupported_deltas": {
+    "pass_rate": {
+      "primary_mean": 1.0,
+      "baseline_mean": 0.0,
+      "delta": 1.0,
+      "evidence_supported": false,
+      "reason": "unbalanced sample counts and non-paired eval coverage; not a valid gain estimate"
+    },
+    "time_seconds": {
+      "primary_mean": 11.0,
+      "baseline_mean": 6.5,
+      "delta": 4.5,
+      "evidence_supported": false,
+      "reason": "unbalanced sample counts and non-paired eval coverage; not a valid gain estimate"
+    },
+    "tokens": {
+      "primary_mean": null,
+      "baseline_mean": null,
+      "delta": null,
+      "evidence_supported": false,
+      "reason": "token measurements not supplied by fixture; unavailable (not zero)"
+    }
+  },
+  "delta_available": false,
+  "aggregate_delta": {
+    "pass_rate": null,
+    "time_seconds": null,
+    "tokens": null,
+    "reason": "Overall skill gain cannot be computed: only 1/2 eval(s) form a complete graded pair; the baseline run for eval b errored and produced no grading; token measurements were not supplied."
+  },
+  "tool_crosscheck": {
+    "tool": ".opencode/skills/skill-creator/scripts/aggregate_benchmark.py",
+    "reported_delta_pass_rate": "+1.00",
+    "reported_with_skill_runs": 2,
+    "reported_without_skill_runs": 1,
+    "discrepancies": [
+      "Dropped the errored, ungraded eval-b/without_skill run instead of counting it as an attempt/error.",
+      "Reported runs_per_configuration=2, masking that the baseline only had 1 graded run.",
+      "Computed a +1.00 delta from 2 vs 1 unpaired runs, implying a gain not supported by the records.",
+      "Reported tokens as 0.0 although token measurements were not supplied (missing cost treated as zero)."
+    ]
+  },
+  "notes": [
+    "Inputs are synthetic fixtures (fixture_metadata.json synthetic=true); results are not real measurements.",
+    "1 of 2 planned baseline runs errored, so the benchmark is not fully comparable.",
+    "No overall skill gain can be inferred from these records."
+  ]
+}

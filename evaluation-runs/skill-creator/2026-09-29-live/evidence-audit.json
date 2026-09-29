@@ -1,0 +1,174 @@
+{
+  "artifact_hash_errors": [],
+  "configured_secret_matches": [],
+  "observed_models": [
+    {
+      "run": "attempt-2\\iteration-1\\eval-benchmark\\old_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 16
+    },
+    {
+      "run": "attempt-2\\iteration-1\\eval-benchmark\\with_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 15
+    },
+    {
+      "run": "attempt-2\\iteration-1\\eval-benchmark\\without_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 16
+    },
+    {
+      "run": "attempt-2\\iteration-1\\eval-rename\\old_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 24
+    },
+    {
+      "run": "attempt-2\\iteration-1\\eval-rename\\with_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 15
+    },
+    {
+      "run": "attempt-2\\iteration-1\\eval-rename\\without_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 15
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-01",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 14
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-02",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 8
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-03",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 6
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-04",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 4
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-05",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 13
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-06",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 8
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-07",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 5
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-08",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 4
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-09",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 4
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-10",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 1
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-11",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 2
+    },
+    {
+      "run": "attempt-2\\trigger\\raw\\query-12",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 9
+    },
+    {
+      "run": "attempt-3\\iteration-1\\eval-benchmark\\old_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 18
+    },
+    {
+      "run": "attempt-3\\iteration-1\\eval-benchmark\\with_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 9
+    },
+    {
+      "run": "attempt-3\\iteration-1\\eval-benchmark\\without_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 10
+    },
+    {
+      "run": "attempt-3\\iteration-1\\eval-rename\\old_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 17
+    },
+    {
+      "run": "attempt-3\\iteration-1\\eval-rename\\with_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 14
+    },
+    {
+      "run": "attempt-3\\iteration-1\\eval-rename\\without_skill\\run-1",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "assistant_messages": 15
+    }
+  ]
+}

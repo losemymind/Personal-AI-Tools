@@ -1,9 +1,8 @@
-"""Tests for package_skill.py (per-client skill packaging).
+"""Tests for skill_package.py (per-client skill packaging).
 
-Covers the opencode permission/whitelist merge (the bug inherited from
-adapt_agent.py: a bare permission string must not discard the tools whitelist or
-widen it to a global rule), per-client post-checks, the copied tree, zip output,
-and argument/input errors.
+Covers the opencode permission/whitelist merge: a bare permission string must
+not discard the tools whitelist or widen it to a global rule. Also checks
+per-client post-checks, the copied tree, zip output, and argument/input errors.
 """
 
 import importlib.util
@@ -13,7 +12,7 @@ from pathlib import Path
 import yaml
 from conftest import ARTIFACT, run_script
 
-PACKAGE_SKILL = ARTIFACT / "scripts" / "package_skill.py"
+PACKAGE_SKILL = ARTIFACT / "scripts" / "skill_package.py"
 
 SKILL_MD = """---
 name: pkg-demo
@@ -42,7 +41,7 @@ a -> b
 
 
 def _load():
-    spec = importlib.util.spec_from_file_location("package_skill", PACKAGE_SKILL)
+    spec = importlib.util.spec_from_file_location("skill_package", PACKAGE_SKILL)
     mod = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(mod)
@@ -192,7 +191,7 @@ def _make_skill(tmp_path: Path, extra: str = "tools: [read, bash]\npermission: a
 def test_packages_all_clients_and_copies_tree(tmp_path):
     src = _make_skill(tmp_path)
     out = tmp_path / "dist"
-    r = run_script("scripts/package_skill.py", str(src), "--client", "claude",
+    r = run_script("scripts/skill_package.py", str(src), "--client", "claude",
                    "--client", "opencode", "--client", "codex", "--client", "deepseek",
                    "--out", str(out))
     assert r.returncode == 0, r.stdout + r.stderr
@@ -208,7 +207,7 @@ def test_packages_all_clients_and_copies_tree(tmp_path):
 def test_zip_output_contains_skill(tmp_path):
     src = _make_skill(tmp_path)
     out = tmp_path / "dist"
-    r = run_script("scripts/package_skill.py", str(src), "--client", "opencode",
+    r = run_script("scripts/skill_package.py", str(src), "--client", "opencode",
                    "--out", str(out), "--zip")
     assert r.returncode == 0, r.stdout + r.stderr
     z = out / "opencode" / "pkg-demo.zip"
@@ -220,7 +219,7 @@ def test_zip_output_contains_skill(tmp_path):
 def test_comma_separated_clients_accepted(tmp_path):
     src = _make_skill(tmp_path)
     out = tmp_path / "dist"
-    r = run_script("scripts/package_skill.py", str(src), "--client", "claude,opencode",
+    r = run_script("scripts/skill_package.py", str(src), "--client", "claude,opencode",
                    "--out", str(out))
     assert r.returncode == 0, r.stdout + r.stderr
     assert (out / "claude" / "pkg-demo" / "SKILL.md").is_file()
@@ -233,7 +232,7 @@ def test_comma_separated_clients_accepted(tmp_path):
 def test_missing_skill_md_fails(tmp_path):
     d = tmp_path / "empty-skill"
     d.mkdir()
-    r = run_script("scripts/package_skill.py", str(d), "--client", "claude",
+    r = run_script("scripts/skill_package.py", str(d), "--client", "claude",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 1
     assert "no SKILL.md" in r.stderr or "no SKILL.md" in r.stdout
@@ -241,7 +240,7 @@ def test_missing_skill_md_fails(tmp_path):
 
 def test_unknown_client_fails(tmp_path):
     src = _make_skill(tmp_path)
-    r = run_script("scripts/package_skill.py", str(src), "--client", "vim",
+    r = run_script("scripts/skill_package.py", str(src), "--client", "vim",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 2
     assert "unknown client" in r.stderr
@@ -253,14 +252,14 @@ def test_missing_description_rejected(tmp_path):
     (d / "SKILL.md").write_text(
         '---\nname: pkg-demo\n---\n\n# x\n', encoding="utf-8"
     )
-    r = run_script("scripts/package_skill.py", str(d), "--client", "opencode",
+    r = run_script("scripts/skill_package.py", str(d), "--client", "opencode",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 1
 
 
 def test_out_inside_skill_rejected(tmp_path):
     src = _make_skill(tmp_path)
-    r = run_script("scripts/package_skill.py", str(src), "--client", "claude",
+    r = run_script("scripts/skill_package.py", str(src), "--client", "claude",
                    "--out", str(src / "dist"))
     assert r.returncode == 1
     assert "must not be inside" in r.stderr
@@ -270,7 +269,7 @@ def test_package_out_existing_file_fails_cleanly(tmp_path):
     skill = _make_skill(tmp_path)
     out_file = tmp_path / "not_a_dir"
     out_file.write_text("x", encoding="utf-8")
-    r = run_script("scripts/package_skill.py", str(skill), "--client", "claude", "--out", str(out_file))
+    r = run_script("scripts/skill_package.py", str(skill), "--client", "claude", "--out", str(out_file))
     assert r.returncode == 1
     assert "Traceback" not in r.stderr
     assert "expected a directory" in (r.stdout + r.stderr)

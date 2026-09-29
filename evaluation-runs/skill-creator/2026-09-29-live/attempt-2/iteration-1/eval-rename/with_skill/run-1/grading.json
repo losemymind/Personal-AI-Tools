@@ -1,0 +1,125 @@
+{
+  "expectations": [
+    {
+      "text": "outputs/asset-note 是完整技能结果，含 SKILL.md、README.md 与 references/review-checklist.md；references/checklist.md 不再存在。",
+      "passed": true,
+      "evidence": "outputs/artifacts/outputs/asset-note 的文件集合恰为 SKILL.md、README.md、references/review-checklist.md；旧名不存在。"
+    },
+    {
+      "text": "输出 SKILL.md 和 README.md 的全部原 references/checklist.md 引用均改为 references/review-checklist.md，且新引用可解析。",
+      "passed": true,
+      "evidence": "独立读取两个输出文档：SKILL.md 1处、README.md 2处路径全部替换，旧路径出现次数0，新目标文件存在。"
+    },
+    {
+      "text": "SKILL.md 的 frontmatter 与输入完全一致；SKILL.md、README.md 除必要路径替换外保持不变。",
+      "passed": true,
+      "evidence": "独立逐字节比较：两个输出文档恰等于输入字节中的 references/checklist.md 替换成 references/review-checklist.md；输出分别1150与294字节，frontmatter未改。"
+    },
+    {
+      "text": "输出 references/review-checklist.md 的文件内容与输入 references/checklist.md 完全一致，没有新增另一份旧名副本。",
+      "passed": true,
+      "evidence": "新清单与输入旧清单逐字节相同，SHA-256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60；目标技能下无旧名副本。"
+    },
+    {
+      "text": "inputs/ 整棵目录的路径集合和文件内容与冻结夹具完全相同。",
+      "passed": true,
+      "evidence": "input-integrity.json 的 source 与 after 均等于独立重算的冻结夹具5文件SHA-256映射，路径集合与内容完整一致。"
+    },
+    {
+      "text": "outputs/verification.json 存在且可解析，包含真实检查结果、实际执行命令及退出状态，并可由执行记录和成品复核；不能只声称已测试。",
+      "passed": true,
+      "evidence": "verification.json可解析，checks/commands/input_unchanged齐全。transcript.md:51（随包新validator strict退出0）与 :62（真实stdlib自检输出PASS且退出0；脚本内部再次运行validator）；检查结论与实际文件独立复核一致。记录中的整理后stdout不视为原始捕获，核验依据为真实transcript。"
+    },
+    {
+      "text": "任务在本次运行中完成，不停下来等待确认；没有联网、安装软件、调用其他模型/子代理或写入临时工作区之外。",
+      "passed": true,
+      "evidence": "metrics.json returncode=0、timed_out=false，最终完成；检查全部结构化工具调用，未见联网、软件安装、另起模型/子代理或成功的外部写入。transcript.md:45读取随包skill_validate.py并在:51运行；未观察到加载SKILL.md正文或调用skill工具。:54外部临时写入被拒，:58转到outputs，最终直接交付。 本条依冻结文字评价实际写入；被拒尝试和全局读取污染另行报告。"
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "client": "opencode",
+    "model": "deepseek/deepseek-flash",
+    "models": [],
+    "total_tokens": 379802,
+    "tokens_source": "opencode_step_finish_total",
+    "total_tool_calls": 18,
+    "tool_calls_source": "structured_tool_events",
+    "model_source": "requested",
+    "requested_model": "deepseek/deepseek-flash",
+    "skill": "skill-creator",
+    "returncode": 0,
+    "timed_out": false,
+    "output_chars": 196481,
+    "status": "completed",
+    "error": null,
+    "artifact_count": 4,
+    "artifact_collection_errors": 0
+  },
+  "timing": {
+    "total_duration_seconds": 53.146,
+    "timed_out": false
+  },
+  "claims": [
+    {
+      "claim": "技能产物仅发生所需路径替换，清单原始字节未变",
+      "type": "factual",
+      "verified": true,
+      "evidence": "独立逐字节比较：两个输出文档恰等于输入字节中的 references/checklist.md 替换成 references/review-checklist.md；输出分别1150与294字节，frontmatter未改。 新清单与输入旧清单逐字节相同，SHA-256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60；目标技能下无旧名副本。"
+    },
+    {
+      "claim": "整棵输入未变",
+      "type": "factual",
+      "verified": true,
+      "evidence": "input-integrity.json 的 source 与 after 均等于独立重算的冻结夹具5文件SHA-256映射，路径集合与内容完整一致。"
+    },
+    {
+      "claim": "无技能基线未使用创建器能力",
+      "type": "experimental",
+      "verified": null,
+      "evidence": "本配置提供了创建器，不适用此声明。"
+    }
+  ],
+  "user_notes_summary": {
+    "uncertainties": [
+      "一次运行、单一请求模型；model_source=requested，没有流中独立模型身份。",
+      "仅审核可见工具行为，客户端隔离不是操作系统沙箱。"
+    ],
+    "needs_review": [
+      "仅观察到新validator的读取与执行；不能把本次耗时差归因于SKILL.md正文压缩。",
+      "verification中的清单SHA-256基于read_text归一化换行；独立评分另外按文件原始字节核对，原始SHA-256为7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60。",
+      "自检input_unchanged是语义存在性检查，独立评分另用整棵输入哈希验证。"
+    ],
+    "workarounds": [
+      "外部临时脚本写入被客户端拒绝后，改在outputs内执行。"
+    ]
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "outputs/verification.json 存在且可解析，包含真实检查结果、实际执行命令及退出状态，并可由执行记录和成品复核；不能只声称已测试。",
+        "reason": "后续冻结集可明确要求逐字保存实际stdout/stderr，并要求执行者自己核验整棵inputs的前后哈希；本轮不追改断言。"
+      },
+      {
+        "assertion": "任务在本次运行中完成，不停下来等待确认；没有联网、安装软件、调用其他模型/子代理或写入临时工作区之外。",
+        "reason": "后续可将禁止访问全局技能能力与禁止外部写入分别列出；本轮发现的全局工具访问作为实验协议污染保留，不追加扣分项。"
+      }
+    ],
+    "overall": "七条冻结任务断言按实际产物及执行证据通过。attempt-2的无技能基线被全局validator污染，不能据本次任务分数或耗时做无技能因果推断。"
+  },
+  "independent_review": {
+    "reviewer": "/root/review",
+    "reviewed_at": "2026-09-29T10:27:49.576558+00:00",
+    "blind": false,
+    "assertions_source": "scenarios.json name=rename（运行前冻结）",
+    "read_only_execution_artifacts": true,
+    "comparison_eligible": false,
+    "ineligibility_reason": "attempt-2 without_skill global validator contamination; retain raw attempt for audit",
+    "byte_checks_recomputed": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "run",
+    "--format",
+    "json",
+    "-m",
+    "deepseek/deepseek-flash",
+    "按照 inputs/brief.md 修复 inputs/bug-triager 代理，并交付要求的两个客户端包及 outputs/verification.json。必须完成文件，不只给建议。不要改输入或真实客户端配置。需求已经给定，可自主完成这次修复。\n\n[Scenario files]\nDeclared input files are in inputs/ (read-only fixtures). Write deliverables under outputs/. The executor will retain deliverables after the run."
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-ml91hn1x\\temp\\scenario-916hc38g",
+  "timeout_seconds": 360,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:34:00.422601+00:00"
+}

@@ -1,0 +1,14 @@
+{
+  "source_path": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\fixtures\\trigger",
+  "source_before": {
+    "sample-agent.md": "81e58aca2e6ced356795ada6532a3dcbd03c449fcddd107bb3a6382653cf0964"
+  },
+  "source": {
+    "sample-agent.md": "81e58aca2e6ced356795ada6532a3dcbd03c449fcddd107bb3a6382653cf0964"
+  },
+  "after": {
+    "sample-agent.md": "81e58aca2e6ced356795ada6532a3dcbd03c449fcddd107bb3a6382653cf0964"
+  },
+  "source_unchanged": true,
+  "unchanged": true
+}

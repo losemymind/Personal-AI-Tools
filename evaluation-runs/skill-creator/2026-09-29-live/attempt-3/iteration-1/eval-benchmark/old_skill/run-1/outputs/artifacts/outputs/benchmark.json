@@ -1,0 +1,213 @@
+{
+  "schema_version": "benchmark-audit/1",
+  "generated_at": "2026-09-29T10:30:47Z",
+  "synthetic": true,
+  "fixture": "incomplete-benchmark-v1",
+  "inputs_dir": "inputs/iteration-1",
+  "provenance_note": "All run records, grades, timings and model names are synthetic fixtures; they are not real measurements.",
+  "method": {
+    "tool_used": ".opencode/skills/skill-creator/scripts/aggregate_benchmark.py (numeric skeleton), corrected by stdlib status audit",
+    "tool_caveats": [
+      "stock tool omits an errored/ungraded run without recording it and computes the baseline from the remaining run",
+      "stock tool defaults missing tokens to 0.0 and reports a 0 delta",
+      "stock tool emits executor_model placeholder '<model-name>'"
+    ]
+  },
+  "configurations": {
+    "with_skill": {
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "valid_scored_runs": 2,
+      "coverage": 1.0
+    },
+    "without_skill": {
+      "attempted": 2,
+      "completed": 1,
+      "errors": 1,
+      "incomplete": 1,
+      "valid_scored_runs": 1,
+      "coverage": 0.5
+    }
+  },
+  "valid_metric_samples": {
+    "pass_rate": {
+      "with_skill": 2,
+      "without_skill": 1
+    },
+    "time_seconds": {
+      "with_skill": 2,
+      "without_skill": 1,
+      "note": "valid = completed runs; 4 timing files exist but one belongs to the errored eval-b baseline run"
+    },
+    "tokens": {
+      "with_skill": 0,
+      "without_skill": 0,
+      "supplied": false
+    },
+    "tool_calls": {
+      "with_skill": 0,
+      "without_skill": 0,
+      "supplied": false
+    }
+  },
+  "pairing": {
+    "possible_pairs": 2,
+    "valid_pairs": 1,
+    "pair_coverage": 0.5,
+    "pairs": [
+      {
+        "eval_id": "a",
+        "run_number": 1,
+        "pair_valid": true,
+        "with_skill_pass_rate": 1.0,
+        "without_skill_pass_rate": 0.0,
+        "pass_rate_delta": 1.0,
+        "time_seconds_delta": 2.0
+      },
+      {
+        "eval_id": "b",
+        "run_number": 1,
+        "pair_valid": false,
+        "reason": "without_skill run is error (returncode=1), no valid grading; missing score is not a zero score"
+      }
+    ]
+  },
+  "deltas": {
+    "pass_rate": {
+      "available": true,
+      "value": 1.0,
+      "basis": "completed runs only: with_skill n=2 vs without_skill n=1; baseline covers eval-a only, eval-b baseline errored"
+    },
+    "time_seconds": {
+      "available": true,
+      "value": 3.0,
+      "basis": "completed runs only (errored eval-b timing excluded)"
+    },
+    "tokens": {
+      "available": false,
+      "value": null,
+      "reason": "token_measurements = 'not supplied'; no run record carries total_tokens. Missing cost is not zero."
+    },
+    "tool_calls": {
+      "available": false,
+      "value": null,
+      "reason": "metrics.json records no total_tool_calls."
+    }
+  },
+  "run_summary": {
+    "with_skill": {
+      "runs": 2,
+      "attempted": 2,
+      "pass_rate": {
+        "n": 2,
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "n": 2,
+        "mean": 11.0,
+        "stddev": 1.4142,
+        "min": 10.0,
+        "max": 12.0
+      },
+      "tokens": null
+    },
+    "without_skill": {
+      "runs": 1,
+      "attempted": 2,
+      "pass_rate": {
+        "n": 1,
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "time_seconds": {
+        "n": 1,
+        "mean": 8.0,
+        "stddev": 0.0,
+        "min": 8.0,
+        "max": 8.0
+      },
+      "tokens": null
+    },
+    "delta": {
+      "primary": "with_skill",
+      "baseline": "without_skill",
+      "pass_rate": "+1.00",
+      "time_seconds": "+3.0",
+      "tokens": null,
+      "note": "pass_rate/time delta computed from valid runs only and is scoped to the single paired eval-a; tokens unavailable; not a generalizable skill gain"
+    }
+  },
+  "runs": [
+    {
+      "eval_id": "a",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "status": "completed",
+      "returncode": 0,
+      "error": null,
+      "completed": true,
+      "errored": false,
+      "incomplete": false,
+      "valid_score": true,
+      "pass_rate": 1.0,
+      "time_seconds": 10.0,
+      "tokens": null,
+      "has_grading": true
+    },
+    {
+      "eval_id": "a",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "status": "completed",
+      "returncode": 0,
+      "error": null,
+      "completed": true,
+      "errored": false,
+      "incomplete": false,
+      "valid_score": true,
+      "pass_rate": 0.0,
+      "time_seconds": 8.0,
+      "tokens": null,
+      "has_grading": true
+    },
+    {
+      "eval_id": "b",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "status": "completed",
+      "returncode": 0,
+      "error": null,
+      "completed": true,
+      "errored": false,
+      "incomplete": false,
+      "valid_score": true,
+      "pass_rate": 1.0,
+      "time_seconds": 12.0,
+      "tokens": null,
+      "has_grading": true
+    },
+    {
+      "eval_id": "b",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "status": "error",
+      "returncode": 1,
+      "error": "Synthetic execution failure; grading was not produced.",
+      "completed": false,
+      "errored": true,
+      "incomplete": true,
+      "valid_score": false,
+      "pass_rate": null,
+      "time_seconds": 5.0,
+      "tokens": null,
+      "has_grading": false
+    }
+  ]
+}

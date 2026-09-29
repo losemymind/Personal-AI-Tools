@@ -1,0 +1,8 @@
+完成。交付物：
+
+- `outputs/bug-triager/AGENT.md` + `references/report-format.md` — 中文只读 subagent，`tools: [read, grep, glob]`，permission 默认 `"*": deny` 仅放行三种读取，已移除 version/tags/tools_clients/source，`color: "#2563EB"`，含必须做/拒绝做、升级路径、可验收完成标准。
+- `outputs/packages/opencode/bug-triager/` — 规范工具数组转 permission 对象（read/grep/glob allow，其余 deny）。
+- `outputs/packages/claude/bug-triager/` — `tools: Read, Grep, Glob`。
+- `outputs/verification.json` — 如实区分已执行校验与未执行项。
+
+验证：`validate_agents.py --strict` 对 canonical 与两个包均 exit 0；静态审计全通过（字段、权限、引用包内可解析）。未执行：OpenCode/Claude 客户端原生加载（环境无运行时）、独立评审（仅生成方自评，已在 `review.independent=false` 标注）。未改动 inputs，未安装到真实客户端。

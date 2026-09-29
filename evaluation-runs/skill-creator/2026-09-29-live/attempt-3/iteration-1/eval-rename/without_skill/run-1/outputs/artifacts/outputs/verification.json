@@ -1,0 +1,60 @@
+{
+  "task": "rename asset-note references/checklist.md -> references/review-checklist.md",
+  "checks": [
+    {
+      "name": "new_filename_exists",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/review-checklist.md exists=True"
+    },
+    {
+      "name": "old_filename_removed",
+      "passed": true,
+      "evidence": "outputs/asset-note/references/checklist.md exists=False"
+    },
+    {
+      "name": "references_resolve",
+      "passed": true,
+      "evidence": "refs=[('SKILL.md', 'references/review-checklist.md'), ('README.md', 'references/review-checklist.md'), ('README.md', 'references/review-checklist.md')] resolved=True stale_old_ref=[]"
+    },
+    {
+      "name": "frontmatter_unchanged",
+      "passed": true,
+      "evidence": "input_frontmatter==output_frontmatter=True"
+    },
+    {
+      "name": "skill_body_unchanged",
+      "passed": true,
+      "evidence": "SKILL.md identical to input after undoing rename=True"
+    },
+    {
+      "name": "readme_unchanged",
+      "passed": true,
+      "evidence": "README.md identical to input after undoing rename=True"
+    },
+    {
+      "name": "resource_content_unchanged",
+      "passed": true,
+      "evidence": "review-checklist.md sha256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60 equals input checklist.md sha256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60 -> True"
+    },
+    {
+      "name": "input_unchanged",
+      "passed": true,
+      "evidence": "inputs SKILL.md/README.md still reference references/checklist.md=True; inputs references/checklist.md present=True; inputs references/review-checklist.md absent=True"
+    }
+  ],
+  "commands": [
+    {
+      "command": "New-Item -ItemType Directory -Force -Path \"outputs\" | Out-Null; Copy-Item -Recurse -Force \"inputs\\asset-note\" \"outputs\\asset-note\"; Move-Item -LiteralPath \"outputs\\asset-note\\references\\checklist.md\" -Destination \"outputs\\asset-note\\references\\review-checklist.md\"; Get-ChildItem -Recurse -Force \"outputs\" | Select-Object FullName",
+      "exit_code": 0,
+      "stdout": "\nFullName                                                                                                     \n--------                                                                                                     \nC:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-piug1s9t\\outputs\\asset-note                               \nC:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-piug1s9t\\outputs\\_verify.py                               \nC:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-piug1s9t\\outputs\\asset-note\\references                    \nC:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-piug1s9t\\outputs\\asset-note\\README.md                     \nC:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-piug1s9t\\outputs\\asset-note\\SKILL.md                      \nC:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-piug1s9t\\outputs\\asset-note\\references\\review-checklist.md\n\n\n",
+      "stderr": ""
+    },
+    {
+      "command": "python outputs\\_verify.py",
+      "exit_code": 0,
+      "stdout": "{\"status\": \"PASS\", \"checks_passed\": 8, \"checks_total\": 8}",
+      "stderr": ""
+    }
+  ],
+  "input_unchanged": true
+}

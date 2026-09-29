@@ -1,0 +1,14 @@
+{
+  "synthetic": true,
+  "client": "synthetic-client",
+  "model": "synthetic-fixture-model",
+  "models": [
+    "synthetic-fixture-model"
+  ],
+  "model_source": "synthetic_fixture",
+  "returncode": 0,
+  "timed_out": false,
+  "status": "completed",
+  "error": null,
+  "provenance": "Artificial fixture record, not execution telemetry."
+}

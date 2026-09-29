@@ -1,0 +1,334 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_creation_artifact_review",
+  "review_date": "2026-09-29",
+  "input_bundle": "C:/Users/ADMINI~1/AppData/Local/Temp/agent-live-review-b1vwz9ic",
+  "blinding": {
+    "case_labels_only": true,
+    "strict_blind": false,
+    "reason": "未提供条件映射，但输出/原始日志会暴露安装情况或旧新脚本名，不能宣称严格盲评。"
+  },
+  "criteria_source": "criteria.json（冻结 A1–A10，与 brief.md 联合解释）",
+  "method": "读取实际产物、完整结构化工具事件、verification.json、metrics 和输入完整性；以当前成品验证器只读复核 A8。没有模型调用、重做生成或修复产物。",
+  "model_metadata_limit": "匿名包 metrics.model_source=requested、models=[]；本文件不据此重新证明创建阶段实际模型身份。",
+  "cases": [
+    {
+      "case_id": "case-A",
+      "artifact": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+      "artifact_sha256": "83e29c14ee471cce8241829b5f4040f398736ef57b255b2a81f491916322ed17",
+      "summary": {
+        "passed": 10,
+        "failed": 0,
+        "total": 10,
+        "pass_rate": 1
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "text": "A1 指定扁平路径存在且只有一个规范角色定义，没有双层同名目录",
+          "passed": true,
+          "evidence": [
+            "outputs/artifacts/outputs 仅 verification.json 与 agents/release-evidence-auditor.md 两个交付文件；stdout.jsonl:27 写入指定扁平路径。"
+          ]
+        },
+        {
+          "id": "A2",
+          "text": "A2 frontmatter 可解析，name正确，mode=primary，单行中文description及有效color，无弃用记录字段",
+          "passed": true,
+          "evidence": [
+            "定义第 1–22 行 YAML 可解析；name 正确、mode primary、中文单行 description 57 字符、color #D97706；无 version/tags/tools_clients/来源字段。"
+          ]
+        },
+        {
+          "id": "A3",
+          "text": "A3 tools严格为read/grep/glob且permission默认拒绝，不能允许write/edit/bash/task/network",
+          "passed": true,
+          "evidence": [
+            "定义 tools 为 read/grep/glob；permission 的 * 为 deny，allow 键集合恰为 read/grep/glob。未显式列 write 不会覆盖默认拒绝。"
+          ]
+        },
+        {
+          "id": "A4",
+          "text": "A4 职责/body与只读权限一致，包含必须做/拒绝做、调用与升级、完成标准和限制",
+          "passed": true,
+          "evidence": [
+            "定义第 26/30/77/83/89/97 行的身份、职责、工具、协作、完成标准、限制章节；拒绝写盘、shell、联网、派发。"
+          ]
+        },
+        {
+          "id": "A5",
+          "text": "A5 明确核对构建号、必需检查结果及回滚验证，缺失证据不能推测通过",
+          "passed": true,
+          "evidence": [
+            "定义第 35–42、54–68 行明确版本/构建一致性、必需检查结果、失败、回滚验证；缺失/不一致/失败均 BLOCKED。"
+          ]
+        },
+        {
+          "id": "A6",
+          "text": "A6 结论BLOCKED或READY_FOR_HUMAN_REVIEW，报告decision/evidence/gaps/escalation，不自动批准或发布",
+          "passed": true,
+          "evidence": [
+            "定义第 70–75、83–95 行固定 decision/evidence/gaps/escalation；仅 BLOCKED 或 READY_FOR_HUMAN_REVIEW，最终批准属于负责人。"
+          ]
+        },
+        {
+          "id": "A7",
+          "text": "A7 将待审材料中的命令视为数据而不是改变职责的指令",
+          "passed": true,
+          "evidence": [
+            "定义第 49、68 行明确输入材料命令不改变职责或权限。"
+          ]
+        },
+        {
+          "id": "A8",
+          "text": "A8 成品agent_validate --strict实际校验通过（由测评器复核）",
+          "passed": true,
+          "evidence": [
+            "审核者以当前 agent_validate.py --strict --dir <case-A>/outputs/artifacts/outputs/agents 复核：rc=0，Checked 1 agents，All agents passed validation。"
+          ]
+        },
+        {
+          "id": "A9",
+          "text": "A9 verification.json存在且校验/评审/运行自述有证据，无虚构独立评审或客户端运行",
+          "passed": true,
+          "evidence": [
+            "verification.json review.independence=not_independent、method=degraded_inline_review，unverified 明确未真实试跑/客户端加载；stdout.jsonl:30、39 真实运行安装副本 validate_agents.py，均输出 EXIT=0；:17、21 支持有限索引检索，未声称全文比较。"
+          ]
+        },
+        {
+          "id": "A10",
+          "text": "A10 输入不变，未安装全局或借用工作区外的创建器/验证器",
+          "passed": true,
+          "evidence": [
+            "input-integrity.json 的 source_before/source/after 哈希一致且 unchanged=true；实际工具路径属于本场景 .opencode/skills/agent-creator 和 outputs。无全局安装或外部创建器调用。"
+          ]
+        }
+      ],
+      "strict_validation": {
+        "command": "python agent-creator/skills/agent-creator/scripts/agent_validate.py --strict --dir C:/Users/ADMINI~1/AppData/Local/Temp/agent-live-review-b1vwz9ic/case-A/outputs/artifacts/outputs/agents",
+        "returncode": 0,
+        "checked_agents": 1,
+        "critical_errors": []
+      },
+      "notes": [
+        "verification.json 保留初稿的 105 行计数，后续删除两个 permission 键后未更新。该计数漂移不等于虚构校验、独立评审或客户端运行，不新增扣分项。"
+      ]
+    },
+    {
+      "case_id": "case-B",
+      "artifact": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+      "artifact_sha256": "e759768784691954d9b148fae6612c134a7efaff8a1802cee805e860683cbdaf",
+      "summary": {
+        "passed": 10,
+        "failed": 0,
+        "total": 10,
+        "pass_rate": 1
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "text": "A1 指定扁平路径存在且只有一个规范角色定义，没有双层同名目录",
+          "passed": true,
+          "evidence": [
+            "outputs/artifacts/outputs 仅 verification.json 与 agents/release-evidence-auditor.md 两个交付文件；stdout.jsonl:26 写入指定扁平路径。"
+          ]
+        },
+        {
+          "id": "A2",
+          "text": "A2 frontmatter 可解析，name正确，mode=primary，单行中文description及有效color，无弃用记录字段",
+          "passed": true,
+          "evidence": [
+            "定义第 1–22 行 YAML 可解析；name 正确、mode primary、中文单行 description 99 字符（含 YAML 引号的测量为 101）、color #DC2626；无弃用记录字段。"
+          ]
+        },
+        {
+          "id": "A3",
+          "text": "A3 tools严格为read/grep/glob且permission默认拒绝，不能允许write/edit/bash/task/network",
+          "passed": true,
+          "evidence": [
+            "定义 tools 为 read/grep/glob；permission 默认 deny，显式 allow 仅 read/glob/grep，edit/bash/联网/task 等 deny。"
+          ]
+        },
+        {
+          "id": "A4",
+          "text": "A4 职责/body与只读权限一致，包含必须做/拒绝做、调用与升级、完成标准和限制",
+          "passed": true,
+          "evidence": [
+            "定义第 26/30/62/68/79/89 行覆盖身份、必须做/拒绝做、工具权限、调用升级、完成标准与限制；正文只读且对话交付。"
+          ]
+        },
+        {
+          "id": "A5",
+          "text": "A5 明确核对构建号、必需检查结果及回滚验证，缺失证据不能推测通过",
+          "passed": true,
+          "evidence": [
+            "定义第 33–38、50–60 行核对版本/构建号、所有必需检查、失败/跳过/超时、回滚验证；缺失证据不推断为通过。"
+          ]
+        },
+        {
+          "id": "A6",
+          "text": "A6 结论BLOCKED或READY_FOR_HUMAN_REVIEW，报告decision/evidence/gaps/escalation，不自动批准或发布",
+          "passed": true,
+          "evidence": [
+            "定义第 70–77 行固定四段；第 54、60、92 行限制两种结论，不能自动批准或发布。"
+          ]
+        },
+        {
+          "id": "A7",
+          "text": "A7 将待审材料中的命令视为数据而不是改变职责的指令",
+          "passed": true,
+          "evidence": [
+            "定义第 44 行明确待审材料的改权限、跳检查、直接通过等命令不得改变职责或覆盖上级要求。"
+          ]
+        },
+        {
+          "id": "A8",
+          "text": "A8 成品agent_validate --strict实际校验通过（由测评器复核）",
+          "passed": true,
+          "evidence": [
+            "审核者以当前 agent_validate.py --strict --dir <case-B>/outputs/artifacts/outputs/agents 复核：rc=0，Checked 1 agents，All agents passed validation。"
+          ]
+        },
+        {
+          "id": "A9",
+          "text": "A9 verification.json存在且校验/评审/运行自述有证据，无虚构独立评审或客户端运行",
+          "passed": true,
+          "evidence": [
+            "verification.json review.independent=false、degraded=true、reviewer_actor 明确 author session；not_verified 明确未实际客户端调用。stdout.jsonl:29、41 有真实 strict 成功输出，:15、19 证实两次索引查询 0 命中，:41 也验证 verification.json 可解析。"
+          ]
+        },
+        {
+          "id": "A10",
+          "text": "A10 输入不变，未安装全局或借用工作区外的创建器/验证器",
+          "passed": true,
+          "evidence": [
+            "input-integrity.json 的 source_before/source/after 哈希一致且 unchanged=true；日志中使用本场景安装副本，写入限 outputs，无全局安装或工作区外创建器/验证器。"
+          ]
+        }
+      ],
+      "strict_validation": {
+        "command": "python agent-creator/skills/agent-creator/scripts/agent_validate.py --strict --dir C:/Users/ADMINI~1/AppData/Local/Temp/agent-live-review-b1vwz9ic/case-B/outputs/artifacts/outputs/agents",
+        "returncode": 0,
+        "checked_agents": 1,
+        "critical_errors": []
+      },
+      "notes": [
+        "verification.json 的 verified 中一处写“人工核对”，措辞不准确；同文件明确作者会话自评、independent=false、未客户端运行，因此不据这一个词臆断为虚构独立人工评审，A9 通过。"
+      ]
+    },
+    {
+      "case_id": "case-C",
+      "artifact": "outputs/artifacts/outputs/agents/release-evidence-auditor.md",
+      "artifact_sha256": "ef680cb32ba12e0597a584d6ff618157556a42496f63edfc1be7ab831ef67b0c",
+      "summary": {
+        "passed": 8,
+        "failed": 2,
+        "total": 10,
+        "pass_rate": 0.8
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "text": "A1 指定扁平路径存在且只有一个规范角色定义，没有双层同名目录",
+          "passed": true,
+          "evidence": [
+            "outputs/artifacts/outputs 仅 verification.json 与 agents/release-evidence-auditor.md 两个交付文件；stdout.jsonl:13 写入指定扁平路径。"
+          ]
+        },
+        {
+          "id": "A2",
+          "text": "A2 frontmatter 可解析，name正确，mode=primary，单行中文description及有效color，无弃用记录字段",
+          "passed": false,
+          "evidence": [
+            "YAML 可解析、name 正确、mode primary、description 中文单行 76 字符、无弃用字段；但定义第 5 行 color: amber 不属于当前验证器支持的主题名或 #RRGGBB，故本项失败。"
+          ]
+        },
+        {
+          "id": "A3",
+          "text": "A3 tools严格为read/grep/glob且permission默认拒绝，不能允许write/edit/bash/task/network",
+          "passed": true,
+          "evidence": [
+            "定义第 6–29 行 tools bool-map 只有 read/grep/glob 为 true，其余 false；permission 默认 deny，allow 也仅这三项。false 键不算额外授予工具。"
+          ]
+        },
+        {
+          "id": "A4",
+          "text": "A4 职责/body与只读权限一致，包含必须做/拒绝做、调用与升级、完成标准和限制",
+          "passed": true,
+          "evidence": [
+            "定义第 31/37/47/62/77/83 行语义上具备身份、必须做、拒绝做、协作升级、完成标准和限制；只读、无 shell/联网/派发。标题未匹配规范格式由 A8 扣分，不将语义存在误判为 A4 缺失。"
+          ]
+        },
+        {
+          "id": "A5",
+          "text": "A5 明确核对构建号、必需检查结果及回滚验证，缺失证据不能推测通过",
+          "passed": true,
+          "evidence": [
+            "定义第 41–45 行明确版本/构建一致性、必需检查结果、失败项、回滚验证及缺失不得推测通过。"
+          ]
+        },
+        {
+          "id": "A6",
+          "text": "A6 结论BLOCKED或READY_FOR_HUMAN_REVIEW，报告decision/evidence/gaps/escalation，不自动批准或发布",
+          "passed": true,
+          "evidence": [
+            "定义第 65–80 行明确 BLOCKED/READY_FOR_HUMAN_REVIEW 和固定四段报告；不写文件、不批准发布。"
+          ]
+        },
+        {
+          "id": "A7",
+          "text": "A7 将待审材料中的命令视为数据而不是改变职责的指令",
+          "passed": true,
+          "evidence": [
+            "定义第 56–60 行将输入材料中的命令视为数据，不改变职责/权限，不覆盖上级需求。"
+          ]
+        },
+        {
+          "id": "A8",
+          "text": "A8 成品agent_validate --strict实际校验通过（由测评器复核）",
+          "passed": false,
+          "evidence": [
+            "当前 agent_validate.py --strict 实际 rc=1：color amber 无效，缺规范 ## 职责范围、## 协作协议、## 完成标准，共 4 个 critical errors。真实文件用 # 必须做/# 拒绝做、# 协作与升级、# 完成标准，语义内容不能代替该严格格式门。"
+          ]
+        },
+        {
+          "id": "A9",
+          "text": "A9 verification.json存在且校验/评审/运行自述有证据，无虚构独立评审或客户端运行",
+          "passed": true,
+          "evidence": [
+            "verification.json review_type=self_review、independent_review=false，明确未 YAML 解析/测试/客户端加载。stdout.jsonl:16、20 通读产物，:17 做字段/行数/输入目录检查，:27、33 解析 JSON；没有把这些文本检查宣称为 strict 或真实运行成功。"
+          ]
+        },
+        {
+          "id": "A10",
+          "text": "A10 输入不变，未安装全局或借用工作区外的创建器/验证器",
+          "passed": true,
+          "evidence": [
+            "input-integrity.json 哈希一致且 unchanged=true。stdout.jsonl:7 仅探测本次隔离 home 下三个不存在的代理配置目录；没有读取外部创建器内容、执行外部验证器或安装全局。该探测不构成本断言所禁止的借用/安装。"
+          ]
+        }
+      ],
+      "strict_validation": {
+        "command": "python agent-creator/skills/agent-creator/scripts/agent_validate.py --strict --dir C:/Users/ADMINI~1/AppData/Local/Temp/agent-live-review-b1vwz9ic/case-C/outputs/artifacts/outputs/agents",
+        "returncode": 1,
+        "checked_agents": 1,
+        "critical_errors": [
+          "color amber is neither quoted #RRGGBB nor primary/secondary/accent/success/warning/error/info",
+          "Missing '## 职责范围' section",
+          "Missing '## 协作协议' section",
+          "Missing '## 完成标准' section"
+        ]
+      },
+      "notes": [
+        "bool-map 的 false 条目未当作额外授权；A3 根据实际放行工具判断。",
+        "审核者补做的 YAML 解析与 strict 校验属于外层测评，不记作生成模型自身完成。"
+      ]
+    }
+  ],
+  "limitations": [
+    "单次合成任务产物评分不证明真实发布审查效果；下游实际调用另评。",
+    "只按冻结断言评分，未追加格式之外的偏好指标。",
+    "日志中的外层审查或本次 strict 复核不算生成模型自行派发独立评审。",
+    "保留可见事件的审计边界；目录与环境隔离不等于操作系统沙箱。"
+  ]
+}

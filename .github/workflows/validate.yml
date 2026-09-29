@@ -22,9 +22,9 @@ jobs:
         run: python -m pytest tests/ -q
       - name: Artifact strict self-check
         working-directory: skill-creator
-        run: python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
+        run: python skills/skill-creator/scripts/skill_validate.py --strict --dir skills/skill-creator
       - name: Capability library strict check
-        run: python skill-creator/skills/skill-creator/scripts/validate_skills.py --strict --dir skills
+        run: python skill-creator/skills/skill-creator/scripts/skill_validate.py --strict --dir skills
 
   agent-creator:
     name: agent-creator (pytest + library strict)
@@ -40,7 +40,7 @@ jobs:
         working-directory: agent-creator
         run: python -m pytest tests/ -q
       - name: Capability library strict check
-        run: python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --dir agents
+        run: python agent-creator/skills/agent-creator/scripts/agent_validate.py --strict --dir agents
 
   catalog:
     name: CATALOG up to date

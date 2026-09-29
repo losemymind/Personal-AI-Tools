@@ -1,4 +1,4 @@
-"""Tests for the quantitative eval tooling (run_eval / aggregate_benchmark / run_loop)."""
+"""Tests for the quantitative eval tooling (skill_eval / skill_benchmark / skill_optimize)."""
 
 import json
 
@@ -6,13 +6,13 @@ import json
 def _build_workspace(root, configs=("with_skill", "without_skill")):
     ws = root / "iteration-1"
     for cfg in configs:
-        run = ws / f"eval-{cfg}"
+        run = ws / "eval-shared"
         (run / cfg / "run-1").mkdir(parents=True)
         grading = {
-            "expectations": [{"text": "x", "passed": True, "evidence": "ok"}],
+            "expectations": [{"text": f"assertion-{i}", "passed": i < (6 if cfg == "with_skill" else 2), "evidence": "fixture"} for i in range(7)],
             "summary": {
                 "passed": 6 if cfg == "with_skill" else 2,
-                "failed": 1,
+                "failed": 1 if cfg == "with_skill" else 5,
                 "total": 7,
                 "pass_rate": 0.8571 if cfg == "with_skill" else 0.2857,
             },
@@ -44,7 +44,7 @@ def test_aggregate_benchmark_produces_json_and_md(tmp_path):
 
     ws = _build_workspace(tmp_path)
     r = run_script(
-        "scripts/aggregate_benchmark.py", str(ws), "--skill-name", "pr-summarizer"
+        "scripts/skill_benchmark.py", str(ws), "--skill-name", "pr-summarizer"
     )
     assert r.returncode == 0, r.stdout + r.stderr
 
@@ -71,7 +71,7 @@ def test_aggregate_benchmark_merges_analyzer_notes(tmp_path):
         encoding="utf-8",
     )
     r = run_script(
-        "scripts/aggregate_benchmark.py", str(ws),
+        "scripts/skill_benchmark.py", str(ws),
         "--skill-name", "pr-summarizer", "--notes", str(notes_file),
     )
     assert r.returncode == 0, r.stdout + r.stderr
@@ -82,7 +82,7 @@ def test_aggregate_benchmark_merges_analyzer_notes(tmp_path):
     bad = tmp_path / "bad-notes.json"
     bad.write_text(json.dumps({"not": "an array"}), encoding="utf-8")
     r = run_script(
-        "scripts/aggregate_benchmark.py", str(ws),
+        "scripts/skill_benchmark.py", str(ws),
         "--skill-name", "pr-summarizer", "--notes", str(bad),
     )
     assert r.returncode == 1
@@ -96,7 +96,7 @@ def test_run_eval_heuristic_reports_summary(tmp_path):
         {"id": 2, "query": "这个函数有什么 bug？", "should_trigger": False},
     ])
     r = run_script(
-        "scripts/run_eval.py",
+        "scripts/skill_eval.py",
         "--eval-set", str(skill / "evals" / "evals.json"),
         "--skill-dir", str(skill),
         "--json",
@@ -116,7 +116,7 @@ def test_run_eval_output_dir_writes_results(tmp_path):
     ])
     out_dir = tmp_path / "eval-out"
     r = run_script(
-        "scripts/run_eval.py",
+        "scripts/skill_eval.py",
         "--eval-set", str(skill / "evals" / "evals.json"),
         "--skill-dir", str(skill),
         "--output-dir", str(out_dir),
@@ -156,7 +156,7 @@ def test_run_loop_manual_selects_best_by_test(tmp_path, monkeypatch):
         import sys
 
         r = subprocess.run(
-            [sys.executable, str(ARTIFACT / "scripts" / "run_loop.py"),
+            [sys.executable, str(ARTIFACT / "scripts" / "skill_optimize.py"),
              "--eval-set", str(skill / "evals" / "evals.json"),
              "--skill-dir", str(skill),
              "--max-iterations", "2",

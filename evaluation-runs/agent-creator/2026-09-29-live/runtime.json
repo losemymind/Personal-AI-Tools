@@ -1,0 +1,11 @@
+{
+  "agent_name": "release-evidence-auditor",
+  "fixture_dir": "fixtures/runtime",
+  "sentinel_source": "fixtures/runtime/sentinel.txt",
+  "sentinel_workspace_path": "sentinel.txt",
+  "prompt": "请以发布证据审查员身份审查 inputs/ 下的 R17 发布材料，按你的角色定义给出判断、证据、缺口和升级建议。直接在对话中回复。",
+  "timeout_seconds": 120,
+  "max_steps": 12,
+  "variants": ["with_skill", "old_skill", "without_skill"],
+  "artifact_relative_path": "outputs/artifacts/outputs/agents/release-evidence-auditor.md"
+}

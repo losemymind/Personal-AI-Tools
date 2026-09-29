@@ -1,0 +1,81 @@
+{
+  "synthetic": true,
+  "comparable": false,
+  "delta_available": false,
+  "overall_skill_gain_inferable": false,
+  "reason": "Only 1 of the 2 observed eval_id+run_number pairs is complete. eval-b/without_skill run-1 records an execution failure (metrics.json status=error, returncode=1) and has no grading.json, so it is an error attempt with no valid score. The remaining key, eval-b/run-1, therefore has a completed run only on the with_skill side. The benchmark tool computes a delta only when every observed key has exactly one completed run in both configurations with no known model/client mismatch, so pass_rate, time_seconds and tokens deltas are all null (delta unavailable). The single complete pair (eval-a) shows with_skill pass_rate=1.0 vs without_skill pass_rate=0.0, and times 10s vs 8s, but one pair is descriptive only and cannot establish a skill effect.",
+  "comparability": {
+    "checked_keys": ["eval_id + run_number"],
+    "expected_pairs": 2,
+    "paired_samples": 1,
+    "coverage": 0.5,
+    "pairable_keys": ["a"],
+    "unpairable_keys": [
+      {
+        "eval_id": "b",
+        "run_number": 1,
+        "why": "with_skill run-1 completed; without_skill run-1 status=error (returncode=1, no grading.json)"
+      }
+    ],
+    "duplicate_keys": [],
+    "identity_mismatches": [],
+    "identity_note": "Both observed configurations report the same client 'synthetic-client' and model 'synthetic-fixture-model', but this is synthetic fixture metadata, not verified identity."
+  },
+  "execution_check": {
+    "attempted_total": 4,
+    "completed_total": 3,
+    "errors_total": 1,
+    "incomplete_total": 0,
+    "per_configuration": {
+      "with_skill": {"attempted": 2, "completed": 2, "errors": 0, "incomplete": 0, "coverage": 1.0},
+      "without_skill": {"attempted": 2, "completed": 1, "errors": 1, "incomplete": 0, "coverage": 0.5}
+    },
+    "run_status": [
+      {"eval_id": "a", "run_number": 1, "configuration": "with_skill", "status": "completed", "execution_status": "completed", "pass_rate": 1.0},
+      {"eval_id": "a", "run_number": 1, "configuration": "without_skill", "status": "completed", "execution_status": "completed", "pass_rate": 0.0},
+      {"eval_id": "b", "run_number": 1, "configuration": "with_skill", "status": "completed", "execution_status": "completed", "pass_rate": 1.0},
+      {"eval_id": "b", "run_number": 1, "configuration": "without_skill", "status": "error", "execution_status": "error", "pass_rate": null}
+    ],
+    "error_detail": {
+      "eval_id": "b",
+      "run_number": 1,
+      "configuration": "without_skill",
+      "issues": ["missing_artifact: grading.json", "invalid_grading: missing summary object", "invalid_grading: inconsistent counts or pass_rate", "execution_failed: metrics.json returncode=1", "execution_failed: metrics.json"]
+    }
+  },
+  "valid_metric_samples": {
+    "pass_rate": {"with_skill": 2, "without_skill": 1},
+    "time_seconds": {"with_skill": 2, "without_skill": 2},
+    "tokens": {"with_skill": 0, "without_skill": 0},
+    "note": "pass_rate counts only completed runs; time_seconds counts all observed attempts including the failed one (5s retained, not zeroed); tokens were never supplied and remain unavailable (n=0), not zero."
+  },
+  "supported_differences": [
+    {
+      "metric": "pass_rate",
+      "scope": "descriptive, single pair eval-a only",
+      "primary": 1.0,
+      "baseline": 0.0,
+      "per_pair_difference": 1.0,
+      "caveat": "Not an aggregate delta. Not statistically meaningful at n=1; not evidence of a skill effect."
+    },
+    {
+      "metric": "time_seconds",
+      "scope": "descriptive, single pair eval-a only",
+      "primary": 10.0,
+      "baseline": 8.0,
+      "per_pair_difference": 2.0,
+      "caveat": "Single pair; synthetic values; no significance."
+    }
+  ],
+  "unsupported_differences": ["pass_rate (aggregate delta)", "time_seconds (aggregate delta)", "tokens (no measurements at all)"],
+  "limitations": [
+    "All input records (runs, grades, timings, model and client names) are synthetic fixtures per inputs/README.md and inputs/fixture_metadata.json; they are not real measurements, so no real client call, model performance, or cost was observed.",
+    "eval-b/without_skill run-1 failed (returncode=1) and produced no grading.json; it is retained as an error attempt, not dropped and not counted as a zero score.",
+    "Only 1 of 2 planned scenario/configuration keys is fully paired, so the overall delta is unavailable; the observed 100% vs 0% contrast is driven by unequal completion and must not be read as a skill gain.",
+    "Tokens were not supplied anywhere (fixture_metadata.json: token_measurements='not supplied'); token statistics are unavailable (n=0), not zero, and no token delta exists.",
+    "runs_per_configuration=1 and planned_scenarios=[a,b]; only discovered run directories are covered, so the absence of other planned runs cannot be proven and cannot be inferred as success.",
+    "Single repetition per cell makes stddev and any significance/confidence claim meaningless; no repeat runs exist.",
+    "Correlation cannot be inferred as causation; a single descriptive pair of synthetic values cannot support an overall skill-gain conclusion.",
+    "This analysis only evaluates whether an executing model can read incomplete records and keep unsupported deltas unavailable; it does not validate any skill."
+  ]
+}

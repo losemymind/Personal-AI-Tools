@@ -1,0 +1,922 @@
+"""Build a searchable SQLite index of upstream skill catalogs (multi-source).
+
+Part of the skill-creator skill. See references/skill-index.md.
+
+Sources:
+  - aas         : sickn33/agentic-awesome-skills      (official skills_index.json + dir scan; ~2100 skills)
+  - addy        : addyosmani/agent-skills             (scanned skills/*/SKILL.md; 25 skills, no index file)
+  - anthropics  : anthropics/skills                   (scanned skills/*/SKILL.md; small official catalog)
+  - composiohq  : ComposioHQ/awesome-claude-skills    (scanned */SKILL.md at repo root; no index file)
+  - coevoskills : Zhang-Henry/CoEvoSkills             (sparse API fetch of meta_skills/*/SKILL.md; no index file)
+  - mattpocock  : mattpocock/skills                   (scanned skills/<category>/<name>/SKILL.md; no index file)
+  - karpathy    : multica-ai/andrej-karpathy-skills   (scanned skills/*/SKILL.md; 1 skill, no index file)
+
+Every row carries a `source_repo` column; `path` is unique per source so the
+incremental sync scopes by (source_repo, path).
+
+Usage:
+    python scripts/skill_index_build.py                          # all sources, full rebuild
+    python scripts/skill_index_build.py --source aas             # only sickn33 (tarball)
+    python scripts/skill_index_build.py --source addy            # only addyosmani (scan)
+    python scripts/skill_index_build.py --source anthropics      # only anthropics/skills
+    python scripts/skill_index_build.py --source composiohq      # only awesome-claude-skills
+    python scripts/skill_index_build.py --source coevoskills     # only CoEvoSkills (sparse)
+    python scripts/skill_index_build.py --source mattpocock      # only mattpocock/skills (nested scan)
+    python scripts/skill_index_build.py --source karpathy        # only andrej-karpathy-skills (scan)
+    python scripts/skill_index_build.py --incremental            # reuse upstream.db
+    python scripts/skill_index_build.py --from-extracted <dir>   # use an already-checked-out repo
+    python scripts/skill_index_build.py --no-dl                  # scan <repo>/skills locally
+
+Offline behavior: if a source cannot be fetched/unpacked and an existing
+`indexes/upstream.db` is present, that source is skipped and the committed rows
+are preserved (reachable sources still sync incrementally); the command exits 0.
+It only fails when it is both offline and has no usable DB to fall back on.
+
+Exit code 0 = success.
+"""
+
+import argparse
+import hashlib
+import io
+import json
+import os
+import re
+import socket
+import sqlite3
+import sys
+import tarfile
+import tempfile
+import urllib.error
+import urllib.request
+import urllib.parse
+from datetime import datetime, timezone
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+INDEX_DIR = SCRIPT_DIR.parent / "indexes"
+DB_PATH = INDEX_DIR / "upstream.db"
+INDEX_VERSION = 6
+GITHUB_API = "https://api.github.com"
+
+
+class SourceUnavailable(RuntimeError):
+    """A source's checkout could not be obtained (offline / download / unpack failure).
+
+    Raised by ``load_source_checkout`` so ``main`` can degrade per source: with an
+    existing ``upstream.db`` an offline run keeps the committed rows instead of
+    failing the build (see ``main``).
+    """
+
+
+# ---------------------------------------------------------------------------
+# Source registry
+# ---------------------------------------------------------------------------
+
+SOURCES = {
+    "aas": {
+        "name": "aas",
+        "repo": "sickn33/agentic-awesome-skills",
+        "tarball": "https://github.com/sickn33/agentic-awesome-skills/archive/refs/heads/main.tar.gz",
+        "index_file": "skills_index.json",
+        "skills_root": "skills",
+        "note": "official skills_index.json + dir scan",
+    },
+    "addy": {
+        "name": "addy",
+        "repo": "addyosmani/agent-skills",
+        "tarball": "https://github.com/addyosmani/agent-skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "note": "scanned skills/*/SKILL.md (no index file)",
+    },
+    "anthropics": {
+        "name": "anthropics",
+        "repo": "anthropics/skills",
+        "tarball": "https://github.com/anthropics/skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "note": "scanned skills/*/SKILL.md (no index file)",
+    },
+    "composiohq": {
+        "name": "composiohq",
+        "repo": "ComposioHQ/awesome-claude-skills",
+        "branch": "master",
+        "tarball": "https://github.com/ComposioHQ/awesome-claude-skills/archive/refs/heads/master.tar.gz",
+        "index_file": None,
+        "skills_root": "",
+        "note": "scanned */SKILL.md at repo root (no index file)",
+    },
+    "coevoskills": {
+        "name": "coevoskills",
+        "repo": "Zhang-Henry/CoEvoSkills",
+        "tarball": "https://github.com/Zhang-Henry/CoEvoSkills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "meta_skills",
+        "branch": "main",
+        "api_subtree": "meta_skills",
+        "note": "sparse GitHub API fetch of meta_skills/*/SKILL.md (repo is ~600MB; full tarball avoided)",
+    },
+    "mattpocock": {
+        "name": "mattpocock",
+        "repo": "mattpocock/skills",
+        "tarball": "https://github.com/mattpocock/skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "skills_nested": True,
+        "note": "scanned skills/<category>/<name>/SKILL.md (two-level; category from dir)",
+    },
+    "karpathy": {
+        "name": "karpathy",
+        "repo": "multica-ai/andrej-karpathy-skills",
+        "tarball": "https://github.com/multica-ai/andrej-karpathy-skills/archive/refs/heads/main.tar.gz",
+        "index_file": None,
+        "skills_root": "skills",
+        "note": "scanned skills/*/SKILL.md (single karpathy-guidelines skill; no index file)",
+    },
+}
+
+
+def configure_utf8_output() -> None:
+    if sys.platform != "win32":
+        return
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name)
+        try:
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+            continue
+        except Exception:
+            pass
+        buffer = getattr(stream, "buffer", None)
+        if buffer is not None:
+            setattr(sys, stream_name, io.TextIOWrapper(buffer, encoding="utf-8", errors="backslashreplace"))
+
+
+# ---------------------------------------------------------------------------
+# Fetch / unpack
+# ---------------------------------------------------------------------------
+
+def pin_source(source: dict) -> dict:
+    """Resolve a remote ref once so every fetch uses the same immutable SHA."""
+    pinned = dict(source)
+    commit = pinned.get("upstream_commit")
+    ref = pinned.get("branch", "main")
+    if commit is None:
+        try:
+            payload = _api_json(
+                f"{GITHUB_API}/repos/{pinned['repo']}/commits/{urllib.parse.quote(ref, safe='')}"
+            )
+        except (ValueError, TypeError) as exc:
+            raise SourceUnavailable(f"{pinned['repo']}: invalid commit response") from exc
+        commit = payload.get("sha") if isinstance(payload, dict) else None
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+        raise SourceUnavailable(f"{pinned['repo']}: missing full commit SHA for {ref}")
+    pinned["upstream_commit"] = commit.lower()
+    pinned["tarball"] = f"https://github.com/{pinned['repo']}/archive/{commit.lower()}.tar.gz"
+    return pinned
+
+
+def download_tarball(source: dict, dest: Path) -> Path:
+    source = pin_source(source)
+    print(f"⬇️  Downloading {source['repo']} tarball: {source['tarball']}")
+    tmp = dest / f"{source['name']}.tgz"
+    # chunked download with retries (urlretrieve can die on large files)
+    import time
+
+    last_err: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            req = urllib.request.Request(source["tarball"], headers={"User-Agent": "skill-creator-index/1.0"})
+            with urllib.request.urlopen(req, timeout=120) as resp, open(tmp, "wb") as fh:
+                while True:
+                    block = resp.read(1024 * 256)
+                    if not block:
+                        break
+                    fh.write(block)
+            break
+        except Exception as e:  # noqa: BLE001 - retry transient network errors
+            last_err = e
+            print(f"⚠️  attempt {attempt} failed: {e}")
+            time.sleep(3 * attempt)
+    else:
+        raise SourceUnavailable(f"download failed after 3 attempts: {last_err}")
+    size_mb = tmp.stat().st_size / (1024 * 1024)
+    print(f"✅ Downloaded {size_mb:.1f} MB -> {tmp}")
+    return tmp
+
+
+def unpack_tarball(tar_path: Path, dest: Path) -> Path:
+    print(f"📦 Unpacking tarball -> {dest}")
+    dest.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(tar_path, "r:gz") as tar:
+        tar.extractall(dest, filter="data")
+    tops = [p for p in dest.iterdir() if p.is_dir()]
+    return tops[0] if tops else dest
+
+
+def _read_url(url: str, timeout: int = 60) -> bytes:
+    req = urllib.request.Request(url, headers={"User-Agent": "skill-creator-index/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        # Chunked read: a single resp.read() can die with IncompleteRead on
+        # large chunked responses (same reason download_tarball reads in blocks).
+        chunks = []
+        while True:
+            block = resp.read(1024 * 256)
+            if not block:
+                break
+            chunks.append(block)
+    return b"".join(chunks)
+
+
+def _api_json(url: str, timeout: int = 60):
+    return json.loads(_read_url(url, timeout=timeout).decode("utf-8"))
+
+
+def sparse_subtree_paths(repo: str, branch: str, subtree: str) -> list[str]:
+    """List blob paths under `subtree` via two scoped GitHub API calls.
+
+    Scoping matters: a recursive listing of the whole repo both wastes bandwidth
+    and can hit GitHub's truncation limit on the very repos sparse mode exists
+    for. Resolve the subtree's tree SHA from its parent listing, then list only
+    that subtree. Returned paths are repo-relative (subtree prefix included).
+    """
+    subtree = subtree.strip("/")
+    parent, _, name = subtree.rpartition("/")
+    listing = _api_json(f"{GITHUB_API}/repos/{repo}/contents/{parent}?ref={branch}")
+    if not isinstance(listing, list):
+        raise SourceUnavailable(f"{repo}: '{parent or '/'}' is not a directory")
+    entry = next((e for e in listing if e.get("name") == name and e.get("type") == "dir"), None)
+    if entry is None:
+        raise SourceUnavailable(f"{repo}: no directory '{subtree}' on branch '{branch}'")
+    tree = _api_json(f"{GITHUB_API}/repos/{repo}/git/trees/{entry['sha']}?recursive=1")
+    if tree.get("truncated"):
+        raise SourceUnavailable(f"{repo}: tree listing of '{subtree}' truncated")
+    return [
+        f"{subtree}/{e['path']}"
+        for e in tree.get("tree", [])
+        if e.get("type") == "blob"
+    ]
+
+
+def fetch_sparse_checkout(source: dict, dest: Path) -> Path:
+    """Materialize only `api_subtree`'s files (for repos whose tarball is huge).
+
+    Some upstreams keep a tiny skill subtree inside a multi-hundred-MB repo
+    (e.g. CoEvoSkills: ~200KB of meta_skills vs ~600MB of benchmark task data).
+    Downloading the full tarball would be ~3000x waste, so list the subtree via
+    the GitHub API and pull just those blobs from raw.githubusercontent.
+
+    Returns a directory that `skills_root` resolves against, i.e. a minimal
+    checkout shaped like the repo root (only the requested subtree is present).
+    """
+    source = pin_source(source)
+    repo = source["repo"]
+    branch = source["upstream_commit"]
+    subtree = source["api_subtree"].strip("/")
+    dest.mkdir(parents=True, exist_ok=True)
+
+    blobs = sparse_subtree_paths(repo, branch, subtree)
+    if not blobs:
+        raise SourceUnavailable(f"{repo}: no files found under '{subtree}' on branch '{branch}'")
+
+    for rel in blobs:
+        target = dest / rel
+        if not target.resolve().is_relative_to(dest.resolve()) or "\\" in rel:
+            raise SourceUnavailable(f"{repo}: invalid subtree path {rel!r}")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        last_err: Exception | None = None
+        for _ in range(2):
+            try:
+                quoted_path = urllib.parse.quote(rel, safe="/")
+                target.write_bytes(_read_url(f"https://raw.githubusercontent.com/{repo}/{branch}/{quoted_path}"))
+                break
+            except Exception as e:  # noqa: BLE001 - retry transient network errors
+                last_err = e
+        else:
+            raise SourceUnavailable(f"{repo}: could not fetch {rel}: {last_err}")
+    print(f"✅ Sparse checkout {repo}/{subtree}: {len(blobs)} files -> {dest}")
+    return dest
+
+
+# ---------------------------------------------------------------------------
+# Entry extraction (per source)
+# ---------------------------------------------------------------------------
+
+def _frontmatter_fallback(content: str) -> dict:
+    """Minimal YAML subset parse used only if PyYAML is unavailable.
+
+    Handles scalar keys, quoted scalars, inline lists (`[a, b]`), and block
+    scalars (`>`/`|`) so a scanned source still yields category/risk/tags/tools
+    rather than dropping every key but name/description.
+    """
+    m = re.match(r"^---\s*\n(.*?)\n?---(?:\s*\n|$)", content, re.DOTALL)
+    if not m:
+        return {}
+    data: dict = {}
+    lines = m.group(1).splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if ":" not in line or line.lstrip().startswith("#"):
+            i += 1
+            continue
+        key, _, raw = line.partition(":")
+        key = key.strip()
+        raw = raw.strip()
+        if raw in (">", "|", ">-", "|-", ">+", "|+"):
+            block = []
+            i += 1
+            while i < len(lines) and (lines[i].startswith((" ", "\t")) or not lines[i].strip()):
+                block.append(lines[i].strip())
+                i += 1
+            data[key] = " ".join(x for x in block if x)
+            continue
+        if raw.startswith("[") and raw.endswith("]"):
+            data[key] = [x.strip().strip("'\"") for x in raw[1:-1].split(",") if x.strip()]
+        else:
+            data[key] = raw.strip("'\"")
+        i += 1
+    return data
+
+
+def frontmatter_of(skill_md: Path) -> dict:
+    """Parse a SKILL.md frontmatter into a metadata dict (real YAML).
+
+    The previous hand-rolled parser read only scalar `name:`/`description:`
+    lines: block-scalar descriptions (`>`/`|`) were stored as the literal
+    indicator and structured keys (`category`/`risk`/`tags`/`tools`) were
+    dropped — silently corrupting committed index rows (e.g. `description ==
+    '>'`) and making `--category`/`--risk` filters dead for scan-based sources.
+    Reuse the shared PyYAML parser (skill_utils.parse_frontmatter); fall back to a
+    minimal parser only when PyYAML is absent.
+    """
+    try:
+        content = skill_md.read_text(encoding="utf-8-sig", errors="replace")
+    except OSError:
+        return {}
+    if str(SCRIPT_DIR) not in sys.path:
+        sys.path.insert(0, str(SCRIPT_DIR))
+    try:
+        from skill_utils import parse_frontmatter
+        metadata, _errs = parse_frontmatter(content)
+        if isinstance(metadata, dict):
+            return metadata
+    except Exception:
+        pass
+    return _frontmatter_fallback(content)
+
+
+def load_official_index(repo_root: Path, source: dict) -> list[dict]:
+    f = repo_root / source["index_file"]
+    data = json.loads(f.read_text(encoding="utf-8"))
+    print(f"🗂️  {source['repo']}: using official {source['index_file']} ({len(data)} entries)")
+    return data
+
+
+def _iter_skill_dirs(skills_root: Path, root_rel: str, nested: bool):
+    """Yield ``(skill_dir, repo-relative path, parent_category)`` for SKILL.md dirs.
+
+    Default layout is one level deep (``<skills_root>/<name>/``). Sources that
+    group skills into category subdirs (``skills/<category>/<name>/``) set
+    ``skills_nested``; the category dir name is returned so it can be used as a
+    category fallback when the skill's frontmatter omits one. Dirs without a
+    SKILL.md (README-only buckets like ``deprecated/``) are skipped by the caller.
+    """
+    def _rel(*parts: str) -> str:
+        return "/".join(p for p in parts if p)
+
+    for d in sorted(p for p in skills_root.iterdir() if p.is_dir() and not p.name.startswith(".")):
+        if nested:
+            for sub in sorted(p for p in d.iterdir() if p.is_dir() and not p.name.startswith(".")):
+                yield sub, _rel(root_rel, d.name, sub.name), d.name
+        else:
+            yield d, _rel(root_rel, d.name), None
+
+
+def scan_skill_dir(repo_root: Path, source: dict) -> list[dict]:
+    """Scan ``<skills_root>/<name>/SKILL.md`` (used when a source has no official index file).
+
+    ``skills_root`` may be empty for sources that keep skills at the repo root
+    (e.g. ComposioHQ/awesome-claude-skills); in that case ``path`` is just the
+    directory name (no leading slash). A source may set ``skills_nested`` when it
+    groups skills into category subdirs (see ``_iter_skill_dirs``).
+    """
+    root_rel = source["skills_root"].strip("/")
+    skills_root = repo_root / root_rel if root_rel else repo_root
+    entries = []
+    if not skills_root.is_dir():
+        return entries
+    nested = bool(source.get("skills_nested"))
+    for d, path, parent_category in _iter_skill_dirs(skills_root, root_rel, nested):
+        skill_md = d / "SKILL.md"
+        if not skill_md.exists():
+            continue
+        fm = frontmatter_of(skill_md)
+        entry = {
+            "id": d.name,
+            "path": path,
+            "name": fm.get("name") or d.name,
+            "description": fm.get("description"),
+            "category": fm.get("category") or parent_category,
+            "risk": fm.get("risk"),
+            "source": "community",
+        }
+        # Preserve tags/tools when a scanned upstream declares them (extract_fields
+        # reads tags and plugin.targets); dropping them would make --tool and tag
+        # search silently fail for scan-based sources.
+        if fm.get("tags"):
+            entry["tags"] = fm["tags"]
+        tools = fm.get("tools")
+        if isinstance(tools, list) and tools:
+            entry["plugin"] = {"targets": {str(t): {} for t in tools}}
+        entries.append(entry)
+    layout = "*/<category>/<name>" if nested else "*/<name>"
+    print(f"🗂️  {source['repo']}: scanned {root_rel or '.'}/SKILL.md under {layout} ({len(entries)} entries)")
+    return entries
+
+
+def extract_entries(repo_root: Path, source: dict) -> list[dict]:
+    """Return entries (with their source_repo tagged) for one source checkout."""
+    if source["index_file"] and (repo_root / source["index_file"]).exists():
+        entries = load_official_index(repo_root, source)
+    else:
+        entries = scan_skill_dir(repo_root, source)
+    for e in entries:
+        e["source_repo"] = source["repo"]
+        e["_root"] = str(repo_root)  # each entry remembers its own checkout root
+    return entries
+
+
+def entry_root(e: dict, fallback: Path) -> Path:
+    """Each entry remembers its own checkout root (set in extract_entries)."""
+    r = e.get("_root")
+    return Path(r) if r else fallback
+
+
+def enrich_structure(repo_root: Path, entry: dict) -> dict:
+    # Mirror extract_fields' path fallback: an official-index entry may carry only
+    # an `id`. Without the same fallback the stored path pointed at `skills/<id>`
+    # while structure stats were measured against the whole repo root.
+    rel = (entry.get("path") or (entry.get("id") and "skills/" + entry["id"]) or "").removesuffix("/")
+    skill_dir = repo_root / rel
+    result = {
+        "has_script": 0,
+        "has_references": 0,
+        "has_examples": 0,
+        "has_templates": 0,
+        "body_lines": 0,
+        "file_count": 0,
+        "subdirs": "",
+    }
+    if not skill_dir.is_dir():
+        return result
+    try:
+        content = (skill_dir / "SKILL.md").read_text(encoding="utf-8", errors="replace")
+        result["body_lines"] = content.count("\n") + 1
+    except (OSError, FileNotFoundError):
+        result["body_lines"] = 0
+    subdirs = [d for d in os.listdir(skill_dir) if (skill_dir / d).is_dir() and not d.startswith(".")]
+    result["subdirs"] = ",".join(subdirs)
+    result["has_script"] = int("scripts" in subdirs)
+    result["has_references"] = int("references" in subdirs)
+    result["has_examples"] = int("examples" in subdirs)
+    result["has_templates"] = int("templates" in subdirs)
+    result["file_count"] = sum(1 for _, _, fs in os.walk(skill_dir) for f in fs if not f.startswith("."))
+    return result
+
+
+# (source_repo moved right after source for readability)
+SKILLS_COLUMNS = """(name, path, description, category, risk, source, source_repo, date_added, author,
+     tags, tools, client_targets, has_script, has_references, has_examples,
+     has_templates, body_lines, file_count, subdirs)"""
+
+
+def extract_fields(e: dict, repo_root: Path) -> tuple:
+    tags = e.get("tags") or []
+    plugin = e.get("plugin") or {}
+    targets = plugin.get("targets") or {}
+    tools = json.dumps(list(targets.keys()), ensure_ascii=False) if targets else None
+    st = enrich_structure(entry_root(e, repo_root), e)
+    return (
+        e.get("name") or e.get("id"),
+        e.get("path") or (e.get("id") and "skills/" + e["id"]),
+        e.get("description"),
+        e.get("category"),
+        e.get("risk"),
+        e.get("source"),
+        e.get("source_repo"),
+        e.get("date_added"),
+        e.get("author"),
+        json.dumps(tags, ensure_ascii=False) if tags else None,
+        tools,
+        json.dumps(targets, ensure_ascii=False) if targets else None,
+        st["has_script"],
+        st["has_references"],
+        st["has_examples"],
+        st["has_templates"],
+        st["body_lines"],
+        st["file_count"],
+        st["subdirs"],
+    )
+
+
+def fts_args(e: dict) -> tuple:
+    tags = e.get("tags") or []
+    return (
+        e.get("name") or e.get("id"),
+        e.get("description") or "",
+        e.get("category") or "",
+        " ".join(tags) if tags else "",
+    )
+
+
+def create_schema(conn: sqlite3.Connection) -> None:
+    cur = conn.cursor()
+    cur.execute(
+        """
+        CREATE TABLE skills (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            path TEXT NOT NULL,
+            description TEXT,
+            category TEXT,
+            risk TEXT,
+            source TEXT,
+            source_repo TEXT,
+            date_added TEXT,
+            author TEXT,
+            tags TEXT,
+            tools TEXT,
+            client_targets TEXT,
+            has_script INTEGER DEFAULT 0,
+            has_references INTEGER DEFAULT 0,
+            has_examples INTEGER DEFAULT 0,
+            has_templates INTEGER DEFAULT 0,
+            body_lines INTEGER DEFAULT 0,
+            file_count INTEGER DEFAULT 0,
+            subdirs TEXT
+        )
+        """
+    )
+    cur.execute("CREATE VIRTUAL TABLE skills_fts USING fts5(name, description, category, tags)")
+    cur.execute("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
+
+
+def build_placeholder() -> str:
+    return ",".join(["?"] * 19)
+
+
+def source_summary(source: dict) -> str:
+    """Short 'official+scan' / 'scan' tag used in the meta data_source note."""
+    return "official+scan" if source.get("index_file") else "scan"
+
+
+def data_source_note() -> str:
+    parts = [f"{s['name']}({source_summary(s)})" for s in SOURCES.values()]
+    return "multi-source: " + " + ".join(parts)
+
+
+def sources_meta() -> str:
+    return json.dumps([s["repo"] for s in SOURCES.values()], ensure_ascii=False)
+
+
+def record_source_success(conn: sqlite3.Connection, repo: str, provenance: dict | None = None) -> None:
+    """Record indexed data hash separately from verified remote revision."""
+    columns = SKILLS_COLUMNS.strip().strip("()")
+    rows = conn.execute(f"SELECT {columns} FROM skills WHERE source_repo=? ORDER BY path", (repo,)).fetchall()
+    digest = hashlib.sha256(json.dumps(rows, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    state = {"status": "ready", "last_success": now, "last_attempt": now,
+             "snapshot_sha256": digest, "error": None,
+             "upstream_commit": (provenance or {}).get("upstream_commit"),
+             "source_ref": (provenance or {}).get("source_ref"),
+             "fetch_mode": (provenance or {}).get("fetch_mode", "unknown")}
+    conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)",
+                 ("source_status:" + repo, json.dumps(state, ensure_ascii=False)))
+
+
+def record_source_failure(db_path: Path, repo: str, error: str) -> None:
+    """Keep the last good timestamp/hash when an attempted source update fails."""
+    if not db_path.exists():
+        return
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)")
+        key = "source_status:" + repo
+        previous = conn.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+        state = json.loads(previous[0]) if previous else {"last_success": None, "snapshot_sha256": None}
+        state.update(status="unavailable", last_attempt=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                     error=error)
+        conn.execute("INSERT OR REPLACE INTO meta VALUES (?, ?)", (key, json.dumps(state, ensure_ascii=False)))
+
+
+def build_db(entries: list[dict], repo_root: Path, db_path: Path) -> int:
+    INDEX_DIR.mkdir(parents=True, exist_ok=True)
+    if db_path.exists():
+        db_path.unlink()
+    conn = sqlite3.connect(str(db_path))
+    create_schema(conn)
+    cur = conn.cursor()
+    count = 0
+    for e in entries:
+        cur.execute(
+            "INSERT INTO skills " + SKILLS_COLUMNS + " VALUES (" + build_placeholder() + ")",
+            extract_fields(e, repo_root),
+        )
+        rowid = cur.lastrowid
+        cur.execute(
+            "INSERT INTO skills_fts(rowid, name, description, category, tags) VALUES (?,?,?,?,?)",
+            (rowid, *fts_args(e)),
+        )
+        count += 1
+    cur.execute("INSERT INTO meta VALUES ('version', ?)", (str(INDEX_VERSION),))
+    cur.execute("INSERT INTO meta VALUES ('sources', ?)", (sources_meta(),))
+    cur.execute("INSERT INTO meta VALUES ('built_at', ?)", (datetime.now().isoformat(timespec="seconds"),))
+    cur.execute("INSERT INTO meta VALUES ('skill_count', ?)", (str(count),))
+    cur.execute("INSERT INTO meta VALUES ('data_source', ?)", (data_source_note(),))
+    for repo in sorted({e.get("source_repo") for e in entries if e.get("source_repo")}):
+        provenance = next((e.get("_provenance") for e in entries if e.get("source_repo") == repo), None)
+        record_source_success(conn, repo, provenance)
+    conn.commit()
+    conn.close()
+    return count
+
+
+def update_db_incremental(entries: list[dict], repo_root: Path, db_path: Path, source_repo: str | None = None) -> dict:
+    """Incremental sync: reuse the existing db, only diff by (source_repo, path)."""
+    if not db_path.exists():
+        print("ℹ️  No existing index; falling back to full build.")
+        count = build_db(entries, repo_root, db_path)
+        return {"added": count, "updated": 0, "removed": 0}
+
+    if source_repo is None and entries:
+        source_repo = entries[0].get("source_repo")
+
+    conn = sqlite3.connect(str(db_path))
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='meta'")
+    if cur.fetchone() is None:
+        cur.execute("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
+
+    # existing paths for this source
+    if source_repo:
+        cur.execute("SELECT path FROM skills WHERE source_repo=?", (source_repo,))
+    else:
+        cur.execute("SELECT path FROM skills")
+    known = {row[0] for row in cur.fetchall() if row[0]}
+
+    incoming = set()
+    for e in entries:
+        path = e.get("path") or (e.get("id") and "skills/" + e["id"])
+        if path:
+            incoming.add(path)
+
+    added = updated = 0
+    for e in entries:
+        path = e.get("path") or (e.get("id") and "skills/" + e["id"])
+        if not path:
+            continue
+        fields = extract_fields(e, repo_root)
+        if path in known:
+            cur.execute(
+                """
+                UPDATE skills SET
+                  name=?, description=?, category=?, risk=?, source=?, source_repo=?,
+                  date_added=?, author=?, tags=?, tools=?, client_targets=?, has_script=?,
+                  has_references=?, has_examples=?, has_templates=?, body_lines=?,
+                  file_count=?, subdirs=?
+                WHERE source_repo=? AND path=?
+                """,
+                fields[:1] + fields[2:] + (e.get("source_repo"), path),
+            )
+            cur.execute(
+                "INSERT OR REPLACE INTO skills_fts(rowid, name, description, category, tags)"
+                " SELECT id, name, description, category, tags FROM skills WHERE source_repo=? AND path=?",
+                (e.get("source_repo"), path),
+            )
+            updated += 1
+        else:
+            cur.execute(
+                "INSERT INTO skills " + SKILLS_COLUMNS + " VALUES (" + build_placeholder() + ")",
+                fields,
+            )
+            rowid = cur.lastrowid
+            cur.execute(
+                "INSERT INTO skills_fts(rowid, name, description, category, tags) VALUES (?,?,?,?,?)",
+                (rowid, *fts_args(e)),
+            )
+            added += 1
+
+    vanished = known - incoming
+    removed = len(vanished)
+    for path in sorted(vanished):
+        if source_repo:
+            cur.execute(
+                "DELETE FROM skills_fts WHERE rowid = (SELECT id FROM skills WHERE source_repo=? AND path=?)",
+                (source_repo, path),
+            )
+            cur.execute("DELETE FROM skills WHERE source_repo=? AND path=?", (source_repo, path))
+        else:
+            cur.execute("DELETE FROM skills_fts WHERE rowid = (SELECT id FROM skills WHERE path=?)", (path,))
+            cur.execute("DELETE FROM skills WHERE path=?", (path,))
+
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('built_at', ?)", (datetime.now().isoformat(timespec="seconds"),))
+    # Total across all sources (not just the synced one); refresh source provenance too.
+    total = cur.execute("SELECT COUNT(*) FROM skills").fetchone()[0]
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('skill_count', ?)", (str(total),))
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('sources', ?)", (sources_meta(),))
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('data_source', ?)", (data_source_note(),))
+    cur.execute("INSERT OR REPLACE INTO meta VALUES ('version', ?)", (str(INDEX_VERSION),))
+    if source_repo:
+        provenance = next((e.get("_provenance") for e in entries if e.get("source_repo") == source_repo), None)
+        record_source_success(conn, source_repo, provenance)
+    conn.commit()
+    conn.close()
+    return {"added": added, "updated": updated, "removed": removed}
+
+
+def load_source_checkout(source: dict, args, tmp: Path) -> tuple[Path, list[dict]]:
+    """Resolve one source's checkout dir + entries."""
+    provenance = {"upstream_commit": None, "source_ref": None, "fetch_mode": "local"}
+    if args.from_extracted:
+        root = Path(args.from_extracted)
+        print(f"🗂️  {source['repo']}: using extracted checkout {root}")
+    elif args.no_dl:
+        # Scan the CURRENT directory as the repo root (run it from an upstream
+        # checkout). The old `parents[2]` pointed one level too high (the skills/
+        # dir), so skills_root="skills" resolved to a non-existent skills/skills.
+        root = Path.cwd()
+        print(f"🗂️  {source['repo']}: using local repo root {root}")
+    else:
+        try:
+            source = pin_source(source)
+            provenance = {"upstream_commit": source["upstream_commit"],
+                          "source_ref": source.get("branch", "main"),
+                          "fetch_mode": "sparse" if source.get("api_subtree") else "archive"}
+            if source.get("api_subtree"):
+                root = fetch_sparse_checkout(source, tmp / f"sparse-{source['name']}")
+            else:
+                tar_path = download_tarball(source, tmp)
+                root = unpack_tarball(tar_path, tmp / f"unpack-{source['name']}")
+        except (
+            SourceUnavailable,
+            urllib.error.URLError,
+            socket.timeout,
+            TimeoutError,
+            OSError,
+            tarfile.TarError,
+        ) as e:
+            # Offline / transient network / bad archive: let main decide whether to
+            # keep the committed index (graceful) or fail (no DB to fall back on).
+            raise SourceUnavailable(f"could not fetch/unpack checkout: {e}") from e
+    entries = extract_entries(root, source)
+    for entry in entries:
+        entry["_provenance"] = dict(provenance)
+    if not entries:
+        print(f"❌ {source['repo']}: no entries found; aborting this source.")
+        return root, []
+    return root, entries
+
+
+def sync_incremental(all_entries: list[dict], fallback_root: Path) -> dict:
+    """Diff each source's fresh entries against the existing DB, scoped per source.
+
+    Used both for `--incremental` and for the degraded (some source offline) path:
+    rows of sources that were not re-synced are left untouched, so a committed
+    index survives an offline rebuild.
+    """
+    # group entries by source so the diff is scoped per (source_repo, path)
+    by_source: dict[str, list[dict]] = {}
+    for e in all_entries:
+        by_source.setdefault(e.get("source_repo") or "?", []).append(e)
+    totals = {"added": 0, "updated": 0, "removed": 0}
+    for repo, group in by_source.items():
+        root = Path(group[0].get("_root") or fallback_root)
+        print(f"🔍 Incremental sync: {len(group)} entries from {repo} vs existing {DB_PATH}")
+        result = update_db_incremental(group, root, DB_PATH)
+        totals = {k: totals[k] + result[k] for k in totals}
+        print(f"✅   [{repo}] +{result['added']} added, ~{result['updated']} updated, -{result['removed']} removed")
+    print(f"✅ Incremental total: +{totals['added']} added, ~{totals['updated']} updated, -{totals['removed']} removed")
+    return totals
+
+
+def main() -> int:
+    configure_utf8_output()
+    parser = argparse.ArgumentParser(description="Build upstream skills SQLite index (multi-source)")
+    parser.add_argument("--source", choices=["all", *SOURCES.keys()], default="all", help="Which upstream source to index (default: all)")
+    parser.add_argument("--incremental", action="store_true", help="Reuse upstream.db; sync only added/updated/removed")
+    parser.add_argument("--keep", action="store_true", help="Keep downloaded tarballs")
+    parser.add_argument("--no-dl", action="store_true",
+                        help="Scan the current directory as repo root instead of downloading (run from an upstream checkout)")
+    parser.add_argument("--from-extracted", default=None, help="Build from an already-extracted checkout dir")
+    args = parser.parse_args()
+
+    # Fresh scratch prevents --keep or failed prior downloads from contaminating
+    # the scanned contents of a newer immutable revision.
+    tmp = Path(tempfile.mkdtemp(prefix="pw-upstream-index-"))
+
+    selected = SOURCES.keys() if args.source == "all" else [args.source]
+    all_entries = []
+    all_roots = []
+    unavailable = []
+    failures = {}
+    for name in selected:
+        source = SOURCES[name]
+        try:
+            root, entries = load_source_checkout(source, args, tmp)
+        except SourceUnavailable as e:
+            # Offline per source: remember it and keep going (multi-source degrade).
+            print(f"⚠️  {source['repo']}: unavailable ({e})")
+            unavailable.append(name)
+            failures[source["repo"]] = str(e)
+            continue
+        if entries:
+            all_entries.extend(entries)
+            all_roots.append(root)
+        else:
+            unavailable.append(name)
+            failures[source["repo"]] = "no entries found; previous snapshot retained"
+
+    if not all_entries:
+        if unavailable and DB_PATH.exists():
+            for repo, error in failures.items():
+                record_source_failure(DB_PATH, repo, error)
+            print(
+                "ℹ️  No source could be fetched, but an existing index is present at "
+                f"{DB_PATH}; keeping skill rows and recording failed attempts (offline graceful mode)."
+            )
+            cleanup_tmp(tmp, args.keep)
+            return 0
+        print("❌ No entries loaded from any source.")
+        cleanup_tmp(tmp, args.keep)
+        return 1
+
+    # structure enrichment happens against each source's own root — pass per-entry root
+    if unavailable:
+        # At least one source is offline. Do NOT full-rebuild (that would drop the
+        # offline source's committed rows); diff only the reachable sources, scoped
+        # per source_repo, so the rest of the committed index is preserved.
+        print(
+            f"⚠️  {len(unavailable)} source(s) unavailable ({', '.join(unavailable)}); "
+            f"syncing the reachable source(s) incrementally so their rows in {DB_PATH} are preserved."
+        )
+        sync_incremental(all_entries, all_roots[0])
+    elif args.incremental:
+        sync_incremental(all_entries, all_roots[0])
+    else:
+        print(f"🔍 Enriching structure for {len(all_entries)} skills (dir scan)...")
+        count = build_db(all_entries, all_roots[0], DB_PATH)
+        print(f"✅ Indexed {count} skills -> {DB_PATH}")
+
+    for repo, error in failures.items():
+        record_source_failure(DB_PATH, repo, error)
+
+    cleanup_tmp(tmp, args.keep)
+    return 0
+
+
+def cleanup_tmp(tmp: Path, keep: bool) -> None:
+    """Best-effort removal of the download/unpack scratch dir.
+
+    Never raises: a tarball may contain read-only files, reparse points, or
+    dirs Windows refuses to stat/remove mid-walk. Cleanup is housekeeping, so a
+    stuck path is skipped rather than failing an otherwise successful build.
+    """
+    if keep:
+        return
+
+    def _safe(p: Path, predicate) -> bool:
+        try:
+            return predicate()
+        except OSError:
+            return False
+
+    try:
+        entries = list(tmp.rglob("*"))
+    except OSError:
+        return
+    for p in entries:
+        if _safe(p, p.is_file):
+            try:
+                p.unlink()
+            except OSError:
+                pass
+    for p in sorted(entries, key=lambda x: -len(x.parts)):
+        if not _safe(p, p.is_dir):
+            continue
+        try:
+            for child in p.rglob("*"):
+                if _safe(child, child.is_file):
+                    try:
+                        child.chmod(0o644)
+                    except OSError:
+                        pass
+            p.rmdir()
+        except OSError:
+            pass
+    try:
+        tmp.rmdir()
+    except OSError:
+        pass
+
+
+if __name__ == "__main__":
+    sys.exit(main())

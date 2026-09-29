@@ -1,0 +1,1 @@
+ℹ️  opencode: tools whitelist -> permission (glob, grep, read allow; deny edit, list, bash, task, webfetch, websearch, todowrite, question, skill)

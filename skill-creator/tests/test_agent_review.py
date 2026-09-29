@@ -2,20 +2,20 @@
 
 Pins the no-human review-loop contract: the shipped reviewer subagent exposes a
 `review.json` verdict contract, SKILL.md routes review to it (no human/UI loop),
-and run_loop.py injects the best-so-far description as a gold-standard precedent.
+and skill_optimize.py injects the best-so-far description as a gold-standard precedent.
 """
 
 from conftest import ARTIFACT
 
 
 def test_reviewer_subagent_and_contract_present():
-    reviewer = (ARTIFACT / "agents" / "reviewer.md").read_text(encoding="utf-8")
+    reviewer = (ARTIFACT / "agents" / "skill_reviewer.md").read_text(encoding="utf-8")
     for token in ("review.json", "verdict", "pass", "revise", "issues",
                   "previous_review_path", "fixes_verified", "review_target"):
-        assert token in reviewer, f"agents/reviewer.md must define '{token}'"
+        assert token in reviewer, f"agents/skill_reviewer.md must define '{token}'"
 
     skill = (ARTIFACT / "SKILL.md").read_text(encoding="utf-8")
-    assert "agents/reviewer.md" in skill, "SKILL.md must route review to agents/reviewer.md"
+    assert "agents/skill_reviewer.md" in skill, "SKILL.md must route review to agents/skill_reviewer.md"
     assert "AI 评审闭环" in skill
 
 
@@ -24,9 +24,10 @@ def test_no_human_review_loop_leftovers():
     assert "人审闭环" not in skill, "the human review loop must be replaced by the agent loop"
     assert "带反馈 UI" not in skill, "no UI-based human review should remain"
 
-    evolutions = ARTIFACT / "evolutions"
-    assert (evolutions / "2026-09-10-adopt-agent-review-loop.md").is_file()
-    assert not (evolutions / "2026-09-09-adopt-human-review-ui-loop.md").exists()
+    # Historical files can be compacted; preserve the decision and its boundary.
+    history = (ARTIFACT / "evolutions" / "methodology.md").read_text(encoding="utf-8")
+    review = history.split('<a id="agent-review"></a>', 1)[1].split('<a id=', 1)[0]
+    assert "review.json" in review and "pass|revise" in review
 
 
 def test_build_improve_prompt_injects_gold_standard():
@@ -34,7 +35,7 @@ def test_build_improve_prompt_injects_gold_standard():
 
     sys.path.insert(0, str(ARTIFACT / "scripts"))
     try:
-        from run_loop import build_improve_prompt
+        from skill_optimize import build_improve_prompt
     finally:
         sys.path.pop(0)
 

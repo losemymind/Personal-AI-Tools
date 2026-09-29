@@ -1,8 +1,8 @@
 """Tests for the evals.json schema contract (query vs legacy prompt).
 
 Regression guard for the template/script key drift: the canonical eval key is
-`query` (references/benchmark-schema.md, run_eval.py, run_loop.py). The template
-once shipped `prompt`, which made run_eval.py raise KeyError. These tests pin
+`query` (references/benchmark-schema.md, skill_eval.py, skill_optimize.py). The template
+once shipped `prompt`, which made skill_eval.py raise KeyError. These tests pin
 the canonical key and keep a legacy fallback working.
 """
 
@@ -43,7 +43,7 @@ def test_eval_query_helper_prefers_query_and_falls_back():
 
     sys.path.insert(0, str(ARTIFACT / "scripts"))
     try:
-        from utils import eval_query
+        from skill_utils import eval_query
     finally:
         sys.path.pop(0)
 
@@ -54,7 +54,7 @@ def test_eval_query_helper_prefers_query_and_falls_back():
 
 
 def test_run_eval_accepts_legacy_prompt_key(tmp_path):
-    """Legacy eval files keyed `prompt` must not crash run_eval.py."""
+    """Legacy eval files keyed `prompt` must not crash skill_eval.py."""
     from conftest import run_script
 
     skill = _skill_with_evals(tmp_path, [
@@ -62,7 +62,7 @@ def test_run_eval_accepts_legacy_prompt_key(tmp_path):
         {"id": 2, "prompt": "这个函数有什么 bug？", "should_trigger": False},
     ])
     r = run_script(
-        "scripts/run_eval.py",
+        "scripts/skill_eval.py",
         "--eval-set", str(skill / "evals" / "evals.json"),
         "--skill-dir", str(skill),
         "--json",

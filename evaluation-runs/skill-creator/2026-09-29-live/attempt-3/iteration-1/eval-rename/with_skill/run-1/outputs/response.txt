@@ -1,0 +1,12 @@
+There's a local skill validator. Let me inspect it.
+完成。
+
+结果:
+- `outputs/asset-note/references/checklist.md` 已改名为 `review-checklist.md`；`SKILL.md:22` 与 `README.md:5,7` 的引用已同步，正文/清单内容逐字节保留。
+- 未修改 `inputs/`；未联网、未安装、未写全局配置。
+
+校验（`outputs/verification.json`，11 项全部 passed）:
+- 本地技能验证器 `skill_validate.py --dir outputs/asset-note --strict` → exit 0。
+- Python 标准库检查：新名存在、旧名不存在、引用可解析、无残留旧引用、frontmatter 哈希一致、清单内容哈希一致、正文仅路径替换、`input_unchanged: true`（输入 5 文件哈希已记录，mtime 未变）。
+
+`commands` 仅记录实际执行的 `skill_validate.py --strict`（exit 0，有 stdout）与 `python --version`（3.11.8）。夹具为 synthetic 合成数据。

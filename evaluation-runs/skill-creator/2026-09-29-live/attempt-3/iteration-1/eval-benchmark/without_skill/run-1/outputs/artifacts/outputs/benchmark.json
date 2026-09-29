@@ -1,0 +1,239 @@
+{
+  "synthetic": true,
+  "fixture_id": "incomplete-benchmark-v1",
+  "iteration": "iteration-1",
+  "note": "All input run records, grades, durations and model names are synthetic fixtures (inputs/README.md, fixture_metadata.json). They are not real client calls or measured costs. Values below are transcriptions of the fixture, not live measurements.",
+  "design": {
+    "planned_evals": [
+      "a",
+      "b"
+    ],
+    "configurations": [
+      "with_skill",
+      "without_skill"
+    ],
+    "runs_per_scenario_configuration": 1,
+    "expected_run_cells": 4
+  },
+  "per_run": [
+    {
+      "eval_id": "a",
+      "config": "with_skill",
+      "run": 1,
+      "attempted": true,
+      "status": "completed",
+      "returncode": 0,
+      "timed_out": false,
+      "error": null,
+      "completed": true,
+      "error_flag": false,
+      "incomplete": false,
+      "grading_present": true,
+      "pass_rate": 1.0,
+      "pass_rate_valid": true,
+      "duration_seconds": 10,
+      "duration_valid": true,
+      "token_measurements": null,
+      "cost": null,
+      "synthetic": true
+    },
+    {
+      "eval_id": "a",
+      "config": "without_skill",
+      "run": 1,
+      "attempted": true,
+      "status": "completed",
+      "returncode": 0,
+      "timed_out": false,
+      "error": null,
+      "completed": true,
+      "error_flag": false,
+      "incomplete": false,
+      "grading_present": true,
+      "pass_rate": 0.0,
+      "pass_rate_valid": true,
+      "duration_seconds": 8,
+      "duration_valid": true,
+      "token_measurements": null,
+      "cost": null,
+      "synthetic": true
+    },
+    {
+      "eval_id": "b",
+      "config": "with_skill",
+      "run": 1,
+      "attempted": true,
+      "status": "completed",
+      "returncode": 0,
+      "timed_out": false,
+      "error": null,
+      "completed": true,
+      "error_flag": false,
+      "incomplete": false,
+      "grading_present": true,
+      "pass_rate": 1.0,
+      "pass_rate_valid": true,
+      "duration_seconds": 12,
+      "duration_valid": true,
+      "token_measurements": null,
+      "cost": null,
+      "synthetic": true
+    },
+    {
+      "eval_id": "b",
+      "config": "without_skill",
+      "run": 1,
+      "attempted": true,
+      "status": "error",
+      "returncode": 1,
+      "timed_out": false,
+      "error": "Synthetic execution failure; grading was not produced.",
+      "completed": false,
+      "error_flag": true,
+      "incomplete": true,
+      "grading_present": false,
+      "pass_rate": null,
+      "pass_rate_valid": false,
+      "duration_seconds": 5,
+      "duration_valid": false,
+      "token_measurements": null,
+      "cost": null,
+      "synthetic": true
+    }
+  ],
+  "per_configuration": {
+    "with_skill": {
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "coverage": 1.0,
+      "valid_metric_samples": {
+        "pass_rate": 2,
+        "duration_seconds": 2,
+        "tokens": 0,
+        "cost": 0
+      }
+    },
+    "without_skill": {
+      "attempted": 2,
+      "completed": 1,
+      "errors": 1,
+      "incomplete": 1,
+      "coverage": 0.5,
+      "valid_metric_samples": {
+        "pass_rate": 1,
+        "duration_seconds": 1,
+        "tokens": 0,
+        "cost": 0
+      }
+    }
+  },
+  "overall": {
+    "attempted": 4,
+    "completed": 3,
+    "errors": 1,
+    "incomplete": 1,
+    "coverage": 0.75,
+    "valid_metric_samples": {
+      "pass_rate": 3,
+      "duration_seconds": 3,
+      "tokens": 0,
+      "cost": 0
+    }
+  },
+  "pairing": {
+    "unit": "eval_id x run",
+    "expected_pairs": 2,
+    "valid_pairs": 1,
+    "paired_coverage": 0.5,
+    "valid_paired_metric_samples": {
+      "pass_rate": 1
+    },
+    "details": [
+      {
+        "eval_id": "a",
+        "run": 1,
+        "both_attempted": true,
+        "both_completed": true,
+        "both_valid_pass_rate": true,
+        "valid_pair": true,
+        "reason": "both arms completed with valid synthetic grading"
+      },
+      {
+        "eval_id": "b",
+        "run": 1,
+        "both_attempted": true,
+        "both_completed": false,
+        "both_valid_pass_rate": false,
+        "valid_pair": false,
+        "reason": "not a valid pair: without_skill grading; without_skill not completed (status=error, rc=1)"
+      }
+    ]
+  },
+  "deltas": {
+    "a": {
+      "pass_rate": {
+        "available": true,
+        "with_skill": 1.0,
+        "without_skill": 0.0,
+        "delta": 1.0,
+        "n_pairs": 1,
+        "evidence": "single synthetic paired run with valid grading in both arms",
+        "caveat": "synthetic fixture, n=1; not a real measurement or a statistically supported effect"
+      },
+      "duration_seconds": {
+        "available": true,
+        "with_skill": 10,
+        "without_skill": 8,
+        "delta": 2,
+        "n_pairs": 1,
+        "evidence": "synthetic durations for the single complete pair",
+        "caveat": "synthetic, n=1; resource metric, not a skill-gain measure"
+      }
+    },
+    "b": {
+      "pass_rate": {
+        "available": false,
+        "unavailable": true,
+        "reason": "without_skill arm is not a valid completed grading sample (status/error or missing grading)"
+      },
+      "duration_seconds": {
+        "available": false,
+        "unavailable": true,
+        "reason": "without_skill arm failed and its duration is not a valid performance sample"
+      }
+    }
+  },
+  "aggregate_delta": {
+    "pass_rate": {
+      "available": false,
+      "unavailable": true,
+      "reason": "only 1 of 2 planned pairs has valid grading in both arms; eval-b without_skill is an error with no grading, so pooling or averaging would silently drop a failed cell. An overall skill-gain delta is not supported by the records."
+    },
+    "duration_seconds": {
+      "available": false,
+      "unavailable": true,
+      "reason": "only 1 complete pair; failed arm excluded"
+    },
+    "tokens": {
+      "available": false,
+      "unavailable": true,
+      "reason": "token_measurements not supplied by fixture"
+    },
+    "cost": {
+      "available": false,
+      "unavailable": true,
+      "reason": "cost not supplied by fixture; must not be imputed as zero"
+    }
+  },
+  "notes": [
+    "attempted counts run directories that exist.",
+    "completed counts status == 'completed'.",
+    "errors counts status == 'error'.",
+    "incomplete counts attempted runs lacking a completed status and/or grading.json (eval-b/without_skill/run-1 both errored and has no grading).",
+    "coverage = completed / attempted.",
+    "tokens/cost are unavailable (0 valid samples); they are reported as null, never as 0.",
+    "A valid pair requires both arms completed with a non-null pass_rate for the same eval_id and run number."
+  ]
+}

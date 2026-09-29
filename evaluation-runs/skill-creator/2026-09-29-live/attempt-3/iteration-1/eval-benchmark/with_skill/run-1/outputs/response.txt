@@ -1,0 +1,13 @@
+已完成汇总与校验，实际运行了技能自带的 `scripts/skill_benchmark.py`（strict 模式，退出码 1 但报告保留），未修改 `inputs/`。
+
+**产物**：`outputs/benchmark.json`、`outputs/benchmark.md`、`outputs/conclusion.json`
+
+**关键结论**
+- `synthetic=true`：全部记录为人工夹具，仅衡量本次分析质量，不代表真实调用/成本。
+- 逐次状态：with_skill 2/2 completed（coverage 100%，2 个有效 pass_rate 样本）；without_skill 1/2 completed、1 error（coverage 50%）。
+- eval-b/without_skill/run-1 为硬执行失败（`returncode=1`、无 `grading.json`），未跳过。
+- 配对：expected_pairs=2、paired_samples=1（仅 a/run-1）、coverage 0.5 → 无有效差值。
+- `delta_available=false`、`comparable=false`；`delta.pass_rate/time/tokens` 均为 null。
+- 有证据的仅单对：eval-a 上 pass_rate +1.00、time +2.0s（单样本，非增益估计）。
+- tokens 从未提供：n=0、mean=null，**未记为零**。
+- `overall_skill_gain_inferable=false`——记录不完整，无法推断整体技能增益。

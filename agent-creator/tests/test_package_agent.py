@@ -1,7 +1,7 @@
-"""Tests for package_agent.py (per-client agent packaging).
+"""Tests for agent_package.py (per-client agent packaging).
 
 Covers the opencode permission/whitelist merge (fixes the privilege widening in
-adapt_agent.py: a bare permission string must not discard the tools whitelist or
+agent_adapt.py: a bare permission string must not discard the tools whitelist or
 widen it to a global rule), the write->edit alias, client-label tools metadata,
 claude tool/model adaptation, per-client post-checks, the copied tree, zip
 output, bare AGENT.md input, and argument/input errors.
@@ -15,7 +15,7 @@ from pathlib import Path
 import yaml
 from conftest import ARTIFACT, run_script
 
-PACKAGE_AGENT = ARTIFACT / "scripts" / "package_agent.py"
+PACKAGE_AGENT = ARTIFACT / "scripts" / "agent_package.py"
 
 AGENT_MD = """---
 name: pkg-demo
@@ -57,7 +57,7 @@ mode: subagent
 
 
 def _load():
-    spec = importlib.util.spec_from_file_location("package_agent", PACKAGE_AGENT)
+    spec = importlib.util.spec_from_file_location("agent_package", PACKAGE_AGENT)
     mod = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(mod)
@@ -152,7 +152,7 @@ def _make_agent(tmp_path: Path, extra: str = "tools: [read, bash]\npermission: a
 def test_packages_all_clients_and_copies_tree(tmp_path):
     src = _make_agent(tmp_path)
     out = tmp_path / "dist"
-    r = run_script("scripts/package_agent.py", str(src), "--client", "claude",
+    r = run_script("scripts/agent_package.py", str(src), "--client", "claude",
                    "--client", "opencode", "--client", "codex", "--client", "deepseek",
                    "--out", str(out))
     assert r.returncode == 0, r.stdout + r.stderr
@@ -170,9 +170,9 @@ def test_bare_agent_md_input_packages_only_the_file(tmp_path):
     src.mkdir()
     agent_file = src / "AGENT.md"
     agent_file.write_text(AGENT_MD.format(extra="tools: [read]"), encoding="utf-8")
-    (src / "references").mkdir()  # sibling noise must NOT be copied for file input
+    (src / "references").mkdir()  # adjacent resources must NOT be copied for file input
     out = tmp_path / "dist"
-    r = run_script("scripts/package_agent.py", str(agent_file), "--client", "opencode",
+    r = run_script("scripts/agent_package.py", str(agent_file), "--client", "opencode",
                    "--out", str(out))
     assert r.returncode == 0, r.stdout + r.stderr
     target = out / "opencode" / "pkg-demo"
@@ -183,7 +183,7 @@ def test_bare_agent_md_input_packages_only_the_file(tmp_path):
 def test_zip_output_contains_agent(tmp_path):
     src = _make_agent(tmp_path)
     out = tmp_path / "dist"
-    r = run_script("scripts/package_agent.py", str(src), "--client", "opencode",
+    r = run_script("scripts/agent_package.py", str(src), "--client", "opencode",
                    "--out", str(out), "--zip")
     assert r.returncode == 0, r.stdout + r.stderr
     z = out / "opencode" / "pkg-demo.zip"
@@ -195,7 +195,7 @@ def test_zip_output_contains_agent(tmp_path):
 def test_comma_separated_clients_accepted(tmp_path):
     src = _make_agent(tmp_path)
     out = tmp_path / "dist"
-    r = run_script("scripts/package_agent.py", str(src), "--client", "claude,opencode",
+    r = run_script("scripts/agent_package.py", str(src), "--client", "claude,opencode",
                    "--out", str(out))
     assert r.returncode == 0, r.stdout + r.stderr
     assert (out / "claude" / "pkg-demo" / "AGENT.md").is_file()
@@ -208,7 +208,7 @@ def test_comma_separated_clients_accepted(tmp_path):
 def test_missing_agent_md_fails(tmp_path):
     d = tmp_path / "empty-agent"
     d.mkdir()
-    r = run_script("scripts/package_agent.py", str(d), "--client", "claude",
+    r = run_script("scripts/agent_package.py", str(d), "--client", "claude",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 1
     assert "no AGENT.md" in r.stderr or "no AGENT.md" in r.stdout
@@ -216,7 +216,7 @@ def test_missing_agent_md_fails(tmp_path):
 
 def test_unknown_client_fails(tmp_path):
     src = _make_agent(tmp_path)
-    r = run_script("scripts/package_agent.py", str(src), "--client", "vim",
+    r = run_script("scripts/agent_package.py", str(src), "--client", "vim",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 2
     assert "unknown client" in r.stderr
@@ -226,7 +226,7 @@ def test_missing_description_rejected(tmp_path):
     d = tmp_path / "pkg-demo"
     d.mkdir()
     (d / "AGENT.md").write_text('---\nname: pkg-demo\n---\n\n# x\n', encoding="utf-8")
-    r = run_script("scripts/package_agent.py", str(d), "--client", "opencode",
+    r = run_script("scripts/agent_package.py", str(d), "--client", "opencode",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 1
 
@@ -235,7 +235,7 @@ def test_no_frontmatter_rejected(tmp_path):
     d = tmp_path / "pkg-demo"
     d.mkdir()
     (d / "AGENT.md").write_text("# no frontmatter\n", encoding="utf-8")
-    r = run_script("scripts/package_agent.py", str(d), "--client", "claude",
+    r = run_script("scripts/agent_package.py", str(d), "--client", "claude",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 1
     assert "no frontmatter" in r.stderr
@@ -245,14 +245,14 @@ def test_invalid_frontmatter_rejected(tmp_path):
     d = tmp_path / "pkg-demo"
     d.mkdir()
     (d / "AGENT.md").write_text("---\nname: [unclosed\n---\n\n# x\n", encoding="utf-8")
-    r = run_script("scripts/package_agent.py", str(d), "--client", "claude",
+    r = run_script("scripts/agent_package.py", str(d), "--client", "claude",
                    "--out", str(tmp_path / "dist"))
     assert r.returncode == 1
 
 
 def test_out_inside_agent_rejected(tmp_path):
     src = _make_agent(tmp_path)
-    r = run_script("scripts/package_agent.py", str(src), "--client", "claude",
+    r = run_script("scripts/agent_package.py", str(src), "--client", "claude",
                    "--out", str(src / "dist"))
     assert r.returncode == 1
     assert "must not be inside" in r.stderr
@@ -262,7 +262,7 @@ def test_out_is_existing_file_rejected(tmp_path):
     src = _make_agent(tmp_path)
     out_file = tmp_path / "dist"
     out_file.write_text("i am a file\n", encoding="utf-8")
-    r = run_script("scripts/package_agent.py", str(src), "--client", "claude",
+    r = run_script("scripts/agent_package.py", str(src), "--client", "claude",
                    "--out", str(out_file))
     assert r.returncode == 1
     assert "existing file" in r.stderr

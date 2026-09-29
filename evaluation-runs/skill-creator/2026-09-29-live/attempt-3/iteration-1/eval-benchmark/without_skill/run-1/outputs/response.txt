@@ -1,0 +1,14 @@
+No skill-provided benchmark tool exists in the workspace (only the unrelated `customize-opencode` skill), so I'll do the equivalent aggregation with the Python standard library.
+The pre-approved temp dir is blocked by the active rules; I'll run the helper inside the workspace and remove it afterward, leaving only outputs/.
+Done. Wrote `outputs/benchmark.json`, `outputs/benchmark.md`, `outputs/conclusion.json` using a Python-stdlib aggregation (no skill-provided tool existed; helper deleted). `inputs/` untouched.
+
+Findings, executable summary:
+
+- **4 attempted** cells (a/b × with/without), **3 completed**, **1 error**, **1 incomplete** → overall coverage **0.75**.
+  - with_skill: 2/2 completed, coverage 1.0, 2 valid pass_rate samples.
+  - without_skill: 1/2 completed, coverage 0.5, 1 valid sample. `eval-b/without_skill/run-1` = `status=error, rc=1`, **no grading.json**.
+- **Pairing by eval_id × run: 1/2 valid pairs**, paired coverage 0.5 (only eval-a gradeable both arms).
+- **Supported delta:** eval-a pass_rate 1.0 vs 0.0 (Δ=1.0) — synthetic, n=1, no real weight. **Unavailable:** eval-b delta (missing arm), overall delta, tokens, cost.
+- **conclusion.json:** `synthetic=true`, `comparable=false`, `delta_available=false`.
+
+Evidence boundary: records are synthetic; n=1/iteration, no variance; a failed cell is missing, so unequal completion blocks comparability; missing cost/tokens recorded as `null`, never zero. No overall skill gain can be inferred.

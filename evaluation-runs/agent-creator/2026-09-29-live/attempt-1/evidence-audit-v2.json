@@ -1,0 +1,2807 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-09-29T11:43:39.473725+00:00",
+  "attempt": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\attempt-1",
+  "read_only_evidence": true,
+  "frozen_inputs": {
+    "valid": true,
+    "errors": [],
+    "head_at_freeze": "f68cfc8da398e76a8f344cffc0e6ae8729af364c",
+    "protocol_files": 4,
+    "fixture_files": 10,
+    "product_files": 26
+  },
+  "phase_hashes": {
+    "phases_checked": [
+      "preflight",
+      "trigger",
+      "scenarios"
+    ],
+    "valid": true,
+    "errors": []
+  },
+  "counts": {
+    "trigger": {
+      "planned": 8,
+      "run_directories": 8,
+      "model_commands_recorded": 8,
+      "runs_with_assistant_model_metadata": 8,
+      "statuses": {
+        "completed": 8
+      }
+    },
+    "scenario": {
+      "planned": 6,
+      "run_directories": 6,
+      "model_commands_recorded": 6,
+      "runs_with_assistant_model_metadata": 6,
+      "statuses": {
+        "completed": 6
+      }
+    },
+    "runtime": {
+      "planned": 3,
+      "run_directories": 3,
+      "model_commands_recorded": 2,
+      "runs_with_assistant_model_metadata": 2,
+      "statuses": {
+        "completed": 2,
+        "error": 1
+      }
+    }
+  },
+  "planned_total": 17,
+  "expected_protocol_total": 17,
+  "model_commands_recorded": 16,
+  "runs_with_assistant_model_metadata": 16,
+  "evidence_complete": true,
+  "integrity_ok": true,
+  "configured_secret_scan": {
+    "source": "selected_provider_exact_values_and_declared_environment_references",
+    "values_available": 1,
+    "matching_files": [],
+    "match_count": 0,
+    "read_errors": [],
+    "configuration_error": null
+  },
+  "evidence_read_errors": [],
+  "integrity_failures": [],
+  "runs": [
+    {
+      "run": "trigger/raw/query-01",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-nogd7oe2\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf01ae1001njhSP7mZL3wEgX",
+            "session_id": "ses_f130fe7c4ffedLWJTIimXtdT3f",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf026d5001ozesQ423J4U2uZ",
+            "session_id": "ses_f130fe7c4ffedLWJTIimXtdT3f",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf030c80012ZzCrEYYRGK0nk",
+            "session_id": "ses_f130fe7c4ffedLWJTIimXtdT3f",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf03958001v8p3jUPjysKPDS",
+            "session_id": "ses_f130fe7c4ffedLWJTIimXtdT3f",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf051a8001ujQ3RE2IWwxrPa",
+            "session_id": "ses_f130fe7c4ffedLWJTIimXtdT3f",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf059650013z3WKauEorseY2",
+            "session_id": "ses_f130fe7c4ffedLWJTIimXtdT3f",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "a64baeee25822875b09b0539b60cbfdf910d1ee10194a68267aef2eeb9dce95c",
+          "discovery-check.json": "9cdb8480661a8546e19135f864c45cedd26e4e6233aaec6c1afaab1d7119985f",
+          "discovery-invocation.json": "83d5c77cfbc30eb50cec180f7d1844d030e49df5565b2c277458987d7cfb27cb",
+          "discovery.json": "5007b7037916e71c6bd046a6176f9677c276598f8445d0b24c53544c549ca7f5",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "56a53584a484c2c8f89193a7bb9c9a211f3c5c19b61b234964074554ed4ace8d",
+          "evidence-hashes.json": "88c9b88d60d8fc7471800938e442148b1703eb218b8c75dfb0da17873e2be7bc",
+          "execution.json": "247067e8607a6017dc937bccc051168626abc65d4e0c3d438da1c24ed9f7e664",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "a16e2507b88c4de4196f008edf369345d96cfacb867b5121c8d9c24b66471e0b",
+          "metrics.json": "247067e8607a6017dc937bccc051168626abc65d4e0c3d438da1c24ed9f7e664",
+          "observed-models.json": "1476d13802d0c6e083bec7d243ad8fe2aa4f8f2b51828808f0956ad62a681d47",
+          "result.json": "d8e5c621c920175f8adb1af7d23c19774ab9b99d35803d9a344e5f1711d720bf",
+          "signals.json": "adbe66815ef7d75bdfc463eb4297ee0145ed3f4cf167ce23f27f5f4054710901",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "b9c166f80820534eb093e6ed7a998240dce777011255632891ee8ede26119a5a",
+          "workspace.json": "8f5fc81edf3b940aaab086dec45c7961a53b1d1b504ac0dd4ca6abf0b42e8e8f"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-nogd7oe2\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 6,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-02",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-b6qt_wiy\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf01ac2001N358FTevI17stc",
+            "session_id": "ses_f130fe7f5ffeXECv4PYakHptuI",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf027b6001DICiuQvuALpr7v",
+            "session_id": "ses_f130fe7f5ffeXECv4PYakHptuI",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf033ab001SCxHgAHH1RLemo",
+            "session_id": "ses_f130fe7f5ffeXECv4PYakHptuI",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf03b59001UW0Rc3ukGTkJla",
+            "session_id": "ses_f130fe7f5ffeXECv4PYakHptuI",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf05512001gyBxNWdWEV1dxU",
+            "session_id": "ses_f130fe7f5ffeXECv4PYakHptuI",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf05d80001l7rEilMMscz0Nf",
+            "session_id": "ses_f130fe7f5ffeXECv4PYakHptuI",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "3788bc5024c4422dbe36fbd3191dfc7fe763bf45e51e77c1e12251ec30fc08b7",
+          "discovery-check.json": "0da70ff986e1cb1637fc997f92da5b25e2414b186dd3b5fec2e819f71bd4a39e",
+          "discovery-invocation.json": "739ccaac452b62a6e8b00398c8cd4d319334a91b35ae39cb6039b9b7cfba37af",
+          "discovery.json": "3f03e760abc98da43f402f536be4a5b57b79f0f2454cf411d7dac2d4dd131819",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "d7aa4ea90d7c017d390add99e01f0f8220294d0761072f48c7e0cff75001c600",
+          "evidence-hashes.json": "4c95918c32c0b7a71f5cdec3111c011fc18af0b965e97531b5ac95bce7b4fc06",
+          "execution.json": "1e80f44e38fe5191f6ba41ea94f129fcdbd9583fba2f583c59503a577ceb78e9",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "081a8b3816905e00fbc93f86e789d5bd939ab4127c6e3e084c93d2e1e6ce7385",
+          "metrics.json": "1e80f44e38fe5191f6ba41ea94f129fcdbd9583fba2f583c59503a577ceb78e9",
+          "observed-models.json": "6d4ca59bab9408a29ccad4154d76cb55afa60a87239d869bd8c0367a5d92046b",
+          "result.json": "417413bc131f0728f74db7e0534ed2ae5c24ccb77f54221933e99fd65faf1b1a",
+          "signals.json": "1cd5e98a52114e751e62432d1dc37d62ffd53a1ce897e22322a51180489c0639",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "4cae74535f31020761cc67b1cbb04561a635609d57a03ab42b837746ac1e6e99",
+          "workspace.json": "89e0b9092951c2d44c33ebc6576442f1d229033da41d4afb76c50be2042950e6"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-b6qt_wiy\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 8,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-03",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-w3uvzw_r\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf06d1f001bJkTGhwo7XkOzU",
+            "session_id": "ses_f130f9527ffechk1cajb1MNeL1",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0790e0013um04J05flYR9N",
+            "session_id": "ses_f130f9527ffechk1cajb1MNeL1",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf082f8001wOq7fKte4kb2RJ",
+            "session_id": "ses_f130f9527ffechk1cajb1MNeL1",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf09221001ULWV5g81aUXBVh",
+            "session_id": "ses_f130f9527ffechk1cajb1MNeL1",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0ab0800184Ji7Cr5CKR8pJ",
+            "session_id": "ses_f130f9527ffechk1cajb1MNeL1",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0b2f30018kYeD37RgyNrVr",
+            "session_id": "ses_f130f9527ffechk1cajb1MNeL1",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "327ab0a5f20f7847ea876ab974be1e782840b62f35a0d8343bdbc4ac63dfab55",
+          "discovery-check.json": "41d8639ea643ac728508471d1d7e34b9aaa4c69fad0916d56cb1373634e45390",
+          "discovery-invocation.json": "c8bbb8e75fedd0f9cdd7ca23787aebbd4f2669bf18f2151a26b5022b2a8b2192",
+          "discovery.json": "173c5c950d1cb93581de708e3bfbfa485180c4cc1509c68ef518f41924802321",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "07852f9969faa4a89c809d8dafe234ae3b8141396202e82ad6d89fa83396146e",
+          "evidence-hashes.json": "88d56d4742c81a71c18816ba1751c579345cef6d69391b53c8a2ad503e57f0de",
+          "execution.json": "47873788b862ae17b8143af470460e681745d04699effa8ec8a86a2c3baeebf5",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "87a2ff21875acd84557f99baa09033bcd23ba87ea5c034340b5f296f9930a06b",
+          "metrics.json": "47873788b862ae17b8143af470460e681745d04699effa8ec8a86a2c3baeebf5",
+          "observed-models.json": "7c594e2091691a8ec284ed807131262d114045a9918147be5ac924eade9ad22e",
+          "result.json": "c942a3dba85dc10299f8ab571ef2258448811df7a80d2c2ae744299b1f458d0b",
+          "signals.json": "3a99e93b4d2425768e1f587c36f59ac1f4d79e3796b91d6a67ce9e51c63f897b",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "fc1753ceb97c27e60cb52af9d2919aa71cc7892fd6a4d2358ffaf923c8cbd530",
+          "workspace.json": "8de2f04a19b742e3878fb5a6e4f1cc0df167eeb0c0f22cdce08e273e99f60f3b"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-w3uvzw_r\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 7,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-04",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-cbty8q_q\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf071d5001w7ydfANwXX8Kut",
+            "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf07c23001BkLdcEsV5ixmnN",
+            "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf084fb001hPYVB9I5ucU5Cy",
+            "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf091f4001zsgTbVXnp2n84K",
+            "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf097f3001pua3RTYnOL2TGc",
+            "session_id": "ses_f130f902cffe6dsPUkSD7s2vLU",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "0edb39f6063c666a1daa5dbf83f3527c5477658e631dc9865db267ca8bad4113",
+          "discovery-check.json": "69e7e440461362525012d85018ff0407008a80c4161151b91e18f9fe220d5572",
+          "discovery-invocation.json": "d78bc44012972d3749386b39b493cc2cebefcd5343436f56e6cd174bb58cafe5",
+          "discovery.json": "40132f6d146708ad32f8361dab22501067651eeb7efecb8449cb72caa5d3c6cf",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "5e716a95e4cf08eb67434f3eab6dfdb49f68f4c7340ceae82a0b73914dcd5774",
+          "evidence-hashes.json": "fa7396bc0a5cdadfe4f9dc572cca20c72f5c60a2364a3f4809cba146e3e4e3f2",
+          "execution.json": "d9a0edc14192d13f3ce2517013200d601d01b645ab9d4339856f573562f32b12",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "4b1cc536293821be55cb7f360c687fe7604e593f2ab1498f76466a97afd67f59",
+          "metrics.json": "d9a0edc14192d13f3ce2517013200d601d01b645ab9d4339856f573562f32b12",
+          "observed-models.json": "2eac1634a6c0f9b883526d67a9e98c64c1da0c84d8d3afe057d1e1427b19b3f3",
+          "result.json": "d8175d01959685edf7e7f06a696748e4667f5dd9467f23c271e180870faa6151",
+          "signals.json": "b92768ece5422d84cfcfb5890b7e77fdf1f94bbeff9eb155727e5f1d6bd217ec",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "0a29786cecb829352977b52aa592b5cc858a63bbecac10bb7db050f6b7ce58b9",
+          "workspace.json": "818a70a84a8c463d7cf71e10934e29ca6cce69ff490af2dab58e22374613b94c"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-cbty8q_q\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 6,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-05",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-pqn4_qxs\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf0aaaf001HhJnxlk2tV9edq",
+            "session_id": "ses_f130f5765ffesmPeeAZV5oKgip",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "08a90a39f77fae9554ee18fccd7244e520b468e877a3c748a599549504d0aae0",
+          "discovery-check.json": "324800df9fb86d2f93937898044211d1ec2b1c9b8b781a934fc1a6909e7a5a7f",
+          "discovery-invocation.json": "7243f6edd3df30d87e8796e035d2a826640f6f88634bee66c9c57fa792c4b490",
+          "discovery.json": "cf64e1805c65e0d2e9b86b3c5984e010cf3b7724b703f228cfe82c4ee2797456",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "e4c1b5225c77b51b081176849d4dfb0e27a9d68087715622d81dab726bf2a670",
+          "evidence-hashes.json": "fd2f1f939d52520dc8145905170d20a23c96eb5d8ea2ef56c5690931f6c62123",
+          "execution.json": "d8374e0953cc73f089aa2c04abbdc31c58551e93655a1a2194eb8c61b6b5e9e2",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "c3dab350bd3bc7b25c8346419f202bd2ebd6b1feea7b1a344dc331d943d2bcbd",
+          "metrics.json": "d8374e0953cc73f089aa2c04abbdc31c58551e93655a1a2194eb8c61b6b5e9e2",
+          "observed-models.json": "11682a64952951f069de50f0297a2a35d12fda44b72b1a3dbbe406a29fb0850e",
+          "result.json": "f42d9e34ecd6e02e8bf80c2243d07338c0508cd4c348f5a28cea7057ceff5594",
+          "signals.json": "b35274e00f43ac1e19a51e1d937c65afdd30d7a52cbd802ef8844d3366577e6c",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "60b0524aaad6d688bf7f12b7a77482a8ee394b64b0202d4085130ab62b881042",
+          "workspace.json": "d6463672ee0605ac4c529d25283049f56ca8f78684cb9760f3edbd95bcb5965d"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-pqn4_qxs\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 0,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-06",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-_rivbez_\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf0c260001zAuGWI2JfNGbt4",
+            "session_id": "ses_f130f401affeoVfS6UZhwaCZ2U",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "44257b0bd29140d76204287a82801fc2030c7206dedfceaf09345d561f8ebc47",
+          "discovery-check.json": "79f36516d72d46e3e2f03bf8899b07d273f4b92c9f93300c8522ede7a47ff728",
+          "discovery-invocation.json": "4618152379bab96a6db381c30596f75433bcfe9eb7dfc50fe52b0af409d41650",
+          "discovery.json": "951d8e33c40522ffbc522990264053797ba6b44835e98ec60072491e1b262d21",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "d07afa2fbe03e3c18b474d7e405dbf1bc028e1d7d6f2dffd3c09d74dd30a9c31",
+          "evidence-hashes.json": "1caeb393e4d74e08f947569ab0c08bc9ebda4ef5cef4cff8cac8a7deee424b61",
+          "execution.json": "4f27c06828bbfd81ae653abe87f67adc27fbe4b05e5de6497ae7dda7b0e0b78e",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "775524c37779f93273ff53ce9b62d344272774252979b2128535dd06af5eb6a9",
+          "metrics.json": "4f27c06828bbfd81ae653abe87f67adc27fbe4b05e5de6497ae7dda7b0e0b78e",
+          "observed-models.json": "1671710cbbc644eddc0a40e665b9c49784b8a872b662f8c73eaf0e86ed95f6c8",
+          "result.json": "fb7528168fa85fefc2e33aa466d6b42fdb1f05f9c5625637f3e4ca9ae37dd986",
+          "signals.json": "fd2d015ea7594a975e7c85391d0adb6cbc906131c61156792e6c377931c8bf2a",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "98c185340f025713e9f3a9d67a6f27e30eb5454db19b366ba9b7b128a9ac0470",
+          "workspace.json": "fa22a40180a9960a338527773006e935a8dd45cb5c29a1e4bcd29e5486b7050e"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-_rivbez_\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 0,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-07",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-ymbmr5op\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf0c709001CcE9LzsM2uSO1u",
+            "session_id": "ses_f130f3b51ffeu7E83odiPAf16l",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "ef81ba18fce09a63f7c1b20bed5bcdcff33fc3af7f9a1302a377fa6b79c84916",
+          "discovery-check.json": "58af6ad85e42048b4dc58de2fa8bb5f3fae9bcf3f92342b1396ef10e8906056c",
+          "discovery-invocation.json": "0673b275df70df021b6565f853af654559afdc1f455d87ac0f67803430ae53e2",
+          "discovery.json": "35578ce181b41e65178d721e3ae6db3216a2527a7e63c42fd6a6bd328c7e9b86",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "488d8367a3d0ecb2e62f2b6bfe0cc07171bd6b4fd831e7f5a078c87a77c8241b",
+          "evidence-hashes.json": "99d54c3be87bc2d4845a0603c045dffe54f039905fe5e42faad9d8a5f6d4f761",
+          "execution.json": "78ec4a3ff83a4a2dbebc40ac1ce26944c119c67c6e43fafc764d2ee59e181c0d",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "26fe3641b5774603ae9d321502d40e4d46919bd57d92d6816e8e2bd27d4a14bf",
+          "metrics.json": "78ec4a3ff83a4a2dbebc40ac1ce26944c119c67c6e43fafc764d2ee59e181c0d",
+          "observed-models.json": "e320da0925e12b0156117df8a02d9e3bc7799754548595425196bb75e61d03bb",
+          "result.json": "a3222af63ccdbed848966013b466292f48483764f415f0aad79b065b4d0c51b4",
+          "signals.json": "47e3b590241baa772036b5ccd1ebc55c75533bf09659d4879ad0e8e1a111ff9d",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "c0000e8696563534e4a07af3aa943d2f3608e39c833375bb2a4b178baeec9c40",
+          "workspace.json": "77d8a3228a81c30474dc26cd3d8d99f5c8b8d868abe3e230508946e69302755f"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-ymbmr5op\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 0,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "trigger/raw/query-08",
+      "kind": "trigger",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-d9f0jfvj\\workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf0daa2001fayQu1glrkAkB3",
+            "session_id": "ses_f130f2777ffeThp3E3mx4wSEFS",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 16,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "client-environment.json": "8504fbca17ca13324163de85209c7010911cd11a83767edb908907f6f1f85dbe",
+          "discovery-check.json": "6d19c0c2b9c50fa80ae9576f37408473648fc436dde3f8f74a1f3f5f9f0b1b70",
+          "discovery-invocation.json": "5e847f93d42c8bb5b63ddd19def1260e50c845f351db0c9f5824780dde82e09a",
+          "discovery.json": "5a428f16ffc7d353791792d7d5d8632e31c457038a15f7bc3bac5c647e0c8f0c",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "115aea82d7983c7382c424c1d154eba20f4bd1fd4b308b2fc6521ed119932607",
+          "evidence-hashes.json": "d3e063106ef4f809886d1b36cbc03b8fdc20a9d8caecd5a3c3c2095d18bf2bea",
+          "execution.json": "188ef8d90d6a91e5fa9dc5e9818490ffee1e0ee01bf79ee2faac8902c4bdc410",
+          "input-integrity.json": "5a63cb19e6e218c3bf1255fb97222ce81e8c0381bf2d92bd9cef8c1e3d7b7efb",
+          "invocation.json": "89e01eb86367d7db6c03a579c0ac71a2ca8ab7f572d9db53f0199921c15893d2",
+          "metrics.json": "188ef8d90d6a91e5fa9dc5e9818490ffee1e0ee01bf79ee2faac8902c4bdc410",
+          "observed-models.json": "80dca56f21ada15e704b950d9d338c5e5c0195e467f1dd316fd9fdb6e76eb521",
+          "result.json": "df754ac7e3167a70a4e3642df100b32162aa209b28edb13c6151f007e6713acf",
+          "signals.json": "4a4e2c6a03e76257bf9cfbc698891f21f5bcde469fbdeccbe9bc0822bd452dcf",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "16e067e1bcec2de17c3ad1d2f6db1b865d577d748170357f03af6fffa844e7d7",
+          "workspace.json": "297b93adef800168ed13b0ef57a54dec878cee1eedc42a47e51e9fbd4e5527c3"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-d9f0jfvj\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 0,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "iteration-1/eval-creation/with_skill/run-1",
+      "kind": "scenario",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-l_ncnnce\\temp\\scenario-gbqncgrw",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf0cf6a001msxnZFQwwkA1B7",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0dd31001DS8v6jkxL3dj1X",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0e60c0014Ey3j7X2FUJMSs",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0ed7e001JQwcgGbDkp7Xdr",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0f4bb001kMy2GcQg0MXD5L",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0fd9d001oWCW35befUcYSX",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf39020001xm4DUK6JkXLGeH",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3b85500182Fsy3OSjMzBtT",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3c247001pwR39u9oiuPX57",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3da4d001cSwnZGIS5j0NUw",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3e238001x1GTuil251MaA0",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf41349001wiYngLV4Ck70ow",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf41cc8001AtdIA31JLBZGMm",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf424200018kKYLXqC6oSwl3",
+            "session_id": "ses_f130f332cffed5nn830rn5pMVC",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 2,
+        "saved_evidence_files_checked": 23,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "artifacts.json": "5f879a398f222fbde7dd2dbfa2ac72931785f836612d713c317e6623503c245e",
+          "client-environment.json": "18bb4597fea54cce4394d688acf1dd2692bbe3d483644ad2fea9f73ea7aa41bf",
+          "discovery-check.json": "c8555eae43bd720c60a22300f960d2119041eaa63da4c8114479774a80e3d022",
+          "discovery-invocation.json": "eef93c292a6da82eb4cf48f645e225afe5d419dcbcb3d70a35ee0a1ca28bff27",
+          "discovery.json": "728576118f8f23958b0a6eb612133faec7c484268a1c022285fbb154813713a3",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "83e6d61ed9cc785f172c9ec992ad2f9ef41377a67c34c0de8a4ff455b759e066",
+          "evidence-hashes.json": "a6cb47ec101f62f1210dae4a49eeda3a79dbf1205013fbb13cd237e35b2dc57d",
+          "execution.json": "44933855368da12a173519814a8507c908bfe4bcde5adf432988272e7d83fea3",
+          "executor-status.json": "633eb35358c26d1fabc49f5dc9fb18768ae7f42cfba1db22a268bce667244ac5",
+          "executor.stderr.txt": "109a1053cf225bf717ead7004160cf051f4b4eea8ab5860652d66b8b6be55a12",
+          "executor.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "input-integrity.json": "25c6096ad95195af515f7d81253d31491fdd6487a03ffee3b4cf25b7280880c2",
+          "invocation.json": "19ab5c7ee01fd59be5e1354aeb0e7480684fc2216668b0cf05f735947afb446b",
+          "metrics.json": "45c0fda1e0865a01dbdeb12fca54dd3fb99de6cc2327c183e20cec8094008a16",
+          "observed-models.json": "1b373830546c437ffb1b3f216e049b9ebdd6869992a1ad7875eb3d57d915fcc2",
+          "outputs/artifacts/outputs/agents/release-evidence-auditor.md": "e759768784691954d9b148fae6612c134a7efaff8a1802cee805e860683cbdaf",
+          "outputs/artifacts/outputs/verification.json": "f722d132d2ddd810cc20c5cff36ef0c9f8b23c7e5ce0cfebfe1bd0cfc6ae6ff6",
+          "outputs/response.txt": "b8dce62bf2df9c4474e88adb9c45d30a6267224d1c84d18f624e98744144c6a4",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "9029a8da5584e5f39155830ce7ccd8a71ee40d43def5de4dab496c3c4fc161bf",
+          "strict.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "strict.stdout.txt": "bed89a65cc2348b1b7696f927ad99a88e02281ad80024d969b351b49084f74c1",
+          "timing.json": "9a28d02ad7a7e95338682c86fdca77df833c86a2ef904dc2a3a44f80ec32483a",
+          "transcript.md": "40ac5a7e9b1ee7b951d2caf60ca80d166fe897ede2e0f95d4fb4591b942b8a1e",
+          "workspace.json": "56e15f9d04f584154f5fead9210701c761c327b71e2b67eed41dce7e9269a558"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-l_ncnnce\\temp\\scenario-gbqncgrw\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 18,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "iteration-1/eval-creation/old_skill/run-1",
+      "kind": "scenario",
+      "variant": "old_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-238gp4iv\\temp\\scenario-yf6g09n8",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf01c6a0014K6MDivcO1IzP1",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf02d220017mKSseGSFVBLui",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf03789001LkBEM1zD262AG7",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0404f0019h5TLR03v4brpb",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf049da001EMWZvyhtNI3YfL",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf05397001mUAiraNs0We2H2",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0746f001zJY1ETRT6f8vML",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0a897001WOPRA0qBDS0VNd",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0b241001Q06ju56HnQLCFb",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0c4c60013Qa56w57LEGErm",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0d42c001foIwseZx4Xx20h",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0ddf70014Ri5YMH32FM7NY",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf10167001jg0m5BtLxBMY5Z",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf135ed00112G6Axb5prHVAF",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf15b7a001kUrDG9fvBVktmY",
+            "session_id": "ses_f130fe638ffei1c72JfA1YYgxZ",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 2,
+        "saved_evidence_files_checked": 23,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "artifacts.json": "f0351d30907670b8e91584ea28e338145e1503b280c14512c3f51b27fbd98aac",
+          "client-environment.json": "02fb1390c165db7398d38c638fcd676e10423780bf81f231f6332d6d5af884c4",
+          "discovery-check.json": "e5d17b6cb424d89c1f648635fff868596e49512af08f011b755a76f9c9e6e53e",
+          "discovery-invocation.json": "f6898bab8631fd50bb9e1fcd935ef77e08bf69b07924e42af17628db3b7e4fff",
+          "discovery.json": "babdc8aa926a0d1d06959336794b891604aaed43ad006247ed8b621c39b855fa",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "f240fa119ada1a7760f5de8b2453f8559d3a5e6492e911f5d567497036192e36",
+          "evidence-hashes.json": "e21bea1f5ff26edc26ec056410e47018a331003f716332703d118918bdc2bd83",
+          "execution.json": "0861350d5733f72330ca7540a62e6e53547b0e7adbb982c010bab10d0983b471",
+          "executor-status.json": "f3b82b80da6ecb48d99a7c5f0c8fb97583d07a9741575fd196802c3d7802e150",
+          "executor.stderr.txt": "38ddcedf4ad9a0be20e6f91c6814e59999393eca0ce34c38e14f7d968796ad89",
+          "executor.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "input-integrity.json": "25c6096ad95195af515f7d81253d31491fdd6487a03ffee3b4cf25b7280880c2",
+          "invocation.json": "1272101124150e2663eddf4cbe08118d95870338e3be822e1ea9af7c53ba1612",
+          "metrics.json": "f1f8444914ffe40bf9e53cfe15b396cde96cd2ad8004ff7a3bd665635cafade2",
+          "observed-models.json": "4a3e689f5c2f0806e7e31740a2b6a59eef8a47da6201a93a0195836feb2e3dd3",
+          "outputs/artifacts/outputs/agents/release-evidence-auditor.md": "83e29c14ee471cce8241829b5f4040f398736ef57b255b2a81f491916322ed17",
+          "outputs/artifacts/outputs/verification.json": "1c225293f6f4e05fd5b9a2fa1041a722aa1932ee0da181203c11f14a5af42822",
+          "outputs/response.txt": "6e791363c6c7479f8b3cdb06433599ea1c6079b5aed722756f307bc67e611207",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "4d44494500be080547772809ca2ba387874c95fd0cb20d04bb15234dcb89d1bc",
+          "strict.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "strict.stdout.txt": "7db10c59779e7c85427da9b716f1d9124bfdc025d1d987217a6c9f74a3937b32",
+          "timing.json": "642a9020dfd9467d9a8dfa3ab3b6fc3cb39517f0cea25ae758148528a28962a0",
+          "transcript.md": "bc80e1e2ad3498f00eb67462fc2b71e8ffe57281f3c8f1ac3b336f421fb61acc",
+          "workspace.json": "49051d80320a410ef421e5dc87873a1cb40efa83c184cfc28391e25b6eefdf47"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-238gp4iv\\temp\\scenario-yf6g09n8\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 22,
+        "findings": [
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_GCqP0XVY3rbsZf07RUNW6544",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$p=\"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-238gp4iv\\temp\\scenario-yf6g09n8\\outputs\\agents\\release-evidence-auditor.md\"; $c=Get-Content -LiteralPath $p -Raw -Encoding UTF8; $lines=($c -split \"`n\").Count; $m=[regex]::Match($c,'(?m)^description:\\s*\"([^\"]*)\"'); Write-Output \"lines=$lines\"; Write-Output (\"desc_len=\" + $m.Groups[1].Value.Length); Write-Output (\"desc=\" + $m.Groups[1].Value)",
+            "command_sha256": "c94a4a0d9fdb9960d81fc05c45c15fa0d5018f1453d531ced65c09046c648695",
+            "paths": [
+              {
+                "path": "n:\\s*",
+                "resolved": "n:\\s*",
+                "resolution": "outside_workspace"
+              }
+            ]
+          }
+        ],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "iteration-1/eval-creation/without_skill/run-1",
+      "kind": "scenario",
+      "variant": "without_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-26uqyorg\\temp\\scenario-npmpks62",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf01c06001Vyq7ORcQPjxRIH",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf02790001a9Xd4Qn65Eb6bp",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf04cd3001kaa2yBVvHYprsD",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf056ce001OO8mjCeWPvbvcW",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf07104001bsbxAjahgF9lqG",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf07d30001hPM15Q0G7HW4NT",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf08331001WGWPNYFktkYW1I",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf09f0d0017N7Ln3jt1QuPgt",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0a871001OZuGirgZ5QhSUp",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0b08900111hLVHZx2JUem4",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf0b83c00163JALXRvjSEAyX",
+            "session_id": "ses_f130fe6dcffelIWnoSmIOiJPxW",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 2,
+        "saved_evidence_files_checked": 23,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "artifacts.json": "23e3a6ac97b4ef3747004a994571e11bf69224b573fc2ec12d688405735d150e",
+          "client-environment.json": "09486b97574a2e56844450b5451b96f86f05972e127fcac4a9f009e5e7926f00",
+          "discovery-check.json": "dfa294919f0f6bb0cbeab4999415a80063fbd1b7cbad0b82458c285ce73e0f58",
+          "discovery-invocation.json": "24160c4eccfe083e6129a59b49fbf3a9a7ab26cb31670bd5156f5e07dfe095f1",
+          "discovery.json": "31e2a72021825ddd7b5bc07daf2f1470964ca4b8070c99f644f404b52e10a451",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "20725ae3aef9499e888e043ae17322c55a80b4e04ae11d9939f486ead2fdc0d9",
+          "evidence-hashes.json": "0dfdd23d15cbee45b38fb0f88c85ad41e8d97229f855b4d7afa5155ac4ea9a73",
+          "execution.json": "c5cc8581ebdb5e1762f5b6d590f11724fd88b2c8371f02ddbb78a622dbb27cdd",
+          "executor-status.json": "0aa6a48844508114311acf5bc777c2a920b5194ac3f07c120ed28a1d9cd0d536",
+          "executor.stderr.txt": "bd2578867287c0fca7f1f601079e02d405dafaad40d96711504ab1ca835d3fe1",
+          "executor.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "input-integrity.json": "25c6096ad95195af515f7d81253d31491fdd6487a03ffee3b4cf25b7280880c2",
+          "invocation.json": "4fc562de394a70235cdb6f83df86e2d2ef369f1a10ec6fb46b09b7bf1c7fd8d6",
+          "metrics.json": "529b284b0b29efb31e6205a07e0818526e1e2e71d2a44e7f1a27a54790fbde89",
+          "observed-models.json": "a5bd37f507663480ad815131b4b530c442c9547d9cf6494a1f1bef668ffc50b5",
+          "outputs/artifacts/outputs/agents/release-evidence-auditor.md": "ef680cb32ba12e0597a584d6ff618157556a42496f63edfc1be7ab831ef67b0c",
+          "outputs/artifacts/outputs/verification.json": "362885568a4a4c3eded9029beb115c40900570cd8a50ba9bf61c24710db355a4",
+          "outputs/response.txt": "f8b37863af187c957a4c65645b078514a1119c33cbfd2adec52ef31778560b04",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "e1ec38780e50a93dbbf9fcb5c56592148bbc03fd5754cc7635625e2e9eaffd33",
+          "strict.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "strict.stdout.txt": "2cb63f4b8e5efed5ba605f59614b4b045a895a2bada016456f9ff5d69a3c5de2",
+          "timing.json": "8c3abcbc2b5ab45bb2178ea5b2ed218998d84c64f916f90b969a72b5349cde51",
+          "transcript.md": "a837b9dda08b5e9a38849bba6b674bac29e5f68ff63361ec107b413d9174232b",
+          "workspace.json": "524598cef0d4e2b2e86a99edc0543e034590e47aa81ccba7bd4ae388b360b074"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": null,
+        "discovered_names": [
+          "customize-opencode"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 12,
+        "findings": [
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_34C6s69NYIwcWTmCXEc24979",
+            "observation": "completed_call",
+            "reasons": [
+              "global_configuration_path_in_shell"
+            ],
+            "command_excerpt": "$paths=@(\"$env:USERPROFILE\\.config\\opencode\\agent\",\"$env:USERPROFILE\\.opencode\\agent\",\"$env:APPDATA\\opencode\"); foreach($p in $paths){ if(Test-Path -LiteralPath $p){ Write-Output \"FOUND: $p\"; Get-ChildItem -LiteralPath $p -Force | Select-Object -Expand FullName } else { Write-Output \"absent: $p\" } }",
+            "command_sha256": "7e04b2e21d3c96c8d653159d5a8165f589a2973bf34727ca623d771ff9854570",
+            "paths": []
+          }
+        ],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": false,
+        "errors": []
+      }
+    },
+    {
+      "run": "iteration-1/eval-repair/with_skill/run-1",
+      "kind": "scenario",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-ml91hn1x\\temp\\scenario-916hc38g",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf1727f001k4zmQfl5tEPgtA",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf188c9001ubG47jBuflkbrz",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf190d6001jP867Ua7465fV1",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf1a47b001iVc6UutEWh8xYH",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf1b7f5001tGtHK7OX9K6NC3",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf27045001sRPANaKnicXXqi",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf2e0050013xgsFk6y5ZJxL5",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf34239001KHWwgE302J7XP6",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3673e001vyQLjcQRfXtBut",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf38bdc001gdRDnZQXqceDGI",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3bcb1001f4JHSwRlQ45I2W",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3c80b001Wt7M6dbFkbVedB",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3d6a7001sn6dEIyj7RkWwk",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3e11b001tNf5bLsrxVTnMq",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3f429001VZdLnrL9XwO8iF",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf3ff9f0016kTF06oy1kSOOO",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf41a5d0019JZWV6ODGb4iHy",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf43c60001e8hcEUxDmX2TT3",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf444c6001p4nbvregQD6T7X",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf44c50001zdRkQNNJ8Hk0pD",
+            "session_id": "ses_f130e8eecffevMANL5K76zMuzF",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 7,
+        "saved_evidence_files_checked": 28,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "artifacts.json": "8002b6cb0dd4f9fba54ac816439be2cea0f19006e7ffb71733c73232e409bce6",
+          "client-environment.json": "bcbd40a269df97397e97c4a1c50e3f98b46c6fd8634315cc111a3488454f3e28",
+          "discovery-check.json": "730e543516941ee690a881f03c309f9bf88178636a21793d1be7aa31c89331c9",
+          "discovery-invocation.json": "a17f24ea3e23414565dd55d0d57c4b02a35bb335d82f187ad94b82fd77355c44",
+          "discovery.json": "5df2f2632cb23509485cd60d65f4621081379cf550323ad947dcc38b1ec00c0d",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "5c76f3b27a1f675d020ce4b44ddad053d0b2fd1936dfb4c94bee2c4605e62d11",
+          "evidence-hashes.json": "74cb8fec2f79a3142b450c26bb8fa7c5c1554c8cc8563a86c9e5c9df7bae68bb",
+          "execution.json": "1d8f3f776325dcca5776261ae962ea4c53457434744d5911adb794b4892205d4",
+          "executor-status.json": "9121c149da598fbb09e58be9356567ee23402ec8b78a318146104b2c440916aa",
+          "executor.stderr.txt": "795167e06949e015921720ee25139e742f3951d625234be11c1f7afcbb14b487",
+          "executor.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "input-integrity.json": "8b226ba02a028c9bb3106fc9be0d4dd93deae011ace400c30f6a4e19df537ad5",
+          "invocation.json": "d2e39dac4331170d99673a28fda21d82117df42d11c3ce8b6c0edae74461cb49",
+          "metrics.json": "c5351996579e53de3395aba2f030d3af88d8bb41413746b983be7aa26e683429",
+          "observed-models.json": "487005936fab7b43a2460efcc501ce45d0ed819e99bad72103ddca3028092d73",
+          "outputs/artifacts/outputs/bug-triager/AGENT.md": "61f1eafb6430b22d5d5a579af182b9969055825da73857efa16f31dc0f01b48b",
+          "outputs/artifacts/outputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md": "a1be3b5519c38cf787c19c59a36d53a6ce786d7659d55b3d174ca284cfa1221a",
+          "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md": "e1335ebc9128d969eb9b14c226fbde6c2963a9b47ca0a50afd75e24fadd958ba",
+          "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/verification.json": "efe976f98ca6badeb39e7f9a4e39d350da3c4434491f9d1ea2e451f99fde2d3f",
+          "outputs/response.txt": "4b3d6b3f2fa85ae7bc20307ae1cfb11d4c426aed06cc5b975a9c42fce69b09ba",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "26c025bc15cca9da013da899835e6d786f42aa47ad7357408847f4e89f63f408",
+          "strict.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "strict.stdout.txt": "24d3f08994cf0a3461273b4b39413fb90855384df5124e6b57ad4b1830829fa2",
+          "timing.json": "76965d529dd4a71bee39dcf6e6edd4ec8539205ae528a841b7c48de201496491",
+          "transcript.md": "188c26b9a82d33701f15fb98c315bb4fac920e4f82745593f0892b34c98ff8b0",
+          "workspace.json": "00df34fad1e422a2d82936ab7e733182213dbfb8ba2d5c98fb5092fe127cceb6"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-ml91hn1x\\temp\\scenario-916hc38g\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 37,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "iteration-1/eval-repair/old_skill/run-1",
+      "kind": "scenario",
+      "variant": "old_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-smontqus\\temp\\scenario-511idx89",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf43b3600166rcwlVIHms3bH",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf447cf001ZBI750Mp9G1fOs",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf44f38001Zvrkc5frvc1jpV",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf45873001MGQfnfo8EjQVib",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4663b001hEZVaZ1hv9FSLt",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf47b76001VgxXxfQxXojNyv",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf486fc001TpGi3L1RPhcjFX",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4a8cd001RUHpLFDrOkoVJO",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4c1a1001GsuskoiLMAbxYL",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4cbd3001ulcvQ0dFwD8FO5",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4d495001kL0LVeIuID8mHu",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4f211001OIs2an3q2S2dL8",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf50c92001TtHC8260NOIik7",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf52416001RzQU0VlbXLOyV0",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf530ad001PRAag5fUvtPGt3",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf7e4d1001VGmwOpE5nhjtLT",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf7f050001x76C7ixgmwdkct",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf7f8b3001oTqL41FwS1uogu",
+            "session_id": "ses_f130bc6f7ffeemfXGFMmbRJzrE",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 7,
+        "saved_evidence_files_checked": 28,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "artifacts.json": "da3a0bd42d9eea363a31d5f0e8d3bb634de731c8491ba98affd1440999564f06",
+          "client-environment.json": "001c7288ffeafdca515a645d1bfeadd285c0ee341f5da232f5110634487dc83e",
+          "discovery-check.json": "28d6a4c7e23e48132ca507ef7fa60706719bafa7539f6fb6b288ebfbc204d74a",
+          "discovery-invocation.json": "17e191959c96c798030e4e5ae43a6e181e155e1f2afbec4f4adc1f994b7911e7",
+          "discovery.json": "6821f50ec17abc4c3af64be3c849c0272fff4e52fa04412e95c2ec0cfe5de768",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "a0028641a4dc261a42a7a7ffa479e1297c093a09805a19077d0ec4556ee63454",
+          "evidence-hashes.json": "2c23cd99875f2445b1cfdad0f25ffe5e84c6036f68b052a44e9a395572207658",
+          "execution.json": "8754e56a2c64c275ccb92ad4bf1d6d1cb2a2a61801c991d4469899d312dfd5f1",
+          "executor-status.json": "a032f1b1ef837f96652f6b65f9893cbb92961ab28472af99ac487183974ba9f2",
+          "executor.stderr.txt": "a1c50710edadc1f265a61ab69827424effae6aff9b378ebff846c85ad997817f",
+          "executor.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "input-integrity.json": "8b226ba02a028c9bb3106fc9be0d4dd93deae011ace400c30f6a4e19df537ad5",
+          "invocation.json": "5d161440b3a9c5ef514a6452816fc067ca8338ec3dcdb72ec90b3f249ca5bc62",
+          "metrics.json": "3d6ff01d171385b9c70889e3b2aca648dda89849d25367a75dc65015e84595a2",
+          "observed-models.json": "7ae036f03e776b82e93a700901b6a931f9567d98e43fb507c5dfa339dd940209",
+          "outputs/artifacts/outputs/bug-triager/AGENT.md": "c523571287fe3122c8cca73341db7098684add4c701a7351809b799fe10dd41e",
+          "outputs/artifacts/outputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md": "53d971241c61525296aabc753f37a4c4dde6ad10ed799d659435c5863b3a873b",
+          "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md": "8b13bba4f2b377c8d8f028ed8fd93ff8c2aa7068f3e153949fc4c5e6e62c5525",
+          "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/verification.json": "ab8845078b3a876b0654a81c5dd66d22da94d9b33ee2b257c70725737bf58f47",
+          "outputs/response.txt": "3d08d1188c7df8ce2c810ec5be654f527f889db7a0a699230b6c7e046068253c",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "3f5028bd107d8f59325c1021ea31a38cfbb1205ac5d31848456774eb012a610f",
+          "strict.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "strict.stdout.txt": "ac47bec33ad10a45920fb2f82cf7df46a31cb5418056017c10b9f2e7945c2bc5",
+          "timing.json": "2eaa12001a71973d7ec3e8d8aff3f487e657fb3ed8f6654db8b9381fe8a282c8",
+          "transcript.md": "76ccfcf17da004d399a6b4ad5bdd76ef166a4b0ffbb0641a6064f4a22c82401d",
+          "workspace.json": "58f730ea2cafed4b959a77b936e59d23a77c1eb09bbf4b6381d9fc65e6be859c"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-smontqus\\temp\\scenario-511idx89\\.opencode\\skills\\agent-creator\\SKILL.md",
+        "discovered_names": [
+          "customize-opencode",
+          "agent-creator"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 25,
+        "findings": [
+          {
+            "tool": "write",
+            "status": "error",
+            "tool_use_id": "call_00_WoLCDpQ2o819KlvtgtSF9571",
+            "observation": "attempt_only_or_incomplete",
+            "reason": "external_path_requires_review",
+            "field": "input.filePath",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-smontqus\\temp\\opencode\\audit-bug-triager.py",
+            "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-smontqus\\temp\\opencode\\audit-bug-triager.py",
+            "resolution": "outside_workspace"
+          }
+        ],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": true,
+        "errors": []
+      }
+    },
+    {
+      "run": "iteration-1/eval-repair/without_skill/run-1",
+      "kind": "scenario",
+      "variant": "without_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\scenario-4vh8k0j7",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": null,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf46348001D7vux3ARjzUnL4",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf46d91001wLYmHoycgQxuHH",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf47650001bgPp4ra8DMaED8",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf47c4f0014swJrqKH7RiP8t",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4d6ef0016kRv6r3lGYfNSW",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4e5cd001twCpLF7syjXoUz",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf500340010vDWvvMOE8FVsQ",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf50bea001Z1wF2iPbo2WOdl",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf51b09001bmG1CqnG00yhIn",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5322b001ueu5uH6Y96M7Gv",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf545cb001RMEf2dpB0ubCBT",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf55b9a001gLRm0t7iDHFMe3",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf57483001mt2GXpTwfmgTBL",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf58264001VU1dl6OWDwdMdH",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf592cd001OJb8TjRjdd3NMS",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5aa2b001TxlMRci2pXLLBR",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5ba77001FgAPAzrmIve0Lg",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5d017001QE1fEFuvvS5Unk",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5e2d20017jWje0geSKBPRg",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5fd25001Qbbs0N6cOob39K",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf60647001O2vjQiKqeOcnC6",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf60f3b00101ofDDlmntFev1",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf63e06001dyepM66f53ChSP",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf64874001eiU8GR8ixT64cp",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf650ae001TSp5AzrKqZyPX5",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf657f9001IM5Y4fCN1KXJEn",
+            "session_id": "ses_f130b9eccffec9BaVqVM6ls9fL",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "build",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 7,
+        "saved_evidence_files_checked": 28,
+        "saved_evidence_manifest_available": true,
+        "errors": [],
+        "current_file_hashes": {
+          "artifacts.json": "3c75aab424c9624bf6ca114e9a97e4ae9afa906228e5bb780920629c93081f8b",
+          "client-environment.json": "8cc42751495df0e6385b432a21e58e31b7fb149a53feb43590761cf9bf31b17a",
+          "discovery-check.json": "dfa294919f0f6bb0cbeab4999415a80063fbd1b7cbad0b82458c285ce73e0f58",
+          "discovery-invocation.json": "63d66f80ed0c5d8c252f4bea14692ed62c37000bb0b1d3197040cdc9d86fcfc2",
+          "discovery.json": "31e2a72021825ddd7b5bc07daf2f1470964ca4b8070c99f644f404b52e10a451",
+          "discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "discovery.stdout.txt": "20725ae3aef9499e888e043ae17322c55a80b4e04ae11d9939f486ead2fdc0d9",
+          "evidence-hashes.json": "fcba0de7214bd023df6e89f0545f6d758179f2c4e0018fc5ab780da6c4ecce2c",
+          "execution.json": "c81299a5b225087ab258cbd3830787195310378f1f9776911c3179cf1e709123",
+          "executor-status.json": "76ae35cb8d5c948f4828b7c470e1b319e7d1cc07261d10f2a671506eb68d4c4c",
+          "executor.stderr.txt": "5a7d842265233b0ea81f0e0302b147b4d8ed1bfeb6f23f422f6d6e1b6ad35b6b",
+          "executor.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "input-integrity.json": "8b226ba02a028c9bb3106fc9be0d4dd93deae011ace400c30f6a4e19df537ad5",
+          "invocation.json": "6b068313d559c1b1e2841d7f1aebc9f6386fe1b400a9fbb315cba4bea0c4047b",
+          "metrics.json": "3dee3cbe52e3ee7fc5e39aa50b776f79c5915bf9a416dca3ba172e4bd8a5edf6",
+          "observed-models.json": "141a9eadf2a26fa03dc7d5e6f0aaad68ef127de9cf4ee2bfc18b229148df39df",
+          "outputs/artifacts/outputs/bug-triager/AGENT.md": "7a90af27b990002c056b0bdf405843f9d9775b3e068dd4dcbe868e9f99a8bcce",
+          "outputs/artifacts/outputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md": "4c8be5459917e5f4a519e6d2bc1b1f74edb8445c45e691f1fbc602a7338b12fb",
+          "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md": "1706b348d3356d33390252f961b479ada9564efcefcf72fd8a220d106a4cfead",
+          "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "outputs/artifacts/outputs/verification.json": "5456c62ea67d389bb348d9a1bd2883495ccaea39a42d763297bf58aac5e06f1a",
+          "outputs/response.txt": "f774949304b2b7fc2b3cfa3ad5a6eb1964fb566b82438314798774de874cf478",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "f23c034ad62aa1371bc7f773ccc2c28d3c683ac89684b2be0e5bdb35ac7ef5e8",
+          "strict.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "strict.stdout.txt": "42ba2e043f1a58665fe7ebc94a0a1b80d00a202a4b233e09918fbe8c01110b0c",
+          "timing.json": "7c8b2b7436c3d1f4cd8a8d2acbd279388c3b6513512d2cc6fbec9941827465dd",
+          "transcript.md": "3fcd68000660c0e26b3b9ba1924d6e0bc212fda6a257071521bb76ef1718e2a9",
+          "workspace.json": "44196069ef4b708c841ae2e900018d0bc1d77e9fa0ffe4ecabbd6c01d2230de5"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": null,
+        "discovered_names": [
+          "customize-opencode"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 31,
+        "findings": [
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_JRr60k5cqpBuCRj33Rp85313",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n& \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\" --version 2>&1 | Out-String",
+            "command_sha256": "1a970f3a87f3e669add1d35fc040bfbaa0f2313850ab23877792eda2e7f153d0",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_RHpJ8NUF4jFTWkLhH8u38224",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n& \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\" --help 2>&1 | Out-String",
+            "command_sha256": "6e25c65cf83e14148935e92beede0a7323ae97ae33768a790a81871ae530cfad",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_XivKDMjwlMkNXWXUi5Z53273",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n& \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\" agent --help 2>&1 | Out-String",
+            "command_sha256": "4e62bef8f5c475143608c2640537221711ea808fe0d3252c13f1d4b0e87f6880",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_00HDmarSOlx1onOyK9AL3468",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$base = \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check\"\nNew-Item -ItemType Directory -Force -Path \"$base\\.opencode\\agent\" | Out-Null\n$src = \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\scenario-4vh8k0j7\\outputs\\bug-triager\\AGENT.md\"\nCopy-Item -LiteralPath $src -Destination \"$base\\.opencode\\agent\\bug-triager.md\" -Force\nGet-ChildItem -Recurse -File $base | ForEach-Object { $_.FullName.Substring($base.Length+1) }\n\"copied\"",
+            "command_sha256": "9529c48e2ca491699abbc4c2cbec92f3d46f9c000f056bfa5d835f77fef748a4",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "error",
+            "tool_use_id": "call_00_ET_Uh6OAcWlmXhSMMK1YC1W4197",
+            "observation": "attempt_only_or_incomplete",
+            "reason": "external_path_requires_review",
+            "field": "input.workdir",
+            "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+            "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+            "resolution": "outside_workspace"
+          },
+          {
+            "tool": "bash",
+            "status": "error",
+            "tool_use_id": "call_00_ET_Uh6OAcWlmXhSMMK1YC1W4197",
+            "observation": "attempt_only_or_incomplete",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n$exe = \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\"\n& $exe agent list 2>&1 | Out-String",
+            "command_sha256": "2d84234f6c6f684184ee0ee2f6cdbfc8b59205524dfad370c876b95b42f2f385",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "error",
+            "tool_use_id": "call_00_qBUuUCdaEjAXNXZBX3Hk3802",
+            "observation": "attempt_only_or_incomplete",
+            "reason": "external_path_requires_review",
+            "field": "input.workdir",
+            "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+            "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+            "resolution": "outside_workspace"
+          },
+          {
+            "tool": "bash",
+            "status": "error",
+            "tool_use_id": "call_00_qBUuUCdaEjAXNXZBX3Hk3802",
+            "observation": "attempt_only_or_incomplete",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n$exe = \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\"\n& $exe agent list 2>&1 | Out-String",
+            "command_sha256": "2d84234f6c6f684184ee0ee2f6cdbfc8b59205524dfad370c876b95b42f2f385",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_c51OVkBMSuZlUxX8ckpO3533",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$ws = \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\scenario-4vh8k0j7\"\nNew-Item -ItemType Directory -Force -Path \"$ws\\.opencode\\agent\" | Out-Null\nCopy-Item -LiteralPath \"$ws\\outputs\\bug-triager\\AGENT.md\" -Destination \"$ws\\.opencode\\agent\\bug-triager.md\" -Force\n$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n$exe = \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\"\n& $exe agent list 2>&1 | Out-String",
+            "command_sha256": "6b0b3bdf093f274771239d27f36781bf5ab17ba0c6f7f3951df164814c391a11",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "completed",
+            "tool_use_id": "call_00_uKXBUiNguPjI1wbYj53O4580",
+            "observation": "completed_call",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$ws = \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\scenario-4vh8k0j7\"\nCopy-Item -LiteralPath \"$ws\\outputs\\packages\\opencode\\bug-triager\\AGENT.md\" -Destination \"$ws\\.opencode\\agent\\bug-triager.md\" -Force\n$env:OPENCODE_DISABLE_AUTOUPDATE=\"1\"\n$exe = \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe\"\n& $exe agent list 2>&1 | Out-String",
+            "command_sha256": "2fcc06174211d97e0f1b1e93298a8946970df0a44373fe6e1c38fb33e8f08132",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "error",
+            "tool_use_id": "call_00_CjiukWsL09mnORQvWRS34179",
+            "observation": "attempt_only_or_incomplete",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "$ws = \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\scenario-4vh8k0j7\"\nRemove-Item -Recurse -Force -LiteralPath \"$ws\\.opencode\" -ErrorAction SilentlyContinue\nRemove-Item -Recurse -Force -LiteralPath \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check\" -ErrorAction SilentlyContinue\n\"cleanup done\"\nGet-ChildItem $ws | ForEach-Object { $_.Name }",
+            "command_sha256": "fa3a49f0623cd9735c7e2a7a7d2bc4d0805c3e5c556a73c142ac6d97d072d66e",
+            "paths": [
+              {
+                "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolution": "outside_workspace"
+              }
+            ]
+          },
+          {
+            "tool": "bash",
+            "status": "error",
+            "tool_use_id": "call_00_DAL6NQRxo008k3Z1uEqf0987",
+            "observation": "attempt_only_or_incomplete",
+            "reasons": [
+              "absolute_or_home_path_outside_workspace_in_shell"
+            ],
+            "command_excerpt": "Remove-Item -Recurse -Force -LiteralPath \"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check\" -ErrorAction SilentlyContinue; Test-Path \"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check\"",
+            "command_sha256": "e6f43e577f8049adacb9f2d14baf29d51894d8fd73985092a50ed97b3251c157",
+            "paths": [
+              {
+                "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolution": "outside_workspace"
+              },
+              {
+                "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolved": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4\\temp\\opencode\\native-check",
+                "resolution": "outside_workspace"
+              }
+            ]
+          }
+        ],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "installed_product": {
+        "available": false,
+        "errors": []
+      }
+    },
+    {
+      "run": "runtime/with_skill/run-1",
+      "kind": "runtime",
+      "variant": "with_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-ipzmm9hx\\runtime-workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": true,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf4f5f2001eTuq7ynFeaPrEc",
+            "session_id": "ses_f130b0c6affefhNvCBj8sZn1sd",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4ff5b001iMBv5x7cnpbeUK",
+            "session_id": "ses_f130b0c6affefhNvCBj8sZn1sd",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf5072f001fPm4DDEMVvBBYl",
+            "session_id": "ses_f130b0c6affefhNvCBj8sZn1sd",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf51bd4001T9TONgTMcfROVl",
+            "session_id": "ses_f130b0c6affefhNvCBj8sZn1sd",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 0,
+        "saved_evidence_manifest_available": false,
+        "errors": [],
+        "current_file_hashes": {
+          "adapt.stderr.txt": "5d050b37f7bde9ebb4c300493980e8f93515ed2bc6c20ab250fe8797f0080e58",
+          "adapt.stdout.txt": "5648db406ae21d166add79f8b0367f0c280f63d99e5e04fd28e4a5043766c7f1",
+          "client-environment.json": "76829e105d993d69080a71135c77baee906a7813b3fcbd574f345fc3029f3cca",
+          "execution.json": "91a97559848de965e3e1fdd861abbef51d3bd9d2c6c195c5313c13d552573c91",
+          "input-integrity.json": "326064d33879741a9cf1c9897fb5b482d9cb53577a2050acf60d2359608503c2",
+          "installed-agent.md": "04d42097a280d05e841c4578d19d4d9ea5664ad3bee163809ea1270db0eae9e8",
+          "invocation.json": "88b304b9d2eeaf7e686bcfa54e5ba55e82020a19c7700e6f1193fa058417a630",
+          "native-agent.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "native-agent.stdout.json": "779960e9c2c1fad4c0d1914195b9dd7469909c00ea73d37f8ecb55e359dff578",
+          "observed-models.json": "3278eb5a18098a4ebbb3ca33b0a785885aa8996694c09095b26535214a8825af",
+          "response.txt": "445cfdce32a2719734ac9927fea8e24bc85de6cb038dd0ccf4462317031529a0",
+          "skill-discovery/discovery-check.json": "dfa294919f0f6bb0cbeab4999415a80063fbd1b7cbad0b82458c285ce73e0f58",
+          "skill-discovery/discovery-invocation.json": "04f8d821f7abc984d7cd80cedad4bcd386883ae937df8333bab991f28211b37d",
+          "skill-discovery/discovery.json": "31e2a72021825ddd7b5bc07daf2f1470964ca4b8070c99f644f404b52e10a451",
+          "skill-discovery/discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "skill-discovery/discovery.stdout.txt": "20725ae3aef9499e888e043ae17322c55a80b4e04ae11d9939f486ead2fdc0d9",
+          "source.json": "ca64d19c03ee948884fa703e60a0b0928b1ee0f5665d5b8d89aa2b917aa93479",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "e77b3b4949e2f9b31e9743b05c9324140d6a9cff5e6ac57946b87da7e231f8ef",
+          "tool-audit.json": "a37a8ec9529faab664324d63e8df7bba317215ad780421531512d57aa55e30bd"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": null,
+        "discovered_names": [
+          "customize-opencode"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 8,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "native_role": {
+        "source_recorded": true,
+        "native_discovery_recorded": true,
+        "installed_role_recorded": true,
+        "errors": []
+      },
+      "runtime_tool_audit": {
+        "calls_recorded": 8,
+        "non_readonly_attempts": 0,
+        "agrees_with_raw": true
+      }
+    },
+    {
+      "run": "runtime/old_skill/run-1",
+      "kind": "runtime",
+      "variant": "old_skill",
+      "present": true,
+      "status": "completed",
+      "execution_error": null,
+      "timed_out": false,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-hihsgbbz\\runtime-workspace",
+      "model_command_recorded": true,
+      "model_observed": true,
+      "model_called_flag": true,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [
+          "deepseek/deepseek-flash"
+        ],
+        "messages": [
+          {
+            "message_id": "msg_0ecf4f5d5001JGCe4BoO47LyVO",
+            "session_id": "ses_f130b0c94ffeHql8TeXVxJHk5V",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf4ff1e001Ymi83a5VQXMNNk",
+            "session_id": "ses_f130b0c94ffeHql8TeXVxJHk5V",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "tool-calls"
+          },
+          {
+            "message_id": "msg_0ecf507be001hqzHmeMUp9re9B",
+            "session_id": "ses_f130b0c94ffeHql8TeXVxJHk5V",
+            "provider": "deepseek",
+            "model": "deepseek-flash",
+            "agent": "release-evidence-auditor",
+            "finish": "stop"
+          }
+        ],
+        "error": null
+      },
+      "saved_models_agree": true,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 0,
+        "saved_evidence_manifest_available": false,
+        "errors": [],
+        "current_file_hashes": {
+          "adapt.stderr.txt": "5d050b37f7bde9ebb4c300493980e8f93515ed2bc6c20ab250fe8797f0080e58",
+          "adapt.stdout.txt": "1a444ea0f2293c1aa0e95a74c4cf86b3548ac8a0c8b310a45c068137b5d21c87",
+          "client-environment.json": "125bd5cd19d53cdb9632b279b82b51408d73b625cc0954983912875d106db66f",
+          "execution.json": "590e8d6c53f8f1d65afa34d5bd3bd581a7a3ec581203f1bee333a9ab5aa1476f",
+          "input-integrity.json": "326064d33879741a9cf1c9897fb5b482d9cb53577a2050acf60d2359608503c2",
+          "installed-agent.md": "cc3e829c1375290c87bb1bbeca06ba4971a058c7a4b3bb3244c704a7389d02f1",
+          "invocation.json": "7639a7efd41f030144c250c22c6368143563ea3e1797f77336463022b155962e",
+          "native-agent.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "native-agent.stdout.json": "33d68a4d3ed332a6dac0957d9cfc7cf7f7f0481c26081cb7d3d15cef5d86fe45",
+          "observed-models.json": "632640c854dfebe935f19c01777a6426d5ad6d6a161c3d9ce2a36cfafcb4ef7d",
+          "response.txt": "afdce99306603931c9cafa1e7e36039410eafaa85d1ae259875907de358ec010",
+          "skill-discovery/discovery-check.json": "dfa294919f0f6bb0cbeab4999415a80063fbd1b7cbad0b82458c285ce73e0f58",
+          "skill-discovery/discovery-invocation.json": "5201a1b2e678d2c6de002db5f976b7d36dd2331bb6cb1db6d22fc965650b7f61",
+          "skill-discovery/discovery.json": "31e2a72021825ddd7b5bc07daf2f1470964ca4b8070c99f644f404b52e10a451",
+          "skill-discovery/discovery.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "skill-discovery/discovery.stdout.txt": "20725ae3aef9499e888e043ae17322c55a80b4e04ae11d9939f486ead2fdc0d9",
+          "source.json": "073193f7d992ed9e0f420e2c619acefeae2a87a55b1407f2ffb16556a6532944",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "dfb015997a9f6ca3595b4bfd5b6a3d5ccf337ea439b713ab6be245dc5cee5419",
+          "tool-audit.json": "9189efcb37cfad5323bef90cabe4750025c8b739ad6671abb6c98e04be5b49ad"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "expected_skill_path": null,
+        "discovered_names": [
+          "customize-opencode"
+        ]
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 7,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "native_role": {
+        "source_recorded": true,
+        "native_discovery_recorded": true,
+        "installed_role_recorded": true,
+        "errors": []
+      },
+      "runtime_tool_audit": {
+        "calls_recorded": 7,
+        "non_readonly_attempts": 0,
+        "agrees_with_raw": true
+      }
+    },
+    {
+      "run": "runtime/without_skill/run-1",
+      "kind": "runtime",
+      "variant": "without_skill",
+      "present": true,
+      "status": "error",
+      "execution_error": "ValueError: Generated role failed OpenCode adaptation",
+      "timed_out": null,
+      "workspace": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-zlyf9luq\\runtime-workspace",
+      "model_command_recorded": false,
+      "model_observed": false,
+      "model_called_flag": false,
+      "observed_models": {
+        "source": "opencode_local_session_metadata",
+        "models": [],
+        "messages": [],
+        "error": "session_database_not_found"
+      },
+      "saved_models_agree": null,
+      "unexpected_models": [],
+      "configuration_errors": [],
+      "artifacts": {
+        "artifact_files_checked": 0,
+        "saved_evidence_files_checked": 0,
+        "saved_evidence_manifest_available": false,
+        "errors": [],
+        "current_file_hashes": {
+          "adapt.stderr.txt": "318788380ee1c624a986bc0c59c159439c8a66c93616f4b681e9a55dac150485",
+          "adapt.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "client-environment.json": "d3205102c7b405822f68ea2e628f549941f9917ec8453028f75979a56572d068",
+          "execution.json": "509e1477a226e4b811b4450f4396917e213f706a3f1155f429b5c94fc53ae5d9",
+          "input-integrity.json": "326064d33879741a9cf1c9897fb5b482d9cb53577a2050acf60d2359608503c2",
+          "observed-models.json": "009fef5322a7441fd7af68a483cc1c7f9e2508fc5c91dc8b85d02210ffca4fc7",
+          "response.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "source.json": "4be3f1964bab5b55a8b1bb2cd67cee4c0e2844af80c67346a7079ba9e008d8fb",
+          "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tool-audit.json": "db71e59d9949617b3145b066e483ea6786eb45b67937799a3b5b442929d60e52"
+        },
+        "note": "Current hashes are audit observations; only saved manifests provide an earlier comparison"
+      },
+      "discovery": {
+        "recorded": false,
+        "valid": null,
+        "errors": [],
+        "note": "No discovery evidence; execution may have stopped before loading"
+      },
+      "input_integrity": {
+        "recorded": true,
+        "valid": true,
+        "errors": [],
+        "workspace_retained": true
+      },
+      "tool_observations": {
+        "tool_calls": 0,
+        "findings": [],
+        "interpretation": "Review leads, not proof of successful external access; shell paths may be arguments or quoted text. Home/XDG isolation is not an OS sandbox."
+      },
+      "native_role": {
+        "source_recorded": true,
+        "native_discovery_recorded": false,
+        "installed_role_recorded": false,
+        "errors": []
+      },
+      "runtime_tool_audit": {
+        "calls_recorded": 0,
+        "non_readonly_attempts": 0,
+        "agrees_with_raw": true
+      }
+    }
+  ],
+  "manual_review_findings": 15,
+  "limits": [
+    "Invocation records show attempted commands, not successful provider requests.",
+    "Assistant session metadata identifies the client-selected provider/model, not underlying model weights.",
+    "Missing or failed generation/loading may reduce actual model calls; no missing call is fabricated.",
+    "External path and shell findings require manual review; failed tools are attempts, not confirmed access.",
+    "Environment and discovery isolation do not form an operating-system sandbox.",
+    "Billing is unknown; zero client-reported cost does not establish free usage."
+  ]
+}

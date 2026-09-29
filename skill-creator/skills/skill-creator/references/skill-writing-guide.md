@@ -1,7 +1,7 @@
 # 技能写作规律（TDD 化 + 表述匹配失败类型）
 
-> 反哺来源：上游 obra/superpowers 仓库的「writing-skills」技能（社区成熟方法论，含措辞对照实证）+ Anthropic 官方技能写作最佳实践。2026-09-03 对比本地 skill-creator 后吸收（记录见 `evolutions/2026-09-03-adopt-superpowers-writing-skills.md`）。
-> 本文件补充 SKILL.md 阶段 4/6/7 与质量标准的**写作规律**细节；触发量化工具见 `scripts/run_eval.py` / `run_loop.py` / `aggregate_benchmark.py`，此处不再重复。
+> 反哺来源：上游 obra/superpowers 仓库的「writing-skills」技能（社区成熟方法论，含措辞对照实证）+ Anthropic 官方技能写作最佳实践。2026-09-03 对比本地 skill-creator 后吸收（见[写作纪律摘要](../evolutions/methodology.md#writing)）。
+> 本文件补充 SKILL.md「创建与改进」及评测路径的**写作规律**细节；触发量化工具见 `scripts/skill_eval.py` / `skill_optimize.py` / `skill_benchmark.py`，此处不再重复。
 
 ## 1. 铁律：无「失败先例」不写技能（RED-GREEN-REFACTOR）
 
@@ -15,9 +15,9 @@
 
 **Iron Law：先看 agent 无技能时的基线失败，才知道技能该教什么。**
 - 没看失败就写 = 盲写；写完整再测 = 亡羊补牢。
-- 适用于**新技能与对既有技能的每次编辑**：新增章节也要先问「基线会怎么失败」。
+- 适用于新技能与改变任务行为的编辑：先问「基线会怎么失败」。改名、引用等机械修复按入口的局部修改路径做相关校验，不重复完整行为评测。
 
-本地已具备的量化基建：阶段 6 的「有/无技能基线对比」+ `aggregate_benchmark.py` 的 delta 判定——**纪律缺口在顺序**：基线必须发生在写作之前，且失败记录要 verbatim 存档。
+本地已具备的量化基建：「场景评测」路径的基线对比 + `skill_benchmark.py` 的配对 delta。行为改进先记录基线失败，再修改指令，保留可核验的失败证据。
 
 ## 2. 表述形式匹配失败类型（核心实证规律）
 
@@ -82,7 +82,7 @@
 
 **硬约束（description 是唯一无条件加载的触发面）**：
 - `description` 是客户端在触发前**唯一始终加载**的字段——必须**自足**：覆盖全部会触发它的用户说法，不指望正文兜底。写正文前，先拿 description 当唯一门面试触发查询，问「只看这句，该技能会被调吗」。
-- ≤1024 字符、**单行**、**不含 `<`/`>` 占位符**（`<技能名>`、`<path>` 会让触发匹配失真）。validate_skills 在 strict 下可报此 advisory。
+- ≤1024 字符、**单行**、**不含 `<`/`>` 占位符**（`<技能名>`、`<path>` 会让触发匹配失真）。skill_validate 在 strict 下可报此 advisory。
 - 正文的「何时使用此技能」章节是**触发后**的范围确认，不承担触发职责——两者职责不同，别把正文当 description 的展开版互相抄。
 
 **触发失败先归因再改**：假阴性（漏触发词/说法）→ 补触发面；假阳性（过度匹配/兜底 catchall）→ 收窄到具体场景，别堆穷举清单；run_error（工具/依赖问题）→ 与描述无关，别乱改 description。

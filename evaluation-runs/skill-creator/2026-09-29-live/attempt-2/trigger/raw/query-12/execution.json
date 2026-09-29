@@ -1,0 +1,12 @@
+{
+  "returncode": null,
+  "timed_out": true,
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\skill-live-env-c9uohmcy",
+  "duration_seconds": 120.422,
+  "model": null,
+  "models": [],
+  "total_tokens": 242834,
+  "tokens_source": "opencode_step_finish_total",
+  "total_tool_calls": 19,
+  "tool_calls_source": "structured_tool_events"
+}

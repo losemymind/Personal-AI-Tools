@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "output_dir": "outputs",
+  "files": [
+    {
+      "source_path": "outputs/bug-triager/AGENT.md",
+      "path": "outputs/artifacts/outputs/bug-triager/AGENT.md",
+      "bytes": 2754,
+      "sha256": "7a90af27b990002c056b0bdf405843f9d9775b3e068dd4dcbe868e9f99a8bcce",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/bug-triager/references/report-format.md",
+      "path": "outputs/artifacts/outputs/bug-triager/references/report-format.md",
+      "bytes": 315,
+      "sha256": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/packages/claude/bug-triager/AGENT.md",
+      "path": "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md",
+      "bytes": 2667,
+      "sha256": "4c8be5459917e5f4a519e6d2bc1b1f74edb8445c45e691f1fbc602a7338b12fb",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/packages/claude/bug-triager/references/report-format.md",
+      "path": "outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md",
+      "bytes": 315,
+      "sha256": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/packages/opencode/bug-triager/AGENT.md",
+      "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md",
+      "bytes": 2728,
+      "sha256": "1706b348d3356d33390252f961b479ada9564efcefcf72fd8a220d106a4cfead",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/packages/opencode/bug-triager/references/report-format.md",
+      "path": "outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md",
+      "bytes": 315,
+      "sha256": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/verification.json",
+      "path": "outputs/artifacts/outputs/verification.json",
+      "bytes": 5697,
+      "sha256": "5456c62ea67d389bb348d9a1bd2883495ccaea39a42d763297bf58aac5e06f1a",
+      "declared_output": true
+    }
+  ],
+  "skipped": [
+    {
+      "source_path": "inputs",
+      "reason": "input_or_runtime_metadata"
+    }
+  ],
+  "errors": []
+}

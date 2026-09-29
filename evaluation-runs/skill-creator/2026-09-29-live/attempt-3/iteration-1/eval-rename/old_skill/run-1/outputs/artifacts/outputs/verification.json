@@ -1,0 +1,98 @@
+{
+  "task": "asset-note local resource rename checklist.md -> review-checklist.md",
+  "checks": [
+    {
+      "name": "new_filename_present",
+      "passed": true,
+      "evidence": "exists: outputs/asset-note/references/review-checklist.md"
+    },
+    {
+      "name": "old_filename_absent",
+      "passed": true,
+      "evidence": "does not exist: outputs/asset-note/references/checklist.md"
+    },
+    {
+      "name": "resource_content_preserved",
+      "passed": true,
+      "evidence": "sha256(inputs checklist.md)==sha256(outputs review-checklist.md)=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60"
+    },
+    {
+      "name": "skill_refs_updated",
+      "passed": true,
+      "evidence": "SKILL.md: 1 occurrence(s) of references/review-checklist.md, 0 of references/checklist.md"
+    },
+    {
+      "name": "readme_refs_updated",
+      "passed": true,
+      "evidence": "README.md: 2 occurrence(s) of references/review-checklist.md, 0 of references/checklist.md"
+    },
+    {
+      "name": "skill_body_preserved_except_ref",
+      "passed": true,
+      "evidence": "reverse-transformed outputs/SKILL.md equals inputs/SKILL.md (only path ref changed)"
+    },
+    {
+      "name": "readme_preserved_except_ref",
+      "passed": true,
+      "evidence": "reverse-transformed outputs/README.md equals inputs/README.md (only path refs changed)"
+    },
+    {
+      "name": "frontmatter_unchanged",
+      "passed": true,
+      "evidence": "SKILL.md frontmatter identical:\n---\nname: asset-note\ndescription: \"当用户需要按固定清单整理本地素材说明、核对素材来源和交付范围时使用。\"\nrisk: safe\ncategory: documentation\n---"
+    },
+    {
+      "name": "all_references_resolve",
+      "passed": true,
+      "evidence": "refs checked: SKILL.md, references/review-checklist.md; all resolve"
+    },
+    {
+      "name": "inputs_unchanged_tree_match",
+      "passed": true,
+      "evidence": "reverse-transformed outputs tree == inputs/asset-note tree; baseline hashes={\"README.md\": \"307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2\", \"SKILL.md\": \"1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963\", \"references/checklist.md\": \"7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60\"}"
+    },
+    {
+      "name": "inputs_keeps_old_filename",
+      "passed": true,
+      "evidence": "inputs resource dir still has checklist.md and not review-checklist.md"
+    },
+    {
+      "name": "inputs_skill_refs_untouched",
+      "passed": true,
+      "evidence": "inputs/SKILL.md still references references/checklist.md only"
+    },
+    {
+      "name": "inputs_hashes_recorded",
+      "passed": true,
+      "evidence": "{\"inputs/README.md\": \"336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d\", \"inputs/asset-note/README.md\": \"307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2\", \"inputs/asset-note/SKILL.md\": \"1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963\", \"inputs/asset-note/references/checklist.md\": \"7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60\", \"inputs/fixture_metadata.json\": \"e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99\"}"
+    },
+    {
+      "name": "bundled_validator_strict_passed",
+      "passed": true,
+      "evidence": "validate_skills.py --strict exit=0; All skills passed validation!"
+    }
+  ],
+  "commands": [
+    {
+      "command": "python .opencode/skills/skill-creator/scripts/validate_skills.py --dir outputs/asset-note --strict",
+      "exit_code": 0,
+      "stdout": "🔍 Validating skills in: C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-cocltnuw\\outputs\\asset-note\n⚙️  Mode: STRICT (CI)\n\n📊 Checked 1 skills.\n\nℹ️  Found 1 Advisories:\nℹ️  SKILL.md: No evals.json found (recommended: ship trigger tests with the skill).\n\n✨ All skills passed validation!\n",
+      "stderr": ""
+    },
+    {
+      "command": "python outputs/_verify_asset_note.py",
+      "exit_code": 0,
+      "stdout": "ran 14 checks; all_passed=True",
+      "stderr": ""
+    }
+  ],
+  "input_unchanged": true,
+  "all_passed": true,
+  "input_sha256": {
+    "inputs/README.md": "336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d",
+    "inputs/fixture_metadata.json": "e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99",
+    "inputs/asset-note/README.md": "307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2",
+    "inputs/asset-note/SKILL.md": "1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963",
+    "inputs/asset-note/references/checklist.md": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60"
+  }
+}

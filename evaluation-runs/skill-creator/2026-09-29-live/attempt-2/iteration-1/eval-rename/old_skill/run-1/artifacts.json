@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "output_dir": "outputs",
+  "files": [
+    {
+      "source_path": "outputs/_verify/hash_tree.py",
+      "path": "outputs/artifacts/outputs/_verify/hash_tree.py",
+      "bytes": 592,
+      "sha256": "ab953251f37d67d37ce5d29b59048f32166d4b406cabfba6d1419898472f86dc",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/inputs_before.json",
+      "path": "outputs/artifacts/outputs/_verify/inputs_before.json",
+      "bytes": 968,
+      "sha256": "560a6d8a3b717d4f6a9555ca8c7a744d55351c8112b20be11c98ed9c433751dd",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/validator_exit.txt",
+      "path": "outputs/artifacts/outputs/_verify/validator_exit.txt",
+      "bytes": 28,
+      "sha256": "6a98cb92d1c029bfc11446e71dbfd28fda5b97408ad45e73be7d9ecf9399e062",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/validator_stderr.txt",
+      "path": "outputs/artifacts/outputs/_verify/validator_stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/validator_stdout.txt",
+      "path": "outputs/artifacts/outputs/_verify/validator_stdout.txt",
+      "bytes": 480,
+      "sha256": "6e26d82ffa76df8910b6918504934fc2a3bb51243fe8705e7ee922002ae585db",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/verify_rename.py",
+      "path": "outputs/artifacts/outputs/_verify/verify_rename.py",
+      "bytes": 7541,
+      "sha256": "c526b50599ff35522f259fff638942a1202eb1c36628fbfb37deedb4d9fb39e4",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/verify_stderr.txt",
+      "path": "outputs/artifacts/outputs/_verify/verify_stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/_verify/verify_stdout.txt",
+      "path": "outputs/artifacts/outputs/_verify/verify_stdout.txt",
+      "bytes": 218,
+      "sha256": "f2ff3204b94f6ef0e2e9113b30ffc3252c972fdedf78f18fb94b461155ace180",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/asset-note/README.md",
+      "path": "outputs/artifacts/outputs/asset-note/README.md",
+      "bytes": 294,
+      "sha256": "5f2e34a6e485881ea296990b85b15c4f100bbc51fc8421852bb5688abb9e4196",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/asset-note/SKILL.md",
+      "path": "outputs/artifacts/outputs/asset-note/SKILL.md",
+      "bytes": 1150,
+      "sha256": "3799c9fe17dea1ed3847d4a62ec6cc648e645e890c99c94ee4c1421198cc7768",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/asset-note/references/review-checklist.md",
+      "path": "outputs/artifacts/outputs/asset-note/references/review-checklist.md",
+      "bytes": 257,
+      "sha256": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60",
+      "declared_output": true
+    },
+    {
+      "source_path": "outputs/verification.json",
+      "path": "outputs/artifacts/outputs/verification.json",
+      "bytes": 4440,
+      "sha256": "a5284de5529f1ae6e12a8805169c87c58efbcb37db77959912fc17350cc78dba",
+      "declared_output": true
+    }
+  ],
+  "skipped": [
+    {
+      "source_path": ".opencode",
+      "reason": "input_or_runtime_metadata"
+    },
+    {
+      "source_path": "inputs",
+      "reason": "input_or_runtime_metadata"
+    }
+  ],
+  "errors": []
+}

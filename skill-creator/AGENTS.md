@@ -8,12 +8,11 @@
 
 **负责：**
 - 改进成品各部件：`SKILL.md`（方法论，唯一入口）、`references/`（深化规范）、`scripts/`（确定性工具）、`templates/`、`agents/`（子代理指令）、`indexes/upstream.db`（随成品分发的检索索引）、`evolutions/`（反馈闭环记录）。
-- 配套 dev 支撑：`tests/` 回归、`validate_skills.py` 校验器能力、`run_eval` / `run_loop` / `aggregate_benchmark` 评测链的完整性与进化。
-- 版本记账：技能 frontmatter 不含 `version`；每次实质改动以 **git 提交**为单位记账，并在 `evolutions/<YYYY-MM-DD>-<slug>.md` 记录原因与学习点。
+- 配套 dev 支撑：`tests/` 回归、`skill_validate.py` 校验器能力、`skill_eval` / `skill_optimize` / `skill_benchmark` 评测链的完整性与进化。
+- 版本记账：技能 frontmatter 不含 `version`；每次实质改动以 **git 提交**为单位记账，并按 `evolutions/README.md` 在主题摘要中保留事件日期、原因与学习点。
 
 **不负责（除非用户明确点名）：**
 - 根能力库 `skills/`（那是库条目，不是本工作区；用本成品生成，但不归演进者维护）。
-- 孪生 `agent-creator/`（同构对齐须用户明确要求，别自作主张）。
 - git 提交 / 推送：只准备改动与验证结果，提交须用户确认。
 - 需求之外的顺手重构 / 预优化。
 
@@ -30,13 +29,13 @@
 - 方法论层：工作流阶段/决策门缺失或含糊 → `SKILL.md` 正文。
 - 引用组织层：渐进披露失衡、references 散乱 → 拆分 / 一层深纪律。
 - 脚本/工具层：确定性工作缺工具或工具残缺 → `scripts/` + pytest。
-- 验证器层：纪律未被自动 enforce → `validate_skills.py` + tests。
-- 评测层：好坏无法量化 → `run_eval` / `run_loop` / `aggregate_benchmark` 链。
+- 验证器层：纪律未被自动 enforce → `skill_validate.py` + tests。
+- 评测层：好坏无法量化 → `skill_eval` / `skill_optimize` / `skill_benchmark` 链。
 - 文档层：安装/结构/来源/用法失准 → `references/` 或成品 `README.md`。
 
 **Step 2 上游对比（有候选时）**
-- 涉及方法论演进、且存在可对照的上游实现/规范时，先对比再改。被采纳/参考来源：anthropics/skills（官方方法论+评测链）、ComposioHQ/awesome-claude-skills（官方方法论在 awesome-list 中的分发副本）、antongulin/opencode-skill-creator（description 闭环）、Zhang-Henry/CoEvoSkills（自主评测循环/盲比对照，见 `evolutions/2026-09-17-compare-coevoskills.md`）；索引源（aas/addy/anthropics/composiohq/coevoskills/mattpocock/karpathy）用于「先查后建」。
-- 上游更优 → 吸收优点，把对比结论与学习点写入 `evolutions/<YYYY-MM-DD>-<slug>.md`。
+- 涉及方法论演进、且存在可对照的上游实现/规范时，先对比再改。被采纳/参考来源：anthropics/skills（官方方法论+评测链）、ComposioHQ/awesome-claude-skills（官方方法论在 awesome-list 中的分发副本）、antongulin/opencode-skill-creator（description 闭环）、Zhang-Henry/CoEvoSkills（自主评测循环/盲比对照，见 `evolutions/methodology.md#coevoskills`）；索引源（aas/addy/anthropics/composiohq/coevoskills/mattpocock/karpathy）用于「先查后建」。
+- 上游更优 → 吸收优点，把来源、对比证据、结论与学习点写入 `evolutions/` 对应主题；独立事件可先记日期文件，再按规范合并。
 
 **Step 3 出方案再动手**
 - 列出：改哪个文件、改什么、为什么、影响哪些引用与测试、是否需要记录 evolutions。
@@ -50,17 +49,17 @@
 **Step 5 验证发布门**（在本工作区根执行）
 ```bash
 python -m pytest tests/ -q
-python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
+python skills/skill-creator/scripts/skill_validate.py --strict --dir skills/skill-creator
 ```
-- `pytest tests/` 内含 `tests/test_product_self_containment.py`：成品**全 md**（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用扫描——补 `validate_skills.py`（仅 SKILL.md 反引号引用）的覆盖盲区；新增/改动成品文档后此测试是自包含的硬门。
-- 若改动 `validate_skills.py` 且可能影响库判定，加跑能力库 strict（指向能力库的绝对路径，相对路径会漏扫；把 `<仓库根>` 换成克隆仓库的实际路径）：
+- `pytest tests/` 内含 `tests/test_product_self_containment.py`：成品**全 md**（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用扫描——补 `skill_validate.py`（仅 SKILL.md 反引号引用）的覆盖盲区；新增/改动成品文档后此测试是自包含的硬门。
+- 若改动 `skill_validate.py` 且可能影响库判定，加跑能力库 strict（指向能力库的绝对路径，相对路径会漏扫；把 `<仓库根>` 换成克隆仓库的实际路径）：
 ```bash
-python skills/skill-creator/scripts/validate_skills.py --strict --dir <仓库根>/skills
+python skills/skill-creator/scripts/skill_validate.py --strict --dir <仓库根>/skills
 ```
 - 全绿才可宣布完成；失败必须修到绿。
 
 **Step 6 记录反馈闭环**
-- 方法论升级 / 上游吸收 / 纪律补强 → 在 `evolutions/` 写 `YYYY-MM-DD-<slug>.md`（模板见 `evolutions/README.md`）。
+- 方法论升级 / 上游吸收 / 纪律补强 → 按 `evolutions/README.md` 更新主题摘要；独立新事件可先写日期文件。合并需保留来源、决策、验证与未解决事项，更新旧记录映射及账本/审计/文档引用后再删除旧正文。
 - 重大升级在工作区 `README.md`「上游对比与升级」段补沿革，保持历史可追溯。
 
 **Step 7 版本与元数据**
@@ -72,7 +71,7 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir <仓库根
 ## 硬约束
 
 1. **成品即源，不复制**：编辑直接落在 `skills/skill-creator/`；仓库内不保留第二份成品副本。
-2. **成品自包含**：成品内文档引用只能指向成品内部（`scripts/`、`references/`、`templates/`、`agents/`、`indexes/`、`examples/`、`evolutions/`），**不得引用**本文件或工作区 `tests/`、`INSTALL.md`、`README.md`。发布门双保险：成品 `validate_skills.py --strict` 校验 SKILL.md 的反引号引用不悬空；dev-only pytest（`tests/test_product_self_containment.py`）扫成品全 md（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用。
+2. **成品自包含**：成品内文档引用只能指向成品内部（`scripts/`、`references/`、`templates/`、`agents/`、`indexes/`、`examples/`、`evolutions/`），**不得引用**本文件或工作区 `tests/`、`INSTALL.md`、`README.md`。发布门双保险：成品 `skill_validate.py --strict` 校验 SKILL.md 的反引号引用不悬空；dev-only pytest（`tests/test_product_self_containment.py`）扫成品全 md（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用。
 3. **SKILL.md 为唯一入口**：成品根不放 `AGENTS.md`/`INSTALL.md`；成品内不再注入上下文引导。
 4. **引用纪律**：references 只允许从 SKILL.md 一层深引用、references 之间不互链成图；>100 行文件顶部加目录；超大文件在 SKILL.md 引用处附 grep 模式。
 5. **渐进披露**：正文克制（普通技能 <1000 行），细节进 `references/`；skill-creator 自身是元技能，不受行数上限约束但仍是正文+按需 references。
@@ -94,14 +93,14 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir <仓库根
 
 ```bash
 python -m pytest tests/ -q                                     # 回归（计数随测试增长，不在此硬编码）
-python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator   # 成品 strict 自检
-python skills/skill-creator/scripts/search_index.py --stats    # 索引完整性（7 源 2227 条）
-python skills/skill-creator/scripts/validate_skills.py --strict --dir <能力库绝对路径>       # 库校验
+python skills/skill-creator/scripts/skill_validate.py --strict --dir skills/skill-creator   # 成品 strict 自检
+python skills/skill-creator/scripts/skill_index_search.py --stats    # 索引完整性（7 源 2227 条）
+python skills/skill-creator/scripts/skill_validate.py --strict --dir <能力库绝对路径>       # 库校验
 ```
 
 ## 何时停下来问用户
 
-- 请求跨工作区（agent-creator）或指向根能力库 `skills/` 条目。
+- 请求超出本工作区职责，或指向根能力库 `skills/` 条目。
 - 改动会删除成品文件、改变验证器错误语义、或整目录采纳上游。
 - 需求歧义或证据缺失、又无法构造复现场景。
 - 任何提交 / 推送之前。

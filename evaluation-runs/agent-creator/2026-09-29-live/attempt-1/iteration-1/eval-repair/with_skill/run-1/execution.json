@@ -1,0 +1,18 @@
+{
+  "client": "opencode",
+  "model": "deepseek/deepseek-flash",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "total_tokens": 970940,
+  "tokens_source": "opencode_step_finish_total",
+  "total_tool_calls": 37,
+  "tool_calls_source": "structured_tool_events",
+  "requested_model": "deepseek/deepseek-flash",
+  "model_source": "opencode_local_session_metadata",
+  "returncode": 0,
+  "timed_out": false,
+  "status": "completed",
+  "error": null,
+  "duration_seconds": 190.844
+}

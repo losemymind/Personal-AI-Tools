@@ -1,0 +1,108 @@
+{
+  "expectations": [
+    {
+      "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+      "passed": true,
+      "evidence": "3个指定文件存在，JSON可解析；benchmark.md中逐run/覆盖/配对/结论与JSON一致；三个产物SHA-256与artifacts.json相同。"
+    },
+    {
+      "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+      "passed": true,
+      "evidence": "per_run保留4次尝试；per_configuration with_skill attempted/completed/errors=2/2/0，without_skill=2/1/1；b基线status=error/returncode=1/grading_present=false/pass_rate=null，未静默跳过。"
+    },
+    {
+      "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+      "passed": true,
+      "evidence": "per_configuration覆盖1.0和0.5；a基线有效评分0而b基线无评分且执行失败。incomplete=1与errors重叠在notes明确定义；本条只冻结完成覆盖与错误区分，未新增互斥计数约束。"
+    },
+    {
+      "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+      "passed": true,
+      "evidence": "pairing expected_pairs=2、valid_pairs=1、paired_coverage=0.5，details中只a/run1有效，b/run1无效，未跨场景配对。"
+    },
+    {
+      "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+      "passed": true,
+      "evidence": "aggregate_delta.pass_rate available=false/unavailable=true，Markdown overall=n/a；conclusion.delta_available=false且overall.pass_rate_delta=null。a局部差值显式限定单个synthetic配对，不作为整体增益。"
+    },
+    {
+      "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+      "passed": true,
+      "evidence": "四per_run.token_measurements=null；两配置valid_metric_samples.tokens=0，aggregate token unavailable；报告以null/不可用表达未知token，无虚构均值或字符换算。"
+    },
+    {
+      "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+      "passed": true,
+      "evidence": "per_run.duration_seconds保留10/8/12/5秒；Markdown逐run也保留失败5秒，注明其不是成功性能样本；note和结论明确所有时长均synthetic。"
+    },
+    {
+      "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+      "passed": true,
+      "evidence": "conclusion synthetic=true/comparable=false/delta_available=false，reason/limitations列出失败基线、1/2配对、缺token、synthetic及n=1边界，不宣称显著性或整体收益。"
+    },
+    {
+      "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+      "passed": true,
+      "evidence": "input-integrity与冻结15文件一致；transcript:54写标准库脚本，57实跑exit=0，60解析JSON成功，63/64读取交付件。24次工具调用未发现全局技能目录搜索或使用。49外部temp write被拒后改当前工作区；未观察成功全局写、网络、安装或另起模型。"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "client": "opencode",
+    "model": "deepseek/deepseek-flash",
+    "models": [],
+    "total_tokens": 192061,
+    "tokens_source": "opencode_step_finish_total",
+    "total_tool_calls": 24,
+    "tool_calls_source": "structured_tool_events",
+    "model_source": "requested",
+    "requested_model": "deepseek/deepseek-flash",
+    "skill": null,
+    "returncode": 0,
+    "timed_out": false,
+    "output_chars": 114956,
+    "status": "completed",
+    "error": null,
+    "artifact_count": 3,
+    "artifact_collection_errors": 0
+  },
+  "timing": {
+    "total_duration_seconds": 70.687,
+    "timed_out": false
+  },
+  "user_notes_summary": {
+    "uncertainties": [
+      "固定synthetic夹具的一次真实模型执行，不足以宣称统计显著性或泛化效果。"
+    ],
+    "needs_review": [
+      "本组errors与incomplete为重叠维度，与新版聚合器互斥状态定义不同；冻结断言未要求该互斥契约，未追加扣分。",
+      "transcript:49工作区外temp写入被拒绝，后改工作区；没有成功越界写证据。"
+    ],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+        "reason": "若要比较完整报告协议，下版冻结前明确errors/incomplete是否互斥；本次不事后更改。"
+      }
+    ],
+    "overall": "9/9；以交付产物和真实工具记录判定，不只依赖文字结论。"
+  },
+  "grading_metadata": {
+    "reviewer": "benchmark subagent",
+    "reviewed_at": "2026-09-29T10:35:01.210815+00:00",
+    "scenario_id": 2,
+    "configuration": "without_skill",
+    "assertions_frozen": true,
+    "input_records_synthetic": true,
+    "live_model_run": true,
+    "global_tool_contamination_observed": false,
+    "session_model_audit": "evidence-audit.json: deepseek/deepseek-flash"
+  }
+}

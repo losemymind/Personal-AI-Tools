@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-29",
+  "client": "OpenCode 1.18.30",
+  "model": "deepseek/deepseek-flash",
+  "planned_run_slots": 17,
+  "actual_model_calls": 16,
+  "trigger": {
+    "planned": 8,
+    "completed": 8,
+    "true_positive": 4,
+    "true_negative": 4,
+    "false_positive": 0,
+    "false_negative": 0,
+    "errors": 0
+  },
+  "variants": {
+    "with_skill": {
+      "tasks": {
+        "creation": {
+          "passed": 10,
+          "failed": 0,
+          "total": 10,
+          "pass_rate": 1
+        },
+        "repair": {
+          "passed": 10,
+          "failed": 0,
+          "total": 10
+        }
+      },
+      "total": {
+        "passed": 20,
+        "failed": 0,
+        "total": 20
+      },
+      "runtime": {
+        "status": "completed",
+        "model_called": true,
+        "passed": 7,
+        "failed": 0,
+        "not_evaluable": 0,
+        "planned_criteria": 7
+      }
+    },
+    "old_skill": {
+      "tasks": {
+        "creation": {
+          "passed": 10,
+          "failed": 0,
+          "total": 10,
+          "pass_rate": 1
+        },
+        "repair": {
+          "passed": 10,
+          "failed": 0,
+          "total": 10
+        }
+      },
+      "total": {
+        "passed": 20,
+        "failed": 0,
+        "total": 20
+      },
+      "runtime": {
+        "status": "completed",
+        "model_called": true,
+        "passed": 7,
+        "failed": 0,
+        "not_evaluable": 0,
+        "planned_criteria": 7
+      }
+    },
+    "without_skill": {
+      "tasks": {
+        "creation": {
+          "passed": 8,
+          "failed": 2,
+          "total": 10,
+          "pass_rate": 0.8
+        },
+        "repair": {
+          "passed": 7,
+          "failed": 3,
+          "total": 10
+        }
+      },
+      "total": {
+        "passed": 15,
+        "failed": 5,
+        "total": 20
+      },
+      "runtime": {
+        "status": "prerequisite_failed",
+        "model_called": false,
+        "passed": 0,
+        "failed": 1,
+        "not_evaluable": 6,
+        "planned_criteria": 7
+      }
+    }
+  },
+  "review_source_sha256": {
+    "creation-review.json": "285777762ed3d6361fd6d9b538776028a01763ff17bd5808481b3c70eafe71c6",
+    "repair-review.json": "7cae1be9d8cabea4587025fd2581678c6a8332bf45c848fdaa5791784902ac2b",
+    "runtime-review.json": "cd0c790ad3d8ce458bb79808e59c462908bef18debe6dcb69ee18ab467b6d320",
+    "trigger-review.md": "f5a0249f3ddb0d951867cccda14625ed159059fc3fa351a6163b7d86de92cd63",
+    "evidence-audit-v2.json": "57cd2260182cff575e4e2e472e728a6665eb7bed4c39478a6a195f2c9322dfb9"
+  },
+  "limitations": [
+    "Single model, one run per task and condition; synthetic inputs with real execution.",
+    "Anonymous artifact labels were not strict blinding.",
+    "No observed task-quality improvement of current over old; full assertion scores do not imply flawless prose.",
+    "The without-skill runtime failed adaptation before any model call; six behavior criteria are not evaluable."
+  ]
+}

@@ -1,6 +1,6 @@
 # 技能对比标准（Skill Comparison）
 
-定义 skill-creator「阶段 5.5 与上游候选对比择优」的评分维度，由 `compare_skills.py` 自动计算，供执行代理结合用户需求做最终判断。
+定义 skill-creator「先查后建与上游择优」的静态筛查维度，由 `skill_compare.py` 自动计算。采纳结论还需要相同真实场景的产出证据。
 
 ## 评分模型
 
@@ -15,7 +15,7 @@
 
 | 维度 | 满分条件 | 权重说明 |
 |---|---|---|
-| 触发清晰度 `trigger_clarity` | 存在中英文「何时使用」章节 | 决定 LLM 是否触发，最重要 |
+| 触发章节 `trigger_clarity`（兼容字段名） | 存在中英文「何时使用」章节 | 只检查章节存在；真实触发由 description 和客户端评测确认 |
 | 示例可得性 `example_available` | 有「示例/Examples」章节；退化：有代码块给 0.5 | 质量门槛第 4 项 |
 | 限制声明 `limitations_declared` | 有「限制/Limitations」章节 | 质量门槛第 5 项 |
 | 风险声明 `risk_declared` | frontmatter 的 `risk` 是合法值 | 质量门槛第 3 项 |
@@ -26,28 +26,26 @@
 
 | 维度 | 满分条件 | 评分逻辑 |
 |---|---|---|
-| 渐进式披露 `progressive_disclosure` | 有 `references/` 目录 | 无 references 时 >500 行给 0.4 |
-| 资源组织 `resource_organization` | 有 scripts/references/examples/templates 子目录 | 按实际拥有数/3 封顶 |
-| 脚本复用 `script_reuse` | 有 `scripts/` 目录 | 重复任务是否脚本化 |
+| 渐进式披露 `progressive_disclosure` | references 内有非空文件 | 无有效 references 时 >500 行给 0.4 |
+| 资源组织 `resource_organization` | scripts/references/examples/templates 内有有效文件 | 按有效资源目录数/3 封顶，空目录、缓存、符号链接不加分 |
+| 脚本存在 `script_reuse`（兼容字段名） | scripts 内有非空脚本文件 | 仅检查常见脚本扩展名存在，功能与复用价值需执行验证 |
 | 正文行数控制 `body_size_control` | ≤1000 行 | 1000-1500 给 0.5，>1500 给 0.2 |
 
 ## 对比与择优流程
 
-1. 先运行 `compare_skills.py` 得到双方各项分数。
-2. **只看总分还不够**——检查双方差距所在的维度是否与用户需求相关：
-   - 需求强调"可复现、高质量"→ 重点看结构维（脚本复用、渐进式披露）
-   - 需求强调"可靠触发"→ 重点看触发清晰度
-   - 需求强调"安全"→ 重点看安全护栏、风险声明
-3. 综合总分 + 需求相关维度 + 语义贴合度，由执行代理向用户给出建议：
+1. 先运行 `skill_compare.py` 得到双方各项分数。
+2. 检查结构差距是否与用户需求相关；简单技能无需为得分增加目录。JSON 中 `assessment_kind=structural_screening`、`adoption_verdict=requires_task_evidence` 明确证据边界。
+3. 至少选一个与用户需求对应的真实场景，对双方使用相同输入、成功标准和运行条件，比较产出与成本。没有运行条件时记录「待任务验证」，不凭结构分宣告优劣。
+4. 综合任务证据、语义贴合度和静态筛查，由执行代理向用户给出建议：
    - 上游更优 → 建议采纳上游（或借鉴优势后改进自建）
    - 自建更优 → 采纳自建
-4. 对比结果记录到 `evolutions/`。
+5. 对比结果记录到 `evolutions/`，包含场景、双方产出证据、结构分与采纳理由。
 
 ## 反馈闭环（择优后的学习）
 
 - **上游更优时**：分析上游在优势维度上的做法（章节组织、门控设计、资源结构），提炼为可复用的方法论要点，追加到 skill-creator 的 SKILL.md 或本文件。
-- 记录模板：`evolutions/<日期>-compare-<技能名>.md`，内容包含：对比报告、优势维度分析、提炼的学习点、改进建议。
-- 定期 review `evolutions/` 汇总改进建议 → 迭代 skill-creator。
+- 记录方式见 `evolutions/README.md`：按主题保留日期、来源、双方证据、采纳理由、验证与限制；独立事件可先记日期文件，成熟后合并并更新映射。
+- 定期复盘 `evolutions/`，把有效经验落实到方法论，合并重复审计过程；保留未测、未采纳和待解决项。
 
 ## 限制
 

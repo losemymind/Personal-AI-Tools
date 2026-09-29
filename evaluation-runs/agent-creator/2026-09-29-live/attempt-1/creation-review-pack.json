@@ -1,0 +1,8 @@
+{
+  "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-review-b1vwz9ic",
+  "mapping": {
+    "case-A": "old_skill",
+    "case-B": "with_skill",
+    "case-C": "without_skill"
+  }
+}

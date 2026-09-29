@@ -6,29 +6,29 @@
 
 ## 1. 问题陈述
 
-仓库当前把「安装」定义为**纯复制**（根 `AGENTS.md`：把 `skills/<name>` / `agents/<name>` 复制到目标客户端目录）。但客户端适配逻辑其实已经存在——`package_skill.py` / `package_agent.py` 会按端变换 frontmatter 并做 post-check。这导致三个割裂：
+仓库当前把「安装」定义为**纯复制**（根 `AGENTS.md`：把 `skills/<name>` / `agents/<name>` 复制到目标客户端目录）。但客户端适配逻辑其实已经存在——`skill_package.py` / `agent_package.py` 会按端变换 frontmatter 并做 post-check。这导致三个割裂：
 
-1. **适配器只在创建器内，仓库安装库条目时没复用**：库技能/代理直接复制，未走 `package_skill` / `package_agent` 的按端变换。
+1. **适配器只在创建器内，仓库安装库条目时没复用**：库技能/代理直接复制，未走 `skill_package` / `agent_package` 的按端变换。
 2. **落点矩阵重复**：global/workspace × 各端的落点表在两份 `INSTALL.md` 与 `agents/README.md` 各写一份，易漂移。
-3. ~~**前言约定缺口**~~（**P1 已修复**）：库技能的可选白名单键 `allowed-tools:`（Claude 风格）此前 `package_skill.py` 不认识；现已支持按端映射（见 §7）。
+3. ~~**前言约定缺口**~~（**P1 已修复**）：库技能的可选白名单键 `allowed-tools:`（Claude 风格）此前 `skill_package.py` 不认识；现已支持按端映射（见 §7）。
 
-同时用户提出直觉性质疑：`package_skill` **只**放在 `skill-creator` 里「不太合适」——安装库技能、安装两个创建器本身都要用它。
+同时用户提出直觉性质疑：`skill_package` **只**放在 `skill-creator` 里「不太合适」——安装库技能、安装两个创建器本身都要用它。
 
 ## 2. 现状盘点
 
 | 产物 | 打包器（宿主成品） | 前言关键字段 | 备注 |
 |---|---|---|---|
-| 库技能 `skills/<分类>/<name>/`（含 `SKILL.md`） | `skill-creator/.../scripts/package_skill.py` | `allowed-tools`=白名单（技能无 `tools`/`tags`/`version`/来源字段：打包前客户端中立） | 5 个：code-review-skill / mcp-builder / ue5-performance-optimization / pr-summarizer / prd-generator |
-| 库代理 `agents/<分类>/<name>/`（含 `AGENT.md`） | `agent-creator/.../scripts/package_agent.py` | `tools`=**真白名单**、`permission`=权限图（`tools_clients` 已移除——打包前客户端中立） | 7 个 |
-| `skill-creator` 成品 | `package_skill.py`（它自己就是 skill） | 技能 schema（无 `tools`/`tags`/`version`/来源字段） | `skill-creator/skills/skill-creator/` |
-| `agent-creator` 成品 | `package_skill.py`（它自己就是 skill，**不是** agent） | 技能 schema（无 `tools`/`tags`/`version`/来源字段） | `agent-creator/skills/agent-creator/` |
+| 库技能 `skills/<分类>/<name>/`（含 `SKILL.md`） | `skill-creator/.../scripts/skill_package.py` | `allowed-tools`=白名单（技能无 `tools`/`tags`/`version`/来源字段：打包前客户端中立） | 5 个：code-review-skill / mcp-builder / ue5-performance-optimization / pr-summarizer / prd-generator |
+| 库代理 `agents/<分类>/<name>/`（含 `AGENT.md`） | `agent-creator/.../scripts/agent_package.py` | `tools`=**真白名单**、`permission`=权限图（`tools_clients` 已移除——打包前客户端中立） | 7 个 |
+| `skill-creator` 成品 | `skill_package.py`（它自己就是 skill） | 技能 schema（无 `tools`/`tags`/`version`/来源字段） | `skill-creator/skills/skill-creator/` |
+| `agent-creator` 成品 | `skill_package.py`（它自己就是 skill，**不是** agent） | 技能 schema（无 `tools`/`tags`/`version`/来源字段） | `agent-creator/skills/agent-creator/` |
 
 **关键不对称（本文档重点记录）**：技能与代理的 `tools` 语义不同——
 
 - **技能**：frontmatter **不再携带 `tools`**（打包前技能客户端中立，支持哪些端是打包器/安装器的职责）；唯一权限声明是可选的白名单键 `allowed-tools`。
 - **代理**：`tools` 是「真白名单」；客户端列表（`tools_clients`）已从 frontmatter 移除，多端适配由打包/安装阶段决定。
 
-因此 `package_skill`/`package_agent` 的前言适配**不能互相照搬**，扩展时须各自尊重本侧约定（见 §7）。
+因此 `skill_package`/`agent_package` 的前言适配**不能互相照搬**，扩展时须各自尊重本侧约定（见 §7）。
 
 ## 3. 不可违反的约束
 
@@ -42,7 +42,7 @@
 
 **新增组合层。** 真正缺失的是「把能力组合起来」的一层。关键认知：
 
-> 创建器本身就是 skill（都有 `SKILL.md`），库技能也是 skill。所以「安装 `skill-creator`」「安装库技能」「给新建 skill 打包」**是同一个操作**——`package_skill(<某 skill 目录>)`；只有 agent 走 `package_agent`。
+> 创建器本身就是 skill（都有 `SKILL.md`），库技能也是 skill。所以「安装 `skill-creator`」「安装库技能」「给新建 skill 打包」**是同一个操作**——`skill_package(<某 skill 目录>)`；只有 agent 走 `agent_package`。
 
 于是分层为：
 
@@ -78,8 +78,8 @@ python tools/scripts/install.py <target>... \
 
 ```
 target 解析
-  ├─ 目录含 SKILL.md  → skill-creator/.../package_skill.py
-  ├─ 目录含 AGENT.md  → agent-creator/.../package_agent.py
+  ├─ 目录含 SKILL.md  → skill-creator/.../skill_package.py
+  ├─ 目录含 AGENT.md  → agent-creator/.../agent_package.py
   ├─ --all skills     → 遍历 skills/** 逐个走 skill 分支
   ├─ --all agents     → 遍历 agents/** 逐个走 agent 分支
   └─ --creator <名>   → 映射到 <creator-workspace>/skills/<名>/（是 skill，走 skill 分支）
@@ -99,8 +99,11 @@ target 解析
 ### 5.4 验证关卡
 
 - **通用**：适配后的 SKILL.md/AGENT.md 能被 YAML 解析、`name`/`description` 就位。
-- **自带验证器者**：若产物含 `scripts/validate_skills.py`/`validate_agents.py`，放置后跑 `--strict --dir <安装目录>`；失败即**回滚**（删新、还原备份）。**验证器只在产物根部存在其所校验的入口文件时才运行**（`validate_skills.py`→`SKILL.md`、`validate_agents.py`→`AGENT.md`）：`agent-creator` 是技能形态的创建器，虽分发 `validate_agents.py`（用于校验 AGENT 库）但自身无 `AGENT.md`，不得拿它校验创建器目录（见 2026-09-11 沿革）。
-- **索引**：若含 `indexes/upstream.db`，跑对应 `search_*_index.py --stats` 核对（创建器成品）。
+- **自带验证器者**：若产物含 `scripts/skill_validate.py`/`agent_validate.py`，放置后跑 `--strict --dir <安装目录>`；失败即**回滚**（删新、还原备份）。**验证器只在产物根部存在其所校验的入口文件时才运行**（`skill_validate.py`→`SKILL.md`、`agent_validate.py`→`AGENT.md`）：`agent-creator` 是技能形态的创建器，虽分发 `agent_validate.py`（用于校验 AGENT 库）但自身无 `AGENT.md`，不得拿它校验创建器目录（见 2026-09-11 沿革）。
+- **索引**：若含 `indexes/upstream.db`，跑对应 `skill_index_search.py --stats` 或 `agent_index_search.py --stats` 核对（创建器成品）。
+
+当前创建器只分发统一命名的脚本；安装器仍识别外部旧包中的 `validate_agents.py`、`search_agent_index.py`、`validate_skills.py`、`search_index.py`，避免旧包绕过自检。新旧代理检查入口均有失败回滚回归。
+- **旧包兼容**：仍识别旧产物中的 `validate_skills.py` / `search_index.py`，保证安装旧包时也执行自检；当前成品只分发新入口。
 - 任一项失败 → 该单元不落（回滚），退出码 1；不带病交付。
 
 ### 5.5 退出码
@@ -136,11 +139,11 @@ target 解析
 
 ## 7. 打包器前言适配扩展（**P1 已实现**）
 
-目标：让 `package_skill` 能直接打包**库技能**。约束：**不得放大权限**（缺 `allowed-tools` = 该端全部工具，映射必须显式收紧）。
+目标：让 `skill_package` 能直接打包**库技能**。约束：**不得放大权限**（缺 `allowed-tools` = 该端全部工具，映射必须显式收紧）。
 
-> 背景更新（2026-09-11）：技能 frontmatter 已移除 `tools`（客户端列表不再进技能本体，技能打包前客户端中立），因此技能侧只剩 `allowed-tools` 一条白名单来源。`package_skill` 的旧 `tools` 客户端标签/白名单分支保留为**回退兼容**，不再是仓库规范形态。
+> 背景更新（2026-09-11）：技能 frontmatter 已移除 `tools`（客户端列表不再进技能本体，技能打包前客户端中立），因此技能侧只剩 `allowed-tools` 一条白名单来源。`skill_package` 的旧 `tools` 客户端标签/白名单分支保留为**回退兼容**，不再是仓库规范形态。
 
-### 7.1 `package_skill.py`（技能侧）— 已实现
+### 7.1 `skill_package.py`（技能侧）— 已实现
 
 | 字段 | claude | opencode | codex/deepseek |
 |---|---|---|---|
@@ -155,7 +158,7 @@ target 解析
 - 冒烟：真实 `skills/development/code-review-skill` 四端打包通过（claude `allowed-tools: Read, Grep, Glob, Bash, WebFetch`；opencode 逐工具 permission；codex/deepseek 透传）。
 - 测试：`skill-creator/tests/test_package_skill.py` 已补 8 例（claude 规范化/字符串形式/大小写、opencode permission 映射/显式优先、客户端标签报错、codex·deepseek 透传）。
 
-### 7.2 `package_agent.py`（代理侧）
+### 7.2 `agent_package.py`（代理侧）
 
 代理侧 `tools` 恒为真白名单，无 `tools_clients` 歧义，故**无需** `allowed-tools` 语义。仅需确认：库代理若混入 `allowed-tools` 键，应识别并映射（同 §7.1 规则），而非透传成未知字段。
 
@@ -182,7 +185,7 @@ target 解析
 ## 10. 验证计划（已落实）
 
 - `tools/scripts/install.py` 测试在 **`tools/tests/`**（已建）：18 例，覆盖客户端自动检测、落点矩阵（workspace 技能/代理）、`--creator`、`--force` 备份、验证失败回滚、`--artifact` 冲突 / 未知 client / 缺 `--dest` / 无标记 / `--zip` 缺 `--out` 等 rc=2 错误。
-- `package_skill` 的 `allowed-tools` 映射用例在 `skill-creator/tests/test_package_skill.py`（+8，已落实）。
+- `skill_package` 的 `allowed-tools` 映射用例在 `skill-creator/tests/test_package_skill.py`（+8，已落实）。
 - 端到端冒烟：真实 `skills/git/pr-summarizer`、`agents/code-quality/code-reviewer`、`--creator skill-creator` 安装到临时 workspace，落点与自检均通过（已实测）。
 - 全绿门槛：`agent-creator` 与 `skill-creator` 各自 `pytest`、两侧 strict、`build_catalog.py --check`、新增 `tools/tests` pytest。
 
@@ -190,7 +193,7 @@ target 解析
 
 | 阶段 | 内容 | 门 | 状态 |
 |---|---|---|---|
-| P1 | 扩展 `package_skill` 识别 `allowed-tools`，补 pytest | 单测绿、不放大权限 | ✅ 已完成（2026-09-11） |
+| P1 | 扩展 `skill_package` 识别 `allowed-tools`，补 pytest | 单测绿、不放大权限 | ✅ 已完成（2026-09-11） |
 | P2 | 新增 `tools/scripts/install.py`（派发 + 落点 + 放置 + 验证 + 清理）+ `tools/tests/` | 新增用例绿 | ✅ 已完成（2026-09-11，18 例） |
 | P3 | 文档收敛（§9）+ 端到端冒烟 | 全部发布门全绿 | ✅ 已完成（2026-09-11） |
 | P4 | 记 `evolutions/` + 收尾交接 | HANDOFF 就绪 | ✅ 已完成（2026-09-11） |
@@ -205,10 +208,10 @@ target 解析
 
 ## 设计沿革
 
-- **2026-09-11（独立性门 + 修复 `--creator agent-creator`）**：新增 `tools/tests/test_creators_independent.py`（零交叉引用扫描：两成品互不出现对端名称与脚本名；无跨成品 import）与两工作区 `tests/test_independence.py`（成品复制到仓库外仍可自校验/自跑工具链）。修复 `install.py` 的 `validate_install`——验证器仅在产物含对应入口文件时运行，`--creator agent-creator` 由此恢复 rc=0（此前误用其分发的 `validate_agents.py` 校验技能形态创建器目录而回滚）；`tools/tests` 补两例。自安装（不依赖 `install.py`）改为**纯文档流程**写进两成品 `SKILL.md`「多客户端安装指引」（LLM 直接执行：定位→落点→复制→自检→清缓存），`INSTALL.md` 仍是 dev-only 手册。
-- **2026-09-11（P3/P4 完成）**：文档收敛（根 `AGENTS.md`/`README.md`、两份 `INSTALL.md`、两库 README、CI 新增 tools job）；两创建器 `evolutions/` 各记 `2026-09-11-install-orchestrator.md`。**P1–P4 全部完成。**
+- **2026-09-11（独立性门 + 修复 `--creator agent-creator`）**：新增 `tools/tests/test_creators_independent.py`（零交叉引用扫描：两成品互不出现对端名称与脚本名；无跨成品 import）与两工作区 `tests/test_independence.py`（成品复制到仓库外仍可自校验/自跑工具链）。修复 `install.py` 的 `validate_install`——验证器仅在产物含对应入口文件时运行，`--creator agent-creator` 由此恢复 rc=0（此前误用其分发的 `agent_validate.py` 校验技能形态创建器目录而回滚）；`tools/tests` 补两例。自安装（不依赖 `install.py`）改为**纯文档流程**写进两成品 `SKILL.md`「多客户端安装指引」（LLM 直接执行：定位→落点→复制→自检→清缓存），`INSTALL.md` 仍是 dev-only 手册。
+- **2026-09-11（P3/P4 完成）**：文档收敛（根 `AGENTS.md`/`README.md`、两份 `INSTALL.md`、两库 README、CI 新增 tools job）；skill-creator 证据现归并于 [安装分层摘要](../skill-creator/skills/skill-creator/evolutions/distribution.md#installation)，agent-creator 证据归并于 [安装分层摘要](../agent-creator/skills/agent-creator/evolutions/distribution.md#installation)。**P1–P4 全部完成。**
 - **2026-09-11（P2 实现）**：新增 `tools/scripts/install.py`（完整编排：自动检测客户端 / 派发 / 落点 / staging / 放置 / `--force` 备份 / 自检回滚 / 缓存清理）与 `tools/tests/`（18 例）；§12 五项待决定案。真实库技能/代理/创建器安装冒烟通过。
-- **2026-09-11（P1 实现）**：`package_skill.py` 支持 `allowed-tools` 按端映射（claude 规范化逗号串；opencode 经 `CLAUDE_TO_OPENCODE` 反查并入逐工具 `permission`；codex/deepseek 透传）；与旧 `tools` 白名单并集；客户端标签输入报错。补 8 例 pytest；真实库技能四端打包冒烟通过。技能 frontmatter 文档补记 `allowed-tools` 为可选字段。
-- **2026-09-11（同日更新）**：代理 frontmatter 亦移除 `tools_clients`/`version`/`tags`——打包前代理客户端中立；来源登记在 `agents/AGENTS-RECORDS.md` 台账（§2 已更新）。`package_agent` 只读 `tools` 白名单，不受影响。
-- **2026-09-11（同日更新）**：技能 frontmatter 移除 `tools`——技能打包前客户端中立，支持端不再进技能本体；技能侧唯一白名单键变为 `allowed-tools`（§2/§7.1 已更新）。`package_skill` 的旧 `tools` 分支保留为回退兼容。
-- **2026-09-11**：首版。确立「打包器留成品内、新增 `tools/scripts/install.py` 作安装编排层」的分层；记录技能 `tools` vs 代理 `tools_clients` 的语义差异；确认扩展 `package_skill` 支持 `allowed-tools` 映射。**代码未实现，待二审后按 §11 分阶段推进。**
+- **2026-09-11（P1 实现）**：`skill_package.py` 支持 `allowed-tools` 按端映射（claude 规范化逗号串；opencode 经 `CLAUDE_TO_OPENCODE` 反查并入逐工具 `permission`；codex/deepseek 透传）；与旧 `tools` 白名单并集；客户端标签输入报错。补 8 例 pytest；真实库技能四端打包冒烟通过。技能 frontmatter 文档补记 `allowed-tools` 为可选字段。
+- **2026-09-11（同日更新）**：代理 frontmatter 亦移除 `tools_clients`/`version`/`tags`——打包前代理客户端中立；来源登记在 `agents/AGENTS-RECORDS.md` 台账（§2 已更新）。`agent_package` 只读 `tools` 白名单，不受影响。
+- **2026-09-11（同日更新）**：技能 frontmatter 移除 `tools`——技能打包前客户端中立，支持端不再进技能本体；技能侧唯一白名单键变为 `allowed-tools`（§2/§7.1 已更新）。`skill_package` 的旧 `tools` 分支保留为回退兼容。
+- **2026-09-11**：首版。确立「打包器留成品内、新增 `tools/scripts/install.py` 作安装编排层」的分层；记录技能 `tools` vs 代理 `tools_clients` 的语义差异；确认扩展 `skill_package` 支持 `allowed-tools` 映射。**代码未实现，待二审后按 §11 分阶段推进。**

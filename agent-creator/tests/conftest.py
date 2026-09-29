@@ -66,7 +66,7 @@ permission:
 def run_script(script: str, *args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
     """Run one of the artifact's CLI scripts and capture output.
 
-    `script` is artifact-relative, e.g. "scripts/validate_agents.py".
+    `script` is artifact-relative, e.g. "scripts/agent_validate.py".
     """
     return subprocess.run(
         [sys.executable, str(ARTIFACT / script), *args],

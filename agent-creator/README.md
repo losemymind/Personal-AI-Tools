@@ -21,7 +21,7 @@ agent-creator/                     ← 开发工作区（本目录）
 成品 `skills/agent-creator/` 必须**不依赖上层任何文件或工具**：
 - 内部引用（`scripts/`、`references/`、`templates/`、`indexes/upstream.db` 等）一律以成品目录自身为根书写。
 - 不得引用本工作区的 `INSTALL.md`、`tests/`、`README.md`（那是 dev-only，不进成品）。
-- 发布自检由 `tests/test_product_self_containment.py` 把关（引用悬空/指向 dev-only 路径即失败）。成品自身无自校验脚本——`validate_agents.py` 的校验对象是 AGENT.md 代理库，不是本技能成品（技能形态），所以自包含扫描落在 dev-only pytest 里，与 skill-creator 用成品 `validate_skills.py` 自检是不同实现、同一纪律。
+- 发布自检由 `tests/test_product_self_containment.py` 把关（引用悬空/指向 dev-only 路径即失败）。`agent_validate.py` 的校验对象是 AGENT.md 代理库；本创建器以 SKILL.md 为入口，其成品自包含检查由 dev-only pytest 执行。
 
 ## 常用命令
 
@@ -34,15 +34,15 @@ python -m pytest tests/ -q        # 含成品自包含自检（引用不悬空�
 
 ## 打包代理（成品脚本）
 
-把成品 `skills/agent-creator/` 产出的**代理目录**一次适配给多个客户端时，用成品内 `scripts/package_agent.py`（用法与适配规则见成品 `SKILL.md` 阶段 7）：
+把成品 `skills/agent-creator/` 产出的**代理目录**一次适配给多个客户端时，用成品内 `scripts/agent_package.py`（用法与适配规则见成品 `SKILL.md` 阶段 7）：
 
 ```bash
-python skills/agent-creator/scripts/package_agent.py <代理目录|AGENT.md> \
+python skills/agent-creator/scripts/agent_package.py <代理目录|AGENT.md> \
   --client claude --client opencode --client codex --client deepseek \
   --out <产物目录> [--zip]
 ```
 
-产物布局 `<产物目录>/<客户端>/<代理名>/`，各端先适配 frontmatter 再做 post-check，不合格不出包。它是单文件适配器 `scripts/adapt_agent.py` 的整目录/多端对应物，并修复了 opencode 端 permission 字符串简写放大权限的缺陷。
+产物布局 `<产物目录>/<客户端>/<代理名>/`，各端先适配 frontmatter 再做 post-check，不合格不出包。它是单文件适配器 `scripts/agent_adapt.py` 的整目录/多端对应物，并修复了 opencode 端 permission 字符串简写放大权限的缺陷。
 
 ## 来源与沿革
 
@@ -54,10 +54,14 @@ python skills/agent-creator/scripts/package_agent.py <代理目录|AGENT.md> \
 - **[jnMetaCode/agency-agents-zh](https://github.com/jnMetaCode/agency-agents-zh)**（别名 `agency-zh`，261 条）：同 agency 布局的中文版（含 company/hr/legal 等特有 division）。
 
 **代理导入与工具移植来源**：
-- **[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)**：`plugins/code-simplifier/agents/code-simplifier.md` 为 `code-simplifier` 代理（现库中 `agents/code-quality/code-simplifier`）的导入源，见 `evolutions/2026-09-03-import-code-simplifier.md`。
-- **外部仓库 `personal-workflow`**：其 `tools/scripts/agent_format.py` 是成品 `scripts/adapt_agent.py` 的移植来源（CATALOG 生成器亦出自该仓库），见 `evolutions/2026-09-09-adopt-agent-format-tool.md`。
+- **[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)**：`plugins/code-simplifier/agents/code-simplifier.md` 为 `code-simplifier` 代理（现库中 `agents/code-quality/code-simplifier`）的导入源，见 [导入摘要](skills/agent-creator/evolutions/library-decisions.md#code-simplifier)。
+- **外部仓库 `personal-workflow`**：其 `tools/scripts/agent_format.py` 是成品 `scripts/agent_adapt.py` 的移植来源（CATALOG 生成器亦出自该仓库），见 [适配器来源摘要](skills/agent-creator/evolutions/distribution.md#adaptation)。
 
-具体吸收点、对比择优与学习点见成品 `references/` 文档头与 `evolutions/`。
+具体吸收点、对比择优与学习点见成品 `references/` 文档头与 [演进摘要](skills/agent-creator/evolutions/README.md)。演进目录按五个主题组织，并保留 21 份旧日期记录到具体章节的映射；新增事件优先归入现有主题。
+
+## 真实测评
+
+[2026-09-29 测评报告](../evaluation-runs/agent-creator/2026-09-29-live/REPORT.md)：8 条触发查询、两任务三组创建/修复对照，以及生成角色在 OpenCode 中的原生调用。原始事件、冻结输入和独立评分保存在仓库测评目录，不随成品分发；格式校验与真实行为分开报告。
 
 ## 提交说明
 

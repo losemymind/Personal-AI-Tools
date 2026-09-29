@@ -1,0 +1,18 @@
+{
+  "id": 7,
+  "query": "只整理这份发布记录：unit=passed，integration=failed，security=缺失。列出发布风险，不创建代理，也不执行发布。",
+  "should_trigger": false,
+  "passed": true,
+  "scorable": true,
+  "dispatch": false,
+  "target_read": false,
+  "combined": false,
+  "status": "completed",
+  "error": null,
+  "combined_rule": "dispatch OR target_read",
+  "dispatch_evidence": [],
+  "target_read_evidence": [],
+  "target_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-ymbmr5op\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md",
+  "timed_out": false,
+  "returncode": 0
+}

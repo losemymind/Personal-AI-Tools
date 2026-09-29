@@ -1,0 +1,10 @@
+{
+  "release": "R17",
+  "build": "build-417",
+  "required_checks": ["unit", "integration", "security"],
+  "checks": [
+    {"name": "unit", "build": "build-417", "status": "passed", "evidence": "unit-417.txt"},
+    {"name": "integration", "build": "build-417", "status": "failed", "evidence": "integration-417.txt"}
+  ],
+  "rollback": {"documented": true, "verified": false}
+}

@@ -1,13 +1,11 @@
 """Self-containment scan for the agent-creator artifact (dev-only release gate).
 
 The agent-creator product (skills/agent-creator) is a skill-shaped creator whose
-shipped validator (validate_agents.py) validates AGENT.md agent libraries — not
+shipped validator (agent_validate.py) validates AGENT.md agent libraries — not
 the creator itself. Release-readiness therefore enforces self-containment here,
-in the dev-only pytest suite: the mirror of skill-creator's "product strict
-self-check" becomes a pytest because agent-creator cannot self-validate its own
-skill-shaped product with its own tooling.
+in the dev-only pytest suite.
 
-Scan rules (mirror the former build/check_self_containment.py):
+Scan rules:
   - every *.md under the artifact is scanned, except examples/ and evolutions/
     (upstream learning samples / historical records)
   - fenced code blocks are ignored (illustrative command examples)
@@ -48,7 +46,7 @@ def clean_fenced(content: str) -> str:
 
 def extract_path_token(cand: str) -> str:
     """Pull the artifact-internal path token out of a command-like ref
-    (`python scripts/validate_agents.py ...` -> `scripts/validate_agents.py`)."""
+    (`python scripts/agent_validate.py ...` -> `scripts/agent_validate.py`)."""
     for token in cand.split():
         for known in (*KNOWN_TOP, *DEV_ONLY_MARKERS):
             if token == known or token.startswith(known + "/"):
@@ -121,7 +119,7 @@ def test_product_is_self_contained():
 
 
 def test_product_layout_is_slim():
-    """Mirror of skill-creator slimming: SKILL.md is the sole product entry doc
+    """SKILL.md is the sole product entry doc
     at the artifact root (no product AGENTS.md/INSTALL.md) alongside README.md."""
     assert (ARTIFACT / "SKILL.md").is_file()
     assert (ARTIFACT / "README.md").is_file()

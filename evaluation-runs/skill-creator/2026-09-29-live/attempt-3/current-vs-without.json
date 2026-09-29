@@ -1,0 +1,617 @@
+{
+  "schema_version": 2,
+  "metadata": {
+    "skill_name": "skill-creator",
+    "skill_path": null,
+    "executor_model": "deepseek/deepseek-flash",
+    "executor_models": [
+      "deepseek/deepseek-flash"
+    ],
+    "clients": [
+      "opencode"
+    ],
+    "unknown_model_runs": 0,
+    "unknown_client_runs": 0,
+    "timestamp": "2026-09-29T10:35:55Z",
+    "evals_run": [
+      1,
+      2
+    ],
+    "runs_per_configuration": 2,
+    "primary_configuration": "with_skill",
+    "baseline_configuration": "without_skill"
+  },
+  "runs": [
+    {
+      "eval_id": 2,
+      "run_number": 1,
+      "run_path": "eval-benchmark/old_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "opencode",
+      "model": "deepseek/deepseek-flash",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "model_source": "requested",
+      "requested_model": "deepseek/deepseek-flash",
+      "tokens_source": "opencode_step_finish_total",
+      "tool_calls_source": "structured_tool_events",
+      "measurement_sources": {
+        "tokens": "metrics.json.total_tokens",
+        "tool_calls": "metrics.json.total_tool_calls",
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+          "passed": true,
+          "evidence": "三个指定产物存在且JSON可解析，SHA-256与artifacts.json相同；Markdown逐run/配置/配对/Delta数值与JSON对应（但Delta正确性另在第5条判失败）。"
+        },
+        {
+          "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+          "passed": true,
+          "evidence": "benchmark.runs保留4次尝试；configurations中with_skill attempted/completed/errors=2/2/0，without_skill=2/1/1；b基线status=error/returncode=1/pass_rate=null，未丢掉失败记录。"
+        },
+        {
+          "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+          "passed": true,
+          "evidence": "configurations.coverage分别1.0与0.5；a无技能completed但pass_rate=0，b无技能error无有效分数，区分了有效评分失败和执行失败。errors与incomplete重叠被明确说明，冻结此条不要求其互斥。"
+        },
+        {
+          "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+          "passed": true,
+          "evidence": "pairing possible_pairs=2、valid_pairs=1、pair_coverage=0.5；pairs只有a/run1有效，b因无基线评分无效。"
+        },
+        {
+          "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+          "passed": false,
+          "evidence": "失败：benchmark.deltas.pass_rate available=true/value=1.0，basis明确with n=2 vs without n=1；run_summary.delta.pass_rate=+1.00、time_seconds=+3.0，Markdown标题Evidence-supported deltas将其标可用。时间+3实际来自(10+12)/2-8，不是唯一配对a的10-8=2；不能因note称单对而把未配对均值当有效整体差值。"
+        },
+        {
+          "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+          "passed": true,
+          "evidence": "4项runs.tokens均null；run_summary两配置tokens=null；valid_metric_samples.tokens两组均0/supplied=false；Markdown标not supplied，未填零或估算成本。"
+        },
+        {
+          "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+          "passed": true,
+          "evidence": "runs.time_seconds保留10/8/12/5秒，b基线失败时长5秒未消失；synthetic=true、provenance_note与Markdown头明确人工夹具。完成样本统计排除失败时间，但原始时长被保留，满足冻结断言。"
+        },
+        {
+          "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+          "passed": false,
+          "evidence": "失败：conclusion.synthetic=true、comparable=false，但delta_available=true（要求false），delta_available_scope中pass_rate/time_seconds也true。文字承认不能推断整体收益，无法消除机器字段与冻结要求的矛盾。"
+        },
+        {
+          "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+          "passed": true,
+          "evidence": "input-integrity与冻结15文件路径/SHA-256完全相同。transcript:56真实运行工作区旧聚合器、74/77/80写修正代码、83执行、91解析JSON、94核验输入哈希；38次调用无全局技能发现、网络、安装或另起模型。71外部temp write被拒后改本工作区outputs，未观察到成功越界写。"
+        }
+      ],
+      "notes": [
+        "固定synthetic夹具的一次真实模型执行，不足以宣称统计显著性或泛化效果。",
+        "本组errors与incomplete为重叠维度，与新版聚合器互斥状态定义不同；冻结断言未要求该互斥契约，未追加扣分。",
+        "未配对差值仍标available=true，最终字段与谨慎文字矛盾；详见失败断言5、8。",
+        "transcript:71工作区外temp写入被拒绝，后改outputs；没有成功越界写证据。"
+      ],
+      "configuration": "old_skill",
+      "result": {
+        "pass_rate": 0.7777777777777778,
+        "passed": 7,
+        "failed": 2,
+        "total": 9,
+        "time_seconds": 137.785,
+        "tokens": 977234.0,
+        "tool_calls": 38
+      }
+    },
+    {
+      "eval_id": 1,
+      "run_number": 1,
+      "run_path": "eval-rename/old_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "opencode",
+      "model": "deepseek/deepseek-flash",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "model_source": "requested",
+      "requested_model": "deepseek/deepseek-flash",
+      "tokens_source": "opencode_step_finish_total",
+      "tool_calls_source": "structured_tool_events",
+      "measurement_sources": {
+        "tokens": "metrics.json.total_tokens",
+        "tool_calls": "metrics.json.total_tool_calls",
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "outputs/asset-note 是完整技能结果，含 SKILL.md、README.md 与 references/review-checklist.md；references/checklist.md 不再存在。",
+          "passed": true,
+          "evidence": "outputs/artifacts/outputs/asset-note 文件集合恰为SKILL.md、README.md、references/review-checklist.md；旧名不存在。"
+        },
+        {
+          "text": "输出 SKILL.md 和 README.md 的全部原 references/checklist.md 引用均改为 references/review-checklist.md，且新引用可解析。",
+          "passed": true,
+          "evidence": "独立读取：SKILL.md的1处和README.md的2处路径全部改为新路径，无旧引用，新目标可解析。"
+        },
+        {
+          "text": "SKILL.md 的 frontmatter 与输入完全一致；SKILL.md、README.md 除必要路径替换外保持不变。",
+          "passed": true,
+          "evidence": "独立逐字节比较：SKILL.md=输入只替换路径（1150字节），README.md=输入只替换路径（294字节），frontmatter完整原样保留。"
+        },
+        {
+          "text": "输出 references/review-checklist.md 的文件内容与输入 references/checklist.md 完全一致，没有新增另一份旧名副本。",
+          "passed": true,
+          "evidence": "新清单与输入旧清单原始字节相同：SHA-256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60；目标技能无旧名副本。"
+        },
+        {
+          "text": "inputs/ 整棵目录的路径集合和文件内容与冻结夹具完全相同。",
+          "passed": true,
+          "evidence": "input-integrity.json的source/after相等，且都等于独立重算的冻结夹具5文件SHA-256映射；路径与内容集合未变。"
+        },
+        {
+          "text": "outputs/verification.json 存在且可解析，包含真实检查结果、实际执行命令及退出状态，并可由执行记录和成品复核；不能只声称已测试。",
+          "passed": true,
+          "evidence": "verification.json可解析，真实checks/commands/exit_code/stdout/stderr/input_unchanged齐全；transcript.md:66 运行旧随包validator返回0；:77自检因输入文件数误写6而失败，:81修正为实际5，:84重跑返回0；verification命令记录可与实际subprocess及最终输出核验。 文本级检查不等于原始字节检查；第3条由独立字节判据单独评分，不因检查代码确实执行而自动通过。"
+        },
+        {
+          "text": "任务在本次运行中完成，不停下来等待确认；没有联网、安装软件、调用其他模型/子代理或写入临时工作区之外。",
+          "passed": true,
+          "evidence": "本轮直接完成、returncode=0且未超时；未见全局创建器访问、联网、安装、另起模型/子代理；:69外部临时脚本写入被拒，:74改到outputs，未见成功外部写入。 按冻结断言评价可见实际效果，被拒写入尝试单独披露。"
+        }
+      ],
+      "notes": [
+        "单次运行、单一请求模型；身份来自requested，没有流中独立model观测。",
+        "未见目标SKILL.md正文或skill-creator工具加载；此rename主要观察可用随包工具与操作行为。",
+        "仅审查可见工具记录，隔离home不是操作系统沙箱。",
+        "Get-FileHash命令不可用，改用Python哈希；首次自检误把输入文件数写为6，修正后通过。",
+        "verification的自检stdout是结果摘要，原始stdout以transcript.md:84为准。",
+        "工具不可用或路径拒绝后在本地outputs内恢复执行，保留中间失败证据。"
+      ],
+      "configuration": "old_skill",
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 115.979,
+        "tokens": 576870.0,
+        "tool_calls": 29
+      }
+    },
+    {
+      "eval_id": 2,
+      "run_number": 1,
+      "run_path": "eval-benchmark/with_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "opencode",
+      "model": "deepseek/deepseek-flash",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "model_source": "requested",
+      "requested_model": "deepseek/deepseek-flash",
+      "tokens_source": "opencode_step_finish_total",
+      "tool_calls_source": "structured_tool_events",
+      "measurement_sources": {
+        "tokens": "metrics.json.total_tokens",
+        "tool_calls": "metrics.json.total_tool_calls",
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+          "passed": true,
+          "evidence": "三个指定产物实际存在且JSON可解析；benchmark.md Summary/Coverage数据与benchmark.json.run_summary一致，transcript:50实际解析两个JSON成功。"
+        },
+        {
+          "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+          "passed": true,
+          "evidence": "benchmark.json.runs有4次尝试；with_skill attempted/completed/errors=2/2/0；without_skill=2/1/1；b/without_skill保留status=error、returncode=1与缺grading原因，pass_rate=null。"
+        },
+        {
+          "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+          "passed": true,
+          "evidence": "run_summary.coverage分别为1.0和0.5；a无技能execution_status=completed但pass_rate=0，b无技能execution_status=error而无有效评分。"
+        },
+        {
+          "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+          "passed": true,
+          "evidence": "delta.expected_pairs=2、paired_samples=1、coverage=0.5；conclusion.pairing.paired_keys仅a/run_number1，unpaired_keys明确b/run1。"
+        },
+        {
+          "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+          "passed": true,
+          "evidence": "run_summary.delta.pass_rate/time_seconds/tokens=null，Markdown N/A；conclusion说明单对a的差值不是整体估计且overall_skill_gain_inferable=false。"
+        },
+        {
+          "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+          "passed": true,
+          "evidence": "全部4项result.tokens=null；两配置tokens.n=0且mean/stddev/min/max=null，Markdown为N/A (n=0)，未估算token。"
+        },
+        {
+          "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+          "passed": true,
+          "evidence": "四run保留10/8/12/5秒，基线失败的5秒计入6.5秒均值；conclusion.synthetic=true且limitations说明所有时间与记录均为人工夹具，不代表真实成本。"
+        },
+        {
+          "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+          "passed": true,
+          "evidence": "conclusion synthetic=true/comparable=false/delta_available=false，reason/limitations明确1/2配对、错误基线、无token、synthetic与单样本限制，不推断整体收益或显著性。"
+        },
+        {
+          "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+          "passed": true,
+          "evidence": "input-integrity source/after与冻结15文件路径及SHA-256相同。transcript:40实跑工作区内新版聚合器--strict并保留EXITCODE=1报告，50复核JSON；全部15个工具调用局限本工作区内容与已安装本地Python，无全局技能发现、网络、安装、另起模型或越界写入。"
+        }
+      ],
+      "notes": [
+        "固定synthetic夹具的一次真实模型执行；CLI metrics的model_source为requested，另有session审计确认deepseek/deepseek-flash。"
+      ],
+      "configuration": "with_skill",
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 45.497,
+        "tokens": 243462.0,
+        "tool_calls": 15
+      }
+    },
+    {
+      "eval_id": 1,
+      "run_number": 1,
+      "run_path": "eval-rename/with_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "opencode",
+      "model": "deepseek/deepseek-flash",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "model_source": "requested",
+      "requested_model": "deepseek/deepseek-flash",
+      "tokens_source": "opencode_step_finish_total",
+      "tool_calls_source": "structured_tool_events",
+      "measurement_sources": {
+        "tokens": "metrics.json.total_tokens",
+        "tool_calls": "metrics.json.total_tool_calls",
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "outputs/asset-note 是完整技能结果，含 SKILL.md、README.md 与 references/review-checklist.md；references/checklist.md 不再存在。",
+          "passed": true,
+          "evidence": "outputs/artifacts/outputs/asset-note 文件集合恰为SKILL.md、README.md、references/review-checklist.md；旧名不存在。"
+        },
+        {
+          "text": "输出 SKILL.md 和 README.md 的全部原 references/checklist.md 引用均改为 references/review-checklist.md，且新引用可解析。",
+          "passed": true,
+          "evidence": "独立读取：SKILL.md的1处和README.md的2处路径全部改为新路径，无旧引用，新目标可解析。"
+        },
+        {
+          "text": "SKILL.md 的 frontmatter 与输入完全一致；SKILL.md、README.md 除必要路径替换外保持不变。",
+          "passed": true,
+          "evidence": "独立逐字节比较：SKILL.md=输入只替换路径（1150字节），README.md=输入只替换路径（294字节），frontmatter完整原样保留。"
+        },
+        {
+          "text": "输出 references/review-checklist.md 的文件内容与输入 references/checklist.md 完全一致，没有新增另一份旧名副本。",
+          "passed": true,
+          "evidence": "新清单与输入旧清单原始字节相同：SHA-256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60；目标技能无旧名副本。"
+        },
+        {
+          "text": "inputs/ 整棵目录的路径集合和文件内容与冻结夹具完全相同。",
+          "passed": true,
+          "evidence": "input-integrity.json的source/after相等，且都等于独立重算的冻结夹具5文件SHA-256映射；路径与内容集合未变。"
+        },
+        {
+          "text": "outputs/verification.json 存在且可解析，包含真实检查结果、实际执行命令及退出状态，并可由执行记录和成品复核；不能只声称已测试。",
+          "passed": true,
+          "evidence": "verification.json可解析，真实checks/commands/exit_code/stdout/stderr/input_unchanged齐全；transcript.md:58 运行新随包validator并返回0；:62写入实际检查代码，:67执行检查代码打印verification并返回0；代码实际subprocess运行validator及python --version，与commands字段对应。 文本级检查不等于原始字节检查；第3条由独立字节判据单独评分，不因检查代码确实执行而自动通过。"
+        },
+        {
+          "text": "任务在本次运行中完成，不停下来等待确认；没有联网、安装软件、调用其他模型/子代理或写入临时工作区之外。",
+          "passed": true,
+          "evidence": "本轮直接完成、returncode=0且未超时；工具记录中未见联网、安装、全局创建器访问、另起模型/子代理或成功外部写入；:64一条空参数write被中止。 按冻结断言评价可见实际效果，被拒写入尝试单独披露。"
+        }
+      ],
+      "notes": [
+        "单次运行、单一请求模型；身份来自requested，没有流中独立model观测。",
+        "未见目标SKILL.md正文或skill-creator工具加载；此rename主要观察可用随包工具与操作行为。",
+        "仅审查可见工具记录，隔离home不是操作系统沙箱。",
+        "原始输入核验使用mtime/文件数而非事先哈希快照；独立评分使用input-integrity全树哈希补足。",
+        "实际verification有10项checks，最终答复称11项；此数量声明不准确，真实检查和产物均另已核验。",
+        "模型用read_text做对比却描述为逐字节；独立字节复核本组确实满足要求。",
+        "工具不可用或路径拒绝后在本地outputs内恢复执行，保留中间失败证据。"
+      ],
+      "configuration": "with_skill",
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 7,
+        "failed": 0,
+        "total": 7,
+        "time_seconds": 116.146,
+        "tokens": 516532.0,
+        "tool_calls": 27
+      }
+    },
+    {
+      "eval_id": 2,
+      "run_number": 1,
+      "run_path": "eval-benchmark/without_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "opencode",
+      "model": "deepseek/deepseek-flash",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "model_source": "requested",
+      "requested_model": "deepseek/deepseek-flash",
+      "tokens_source": "opencode_step_finish_total",
+      "tool_calls_source": "structured_tool_events",
+      "measurement_sources": {
+        "tokens": "metrics.json.total_tokens",
+        "tool_calls": "metrics.json.total_tool_calls",
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+          "passed": true,
+          "evidence": "3个指定文件存在，JSON可解析；benchmark.md中逐run/覆盖/配对/结论与JSON一致；三个产物SHA-256与artifacts.json相同。"
+        },
+        {
+          "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+          "passed": true,
+          "evidence": "per_run保留4次尝试；per_configuration with_skill attempted/completed/errors=2/2/0，without_skill=2/1/1；b基线status=error/returncode=1/grading_present=false/pass_rate=null，未静默跳过。"
+        },
+        {
+          "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+          "passed": true,
+          "evidence": "per_configuration覆盖1.0和0.5；a基线有效评分0而b基线无评分且执行失败。incomplete=1与errors重叠在notes明确定义；本条只冻结完成覆盖与错误区分，未新增互斥计数约束。"
+        },
+        {
+          "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+          "passed": true,
+          "evidence": "pairing expected_pairs=2、valid_pairs=1、paired_coverage=0.5，details中只a/run1有效，b/run1无效，未跨场景配对。"
+        },
+        {
+          "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+          "passed": true,
+          "evidence": "aggregate_delta.pass_rate available=false/unavailable=true，Markdown overall=n/a；conclusion.delta_available=false且overall.pass_rate_delta=null。a局部差值显式限定单个synthetic配对，不作为整体增益。"
+        },
+        {
+          "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+          "passed": true,
+          "evidence": "四per_run.token_measurements=null；两配置valid_metric_samples.tokens=0，aggregate token unavailable；报告以null/不可用表达未知token，无虚构均值或字符换算。"
+        },
+        {
+          "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+          "passed": true,
+          "evidence": "per_run.duration_seconds保留10/8/12/5秒；Markdown逐run也保留失败5秒，注明其不是成功性能样本；note和结论明确所有时长均synthetic。"
+        },
+        {
+          "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+          "passed": true,
+          "evidence": "conclusion synthetic=true/comparable=false/delta_available=false，reason/limitations列出失败基线、1/2配对、缺token、synthetic及n=1边界，不宣称显著性或整体收益。"
+        },
+        {
+          "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+          "passed": true,
+          "evidence": "input-integrity与冻结15文件一致；transcript:54写标准库脚本，57实跑exit=0，60解析JSON成功，63/64读取交付件。24次工具调用未发现全局技能目录搜索或使用。49外部temp write被拒后改当前工作区；未观察成功全局写、网络、安装或另起模型。"
+        }
+      ],
+      "notes": [
+        "固定synthetic夹具的一次真实模型执行，不足以宣称统计显著性或泛化效果。",
+        "本组errors与incomplete为重叠维度，与新版聚合器互斥状态定义不同；冻结断言未要求该互斥契约，未追加扣分。",
+        "transcript:49工作区外temp写入被拒绝，后改工作区；没有成功越界写证据。"
+      ],
+      "configuration": "without_skill",
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 70.687,
+        "tokens": 192061.0,
+        "tool_calls": 24
+      }
+    },
+    {
+      "eval_id": 1,
+      "run_number": 1,
+      "run_path": "eval-rename/without_skill/run-1",
+      "status": "completed",
+      "issues": [],
+      "execution_status": "completed",
+      "client": "opencode",
+      "model": "deepseek/deepseek-flash",
+      "models": [
+        "deepseek/deepseek-flash"
+      ],
+      "model_source": "requested",
+      "requested_model": "deepseek/deepseek-flash",
+      "tokens_source": "opencode_step_finish_total",
+      "tool_calls_source": "structured_tool_events",
+      "measurement_sources": {
+        "tokens": "metrics.json.total_tokens",
+        "tool_calls": "metrics.json.total_tool_calls",
+        "time_seconds": "timing.json.total_duration_seconds"
+      },
+      "expectations": [
+        {
+          "text": "outputs/asset-note 是完整技能结果，含 SKILL.md、README.md 与 references/review-checklist.md；references/checklist.md 不再存在。",
+          "passed": true,
+          "evidence": "outputs/artifacts/outputs/asset-note 文件集合恰为SKILL.md、README.md、references/review-checklist.md；旧名不存在。"
+        },
+        {
+          "text": "输出 SKILL.md 和 README.md 的全部原 references/checklist.md 引用均改为 references/review-checklist.md，且新引用可解析。",
+          "passed": true,
+          "evidence": "独立读取：SKILL.md的1处和README.md的2处路径全部改为新路径，无旧引用，新目标可解析。"
+        },
+        {
+          "text": "SKILL.md 的 frontmatter 与输入完全一致；SKILL.md、README.md 除必要路径替换外保持不变。",
+          "passed": false,
+          "evidence": "独立逐字节比较失败：SKILL.md预期1150字节、实际1112字节，38处CRLF全部变为LF；README.md预期294字节、实际287字节，7处CRLF全部变为LF。包括frontmatter换行在内存在非必要改动。输出仅在额外统一换行后才等于路径替换结果；不是内容丢失。outputs/_verify.py 的read_text + newline=\"\"写入解释此差异。"
+        },
+        {
+          "text": "输出 references/review-checklist.md 的文件内容与输入 references/checklist.md 完全一致，没有新增另一份旧名副本。",
+          "passed": true,
+          "evidence": "新清单与输入旧清单原始字节相同：SHA-256=7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60；目标技能无旧名副本。"
+        },
+        {
+          "text": "inputs/ 整棵目录的路径集合和文件内容与冻结夹具完全相同。",
+          "passed": true,
+          "evidence": "input-integrity.json的source/after相等，且都等于独立重算的冻结夹具5文件SHA-256映射；路径与内容集合未变。"
+        },
+        {
+          "text": "outputs/verification.json 存在且可解析，包含真实检查结果、实际执行命令及退出状态，并可由执行记录和成品复核；不能只声称已测试。",
+          "passed": true,
+          "evidence": "verification.json可解析，真实checks/commands/exit_code/stdout/stderr/input_unchanged齐全；transcript.md:60写入outputs/_verify.py，:63真实运行退出0；该脚本subprocess实际执行复制/改名命令并捕获stdout，之后进行stdlib检查，与verification.commands对应。 文本级检查不等于原始字节检查；第3条由独立字节判据单独评分，不因检查代码确实执行而自动通过。"
+        },
+        {
+          "text": "任务在本次运行中完成，不停下来等待确认；没有联网、安装软件、调用其他模型/子代理或写入临时工作区之外。",
+          "passed": true,
+          "evidence": "本轮直接完成、returncode=0且未超时；未见真实全局skill-creator访问；:34调用了所有配置均允许的客户端内置customize-opencode，:42仅在工作区找validator及运行现有opencode --help。:56外部临时写入被拒，:60改到outputs；没有成功外部写入/联网/安装/另起模型。 按冻结断言评价可见实际效果，被拒写入尝试单独披露。"
+        }
+      ],
+      "notes": [
+        "单次运行、单一请求模型；身份来自requested，没有流中独立model观测。",
+        "未见目标SKILL.md正文或skill-creator工具加载；此rename主要观察可用随包工具与操作行为。",
+        "仅审查可见工具记录，隔离home不是操作系统沙箱。",
+        "辅助检查脚本本身重新生成产物，使用read_text后newline=\"\"写出，导致CRLF被归一化为LF；其文本级自检没有发现这个额外改动。",
+        "保留outputs/_verify.py，不在目标技能目录内，冻结断言未禁止辅助证据，不扣分。",
+        "使用允许的内置customize-opencode；without_skill仅表示没有目标skill-creator，不表示零内置技能。",
+        "工具不可用或路径拒绝后在本地outputs内恢复执行，保留中间失败证据。"
+      ],
+      "configuration": "without_skill",
+      "result": {
+        "pass_rate": 0.8571428571428571,
+        "passed": 6,
+        "failed": 1,
+        "total": 7,
+        "time_seconds": 93.465,
+        "tokens": 273196.0,
+        "tool_calls": 25
+      }
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "runs": 2,
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "coverage": 1.0,
+      "pass_rate": {
+        "n": 2,
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "n": 2,
+        "mean": 80.8215,
+        "stddev": 49.9564,
+        "min": 45.497,
+        "max": 116.146
+      },
+      "tokens": {
+        "n": 2,
+        "mean": 379997.0,
+        "stddev": 193089.6487,
+        "min": 243462.0,
+        "max": 516532.0
+      }
+    },
+    "without_skill": {
+      "runs": 2,
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "coverage": 1.0,
+      "pass_rate": {
+        "n": 2,
+        "mean": 0.9286,
+        "stddev": 0.101,
+        "min": 0.8571,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "n": 2,
+        "mean": 82.076,
+        "stddev": 16.1065,
+        "min": 70.687,
+        "max": 93.465
+      },
+      "tokens": {
+        "n": 2,
+        "mean": 232628.5,
+        "stddev": 57371.1087,
+        "min": 192061.0,
+        "max": 273196.0
+      }
+    },
+    "old_skill": {
+      "runs": 2,
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "coverage": 1.0,
+      "pass_rate": {
+        "n": 2,
+        "mean": 0.8889,
+        "stddev": 0.1571,
+        "min": 0.7778,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "n": 2,
+        "mean": 126.882,
+        "stddev": 15.4192,
+        "min": 115.979,
+        "max": 137.785
+      },
+      "tokens": {
+        "n": 2,
+        "mean": 777052.0,
+        "stddev": 283100.0993,
+        "min": 576870.0,
+        "max": 977234.0
+      }
+    },
+    "delta": {
+      "primary": "with_skill",
+      "baseline": "without_skill",
+      "expected_pairs": 2,
+      "paired_samples": 2,
+      "coverage": 1.0,
+      "duplicate_keys": [],
+      "identity_mismatches": [],
+      "metric_pairs": {
+        "pass_rate": 2,
+        "time_seconds": 2,
+        "tokens": 2
+      },
+      "pass_rate": "+0.07",
+      "time_seconds": "-1.3",
+      "tokens": "+147368"
+    }
+  },
+  "notes": []
+}

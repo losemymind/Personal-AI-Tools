@@ -2,7 +2,7 @@
 
 Dev-only orchestrator for the tools layer (see tools/README.md). It does NOT
 reimplement frontmatter adaptation: it dispatches to the creators' packagers
-(`package_skill.py` / `package_agent.py`) per target-client, then places the
+(`skill_package.py` / `agent_package.py`) per target-client, then places the
 packaged tree into the client's landing directory, validates it, and cleans
 caches. The packagers stay inside the creator products (independent install).
 
@@ -36,8 +36,8 @@ REPO_ROOT = SCRIPT_DIR.parents[1]
 ALL_CLIENTS = ("claude", "opencode", "codex", "deepseek")
 
 PACKAGERS = {
-    "skill": REPO_ROOT / "skill-creator" / "skills" / "skill-creator" / "scripts" / "package_skill.py",
-    "agent": REPO_ROOT / "agent-creator" / "skills" / "agent-creator" / "scripts" / "package_agent.py",
+    "skill": REPO_ROOT / "skill-creator" / "skills" / "skill-creator" / "scripts" / "skill_package.py",
+    "agent": REPO_ROOT / "agent-creator" / "skills" / "agent-creator" / "scripts" / "agent_package.py",
 }
 ENTRY_FILE = {"skill": "SKILL.md", "agent": "AGENT.md"}
 
@@ -267,11 +267,14 @@ def _run_validator(script: Path, *args: str) -> subprocess.CompletedProcess:
 
 
 # A bundled validator only applies when the installed unit is the kind it
-# validates. A skill-shaped creator product can carry validate_agents.py (the
+# validates. A skill-shaped creator product can carry agent_validate.py (the
 # agent-creator ships it to validate AGENT libraries) while itself having no
 # AGENT.md — running it there would fail with "no agent definitions found".
 _VALIDATOR_ENTRY = {
+    "skill_validate.py": "SKILL.md",
+    # Older/external packages may still bundle the original entry point.
     "validate_skills.py": "SKILL.md",
+    "agent_validate.py": "AGENT.md",
     "validate_agents.py": "AGENT.md",
 }
 
@@ -286,7 +289,7 @@ def validate_install(kind: str, final: Path) -> None:
             if r.returncode != 0:
                 raise UnitError(f"self-validation failed ({validator}):\n{r.stdout}{r.stderr}")
     idx = final / "indexes" / "upstream.db"
-    for searcher in ("search_index.py", "search_agent_index.py"):
+    for searcher in ("skill_index_search.py", "search_index.py", "agent_index_search.py", "search_agent_index.py"):
         s = scripts / searcher
         if s.is_file() and idx.is_file():
             r = _run_validator(s, "--stats")

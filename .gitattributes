@@ -1,0 +1,5 @@
+# Preserve evaluation evidence bytes: recorded SHA-256 values include line endings.
+/evaluation-runs/** -text whitespace=cr-at-eol
+# Raw outputs and frozen inputs retain intentional whitespace as evidence.
+/evaluation-runs/**/attempt*/** -whitespace
+/evaluation-runs/**/fixtures/** -whitespace

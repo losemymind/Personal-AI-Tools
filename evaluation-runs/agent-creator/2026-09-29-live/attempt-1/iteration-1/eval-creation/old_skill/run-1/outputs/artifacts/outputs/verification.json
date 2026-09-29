@@ -1,0 +1,105 @@
+{
+  "target": "outputs/agents/release-evidence-auditor.md",
+  "brief": "inputs/brief.md",
+  "status": "completed_with_degraded_review",
+  "completed_verifications": [
+    {
+      "check": "交付文件存在且为扁平单文件",
+      "result": "pass",
+      "evidence": "outputs/agents/release-evidence-auditor.md（105 行）已写入；文件名与 frontmatter name 一致"
+    },
+    {
+      "check": "frontmatter 字段符合 brief（name/单行 description/mode: primary/color/tools/permission）",
+      "result": "pass",
+      "evidence": "name: release-evidence-auditor；mode: primary；color: \"#D97706\"；tools: [read, grep, glob]；description 单行 57 字符（≤200）"
+    },
+    {
+      "check": "frontmatter 未包含被禁字段（version/tags/tools_clients/来源字段）",
+      "result": "pass",
+      "evidence": "仅含 name/description/mode/color/tools/permission"
+    },
+    {
+      "check": "工具与权限最小化且与职责一致（只读、默认拒绝、显式放行 read/grep/glob，禁 edit/写入/shell/联网/任务派发）",
+      "result": "pass",
+      "evidence": "permission: \"*\": deny；read/grep/glob: allow；list/skill/webfetch/websearch/question/edit/bash/task/lsp/external_directory: deny"
+    },
+    {
+      "check": "自动结构校验 validate_agents.py --strict",
+      "result": "pass",
+      "command": "python scripts/validate_agents.py --strict --dir outputs/agents",
+      "evidence": "Checked 1 agents. All agents passed validation! 退出码 0（含职责范围/必须做/拒绝做、工具与权限、协作协议含升级路径、完成标准、本地引用不悬空、密钥与危险管道扫描）"
+    },
+    {
+      "check": "内容覆盖 brief 的核对职责（版本/构建一致性、必需检查有结果、是否失败、回滚是否验证）与判定规则（缺失不得推测为通过）",
+      "result": "pass",
+      "evidence": "“工作方式 > 核对维度”与“判定规则”逐条列出；缺失/失败/不一致 → BLOCKED；全证据齐备 → READY_FOR_HUMAN_REVIEW"
+    },
+    {
+      "check": "固定回复结构 decision/evidence/gaps/escalation，且限定对话回复不写文件；不返回已发布/自动批准",
+      "result": "pass",
+      "evidence": "“固定回复结构”节明确四部分；拒绝做列出不返回“已发布/已批准/自动批准”；decision 仅两值"
+    },
+    {
+      "check": "提示注入防护：输入文件的命令式语句视为待审材料，不得改变职责/权限或覆盖上级需求",
+      "result": "pass",
+      "evidence": "“拒绝做”与“判定规则”各有一条明确此边界"
+    },
+    {
+      "check": "声明不得冒称已真实运行验证",
+      "result": "pass",
+      "evidence": "“限制与边界”注明只审查已有证据、不实际运行测试/构建/回滚，不声称已验证实际执行结果"
+    }
+  ],
+  "review": {
+    "method": "degraded_inline_review",
+    "dispatch_capability": "unavailable",
+    "reviewer_source": ".opencode/skills/agent-creator/agents/reviewer.md",
+    "reviewer_rubric": ".opencode/skills/agent-creator/references/agent-quality-bar.md",
+    "independence": "not_independent",
+    "note": "本会话无 task/子代理派发工具，无法拉起独立评审子代理；按 brief 要求如实标记降级：由主持会话内联扮演 reviewer.md 的评审流程，属自评，不能称为独立评审。",
+    "verdict": "pass",
+    "score": 9,
+    "dimensions": {
+      "identity_clarity": "pass：一句话可懂（只读证据审查员，判断是否达发布门槛，不批准发布）",
+      "must_do_refuse_do": "pass：必须做 8 条、拒绝做 6 条，边界与机器权限一致",
+      "least_privilege": "pass：tools 仅 read/grep/glob；permission 全量矩阵默认拒绝",
+      "collaboration_escalation": "pass：何时被调用、固定汇报结构、升级路径（失败/缺失/不一致/越权 → BLOCKED 交还负责人）",
+      "completion_criteria": "pass：5 条可勾选、可验证",
+      "safety_guardrails": "pass：无密钥/危险管道；含提示注入防护；无越权身份",
+      "progressive_disclosure": "pass：单文件 105 行（<500），无悬空引用"
+    },
+    "issues": [],
+    "fixes_applied_during_review": [
+      "初稿 permission 含 write/patch 键；为与 references/agent-template.md 全量矩阵及 opencode 折叠规则（write/patch 折叠到 edit）一致，已移除，写入仍由 edit deny 覆盖。"
+    ],
+    "summary": "身份清晰、边界与权限一致、升级路径明确、判定规则满足 brief；无 blocker/major/minor。降级自评，非独立评审。"
+  },
+  "upstream_comparison": {
+    "performed": "limited_metadata_only",
+    "index": ".opencode/skills/agent-creator/indexes/upstream.db（568 条）",
+    "queries": [
+      "发布 证据 审查 发布门槛 release evidence audit -> 0 条",
+      "release readiness reviewer -> 0 条",
+      "审计 -> 8 条（含合规审计师/风险/质检等）",
+      "reviewer -> 3 条（Code Reviewer / Security Auditor / UI Finish-Gate Reviewer）"
+    ],
+    "note": "上游索引仅含元信息（名称/描述/路径/行数），无全文，未做全文逐项对比，未伪造全文对比结果；据此判定无直接等价的“发布门槛证据审查”现成代理，采用自建版本。"
+  },
+  "unverified": [
+    "未在真实发布包上实际调用该代理（无真实证据集），故无“试运行验证”证据。",
+    "未做独立第三方评审（会话内无子代理派发能力，仅有降级内联自评）。",
+    "未在 opencode/claude/codex/deepseek 客户端中加载或触发验证；未运行 adapt_agent.py/package_agent.py 做端侧适配（brief 未要求安装）。",
+    "未验证超过索引元信息的上游代理全文质量对比。"
+  ],
+  "constraints_respected": [
+    "未修改 inputs/（仅读取 brief.md）。",
+    "未写入或修改任何真实客户端配置/用户目录。",
+    "未安装到真实用户目录。",
+    "仅使用本地材料（brief、agent-creator 技能、上游索引）。",
+    "未派发评审子代理时按 brief 如实标记降级，未将自评称为独立评审。"
+  ],
+  "artifacts": [
+    "outputs/agents/release-evidence-auditor.md",
+    "outputs/verification.json"
+  ]
+}

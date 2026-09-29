@@ -1,0 +1,65 @@
+{
+  "checks": [
+    {
+      "name": "new_filename_exists",
+      "passed": true,
+      "evidence": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu\\outputs\\asset-note\\references\\review-checklist.md"
+    },
+    {
+      "name": "old_filename_absent",
+      "passed": true,
+      "evidence": "absent: C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu\\outputs\\asset-note\\references\\checklist.md"
+    },
+    {
+      "name": "references_resolve",
+      "passed": true,
+      "evidence": "resolved=['SKILL.md', 'references/review-checklist.md'] missing=[]"
+    },
+    {
+      "name": "frontmatter_unchanged",
+      "passed": true,
+      "evidence": "sha256(input)=a671519b138b77bd79ec712ed8ecb648189a98fa16a261ecb99f37d96b489e4d sha256(output)=a671519b138b77bd79ec712ed8ecb648189a98fa16a261ecb99f37d96b489e4d"
+    },
+    {
+      "name": "skill_body_unchanged_except_refs",
+      "passed": true,
+      "evidence": "normalized body identical"
+    },
+    {
+      "name": "readme_refs_updated",
+      "passed": true,
+      "evidence": "contains review-checklist.md and no stale checklist.md"
+    },
+    {
+      "name": "resource_content_unchanged",
+      "passed": true,
+      "evidence": "sha256 both = 6ff74725e128accd858ff10ab402d1aa396d9b663831000dcccd514635c65e51"
+    },
+    {
+      "name": "input_unchanged",
+      "passed": true,
+      "evidence": "inputs/asset-note still holds original checklist.md and original SKILL/README references"
+    },
+    {
+      "name": "strict_skill_validator",
+      "passed": true,
+      "evidence": "exit_code=0"
+    }
+  ],
+  "commands": [
+    {
+      "command": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu\\.opencode\\skills\\skill-creator\\scripts\\skill_validate.py --dir outputs\\asset-note --strict",
+      "exit_code": 0,
+      "stdout": "🔍 Validating skills in: outputs\\asset-note\n⚙️  Mode: STRICT (CI)\n\n📊 Checked 1 skills.\n\nℹ️  Found 1 Advisories:\nℹ️  SKILL.md: No evals.json found (recommended: ship trigger tests with the skill).\n\n✨ All skills passed validation!\n",
+      "stderr": ""
+    },
+    {
+      "command": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu\\outputs\\_verify_asset_note.py C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu",
+      "exit_code": 0,
+      "stdout": "[PASS] new_filename_exists: C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu\\outputs\\asset-note\\references\\review-checklist.md\n[PASS] old_filename_absent: absent: C:\\Users\\Administrator\\AppData\\Local\\Temp\\scenario-2thm6udu\\outputs\\asset-note\\references\\checklist.md\n[PASS] references_resolve: resolved=['SKILL.md', 'references/review-checklist.md'] missing=[]\n[PASS] frontmatter_unchanged: sha256(input)=a671519b138b77bd79ec712ed8ecb648189a98fa16a261ecb99f37d96b489e4d sha256(output)=a671519b138b77bd79ec712ed8ecb648189a98fa16a261ecb99f37d96b489e4d\n[PASS] skill_body_unchanged_except_refs: normalized body identical\n[PASS] readme_refs_updated: contains review-checklist.md and no stale checklist.md\n[PASS] resource_content_unchanged: sha256 both = 6ff74725e128accd858ff10ab402d1aa396d9b663831000dcccd514635c65e51\n[PASS] input_unchanged: inputs/asset-note still holds original checklist.md and original SKILL/README references\n[PASS] strict_skill_validator: exit_code=0\n",
+      "stderr": ""
+    }
+  ],
+  "input_unchanged": true,
+  "all_passed": true
+}

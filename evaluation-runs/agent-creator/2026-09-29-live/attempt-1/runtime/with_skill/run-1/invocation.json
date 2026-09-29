@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "run",
+    "--format",
+    "json",
+    "-m",
+    "deepseek/deepseek-flash",
+    "--agent",
+    "release-evidence-auditor",
+    "请以发布证据审查员身份审查 inputs/ 下的 R17 发布材料，按你的角色定义给出判断、证据、缺口和升级建议。直接在对话中回复。"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-ipzmm9hx\\runtime-workspace",
+  "timeout_seconds": 120,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:37:49.911366+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "variant": "without_skill",
+  "status": "error",
+  "model_called": false,
+  "error": "ValueError: Generated role failed OpenCode adaptation",
+  "native_discovery_passed": false,
+  "adapt_returncode": 1,
+  "model": null,
+  "models": [],
+  "total_tokens": null,
+  "tokens_source": null,
+  "total_tool_calls": null,
+  "tool_calls_source": null,
+  "observed_models": [],
+  "actual_agents": []
+}

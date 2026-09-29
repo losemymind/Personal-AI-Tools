@@ -7,7 +7,7 @@
 一个代理进入本目录，必须满足：
 
 1. 有明确的 frontmatter（name/description/mode 等）与可辨识的用途
-2. 通过 `validate_agents.py --strict`（frontmatter/职责范围/权限声明/协作协议/完成标准/引用不悬空）：`python agent-creator/skills/agent-creator/scripts/validate_agents.py --strict --dir agents/<name>`
+2. 通过 `agent_validate.py --strict`（frontmatter/职责范围/权限声明/协作协议/完成标准/引用不悬空）：`python agent-creator/skills/agent-creator/scripts/agent_validate.py --strict --dir agents/<name>`
 3. 声明验证等级 `maturity`，分两档：
    - `runtime-verified`：在真实任务/目标环境中**试跑验证过**（准入第 2 条）
    - `static-verified`：仅通过静态严格校验、**尚未真实试跑**，待运行时验证后升档
@@ -42,22 +42,22 @@ agents/
 
 ## 与 agent-creator 的关系
 
-- 创建/改进/验证代理 → 使用本仓库内代理创建器成品（`agent-creator/skills/agent-creator/`，方法论见其 `SKILL.md`，脚手架 `scripts/create_agent.py`，验证器 `scripts/validate_agents.py`）
+- 创建/改进/验证代理 → 使用本仓库内代理创建器成品（`agent-creator/skills/agent-creator/`，方法论见其 `SKILL.md`，脚手架 `scripts/agent_create.py`，验证器 `scripts/agent_validate.py`）
 - 从本目录安装代理到 LLM 客户端 → **经根 `tools/scripts/install.py` 打包放置**（先按端适配 frontmatter、再落点 + 自检/回滚；落点矩阵见 `tools/README.md`）：
   ```bash
   python tools/scripts/install.py agents/<分类>/<name> --client claude --scope workspace --dest <目标仓库根>
   ```
-  落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`（**单数**）；工作区版本放 `<项目根>/.<客户端>/<agents|agent>/`。纯复制仅作无该脚本时的回退（先 `adapt_agent.py` 转换再复制）。
-- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` 5 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。`install.py`/`package_agent.py` 会按目标端适配并 post-check，无需手工转换。
+  落点：claude `~/.claude/agents/`、opencode `~/.config/opencode/agent/`（**单数**）；工作区版本放 `<项目根>/.<客户端>/<agents|agent>/`。纯复制仅作无该脚本时的回退（先 `agent_adapt.py` 转换再复制）。
+- 库内 frontmatter **两种形**：`code-quality/` 2 个为仓库规范形（`tools:[...]` 数组）；`academic/` 5 个为 opencode 原生 permission 形（含 `color`/`temperature`/`lsp` 等 opencode-only 字段）。`install.py`/`agent_package.py` 会按目标端适配并 post-check，无需手工转换。
 - 代理更新/卸载 → 更新即重装覆盖（`--force`）；卸载即删除目标副本（本仓库无独立 manifest 生命周期工具）。
 
 ## 能力目录（CATALOG.md）
 
-`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 从各 `AGENT.md` frontmatter **自动生成**（禁止手改）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「先 `adapt_agent.py` 转换、再复制到客户端 agents/ 目录」提示，用户确认后执行。新增/删除/改进代理后**重跑生成器刷新**（发布门可用 `python tools/scripts/build_catalog.py --check` 校验）。
+`CATALOG.md` 由根 `tools/scripts/build_catalog.py` 从各 `AGENT.md` frontmatter **自动生成**（禁止手改）。它是 LLM 按需安装的检索入口：读目录匹配需求 → 命中即给条目「先 `agent_adapt.py` 转换、再复制到客户端 agents/ 目录」提示，用户确认后执行。新增/删除/改进代理后**重跑生成器刷新**（发布门可用 `python tools/scripts/build_catalog.py --check` 校验）。
 
 ## 记录与审计
 
-- `AGENTS-RECORDS.md`：**创建/来源台账**（逐条事实，agent-creator 自动追加）。入库代理用 `python agent-creator/skills/agent-creator/scripts/create_agent.py ... --records agents/AGENTS-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `AGENT.md` frontmatter（`version`/`tools_clients` 也不写，版本以 git 提交历史为准）。本库条目采用目录形态（`<分类>/<name>/AGENT.md`），生成时须加 `--layout dir`（脚手架默认输出扁平单文件 `<name>.md`；`install.py` 按 `AGENT.md` 定位条目，扁平形态不会被收录）。
+- `AGENTS-RECORDS.md`：**创建/来源台账**（逐条事实，agent-creator 自动追加）。入库代理用 `python agent-creator/skills/agent-creator/scripts/agent_create.py ... --records agents/AGENTS-RECORDS.md` 追加一行；来源/作者/日期只记在此，不进 `AGENT.md` frontmatter（`version`/`tools_clients` 也不写，版本以 git 提交历史为准）。本库条目采用目录形态（`<分类>/<name>/AGENT.md`），生成时须加 `--layout dir`（脚手架默认输出扁平单文件 `<name>.md`；`install.py` 按 `AGENT.md` 定位条目，扁平形态不会被收录）。
 - `AGENTS-AUDIT.md`：**入库合规审计**（人工维护，规则见根 `AGENTS.md`）：新增/改进代理后同步登记。
 - agent-creator 是**创建工具**（工作区 + 成品在 `agent-creator/`），不在代理库审计范围内。
 

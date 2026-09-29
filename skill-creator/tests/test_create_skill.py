@@ -1,4 +1,4 @@
-"""Tests for create_skill.py scaffold generator."""
+"""Tests for skill_create.py scaffold generator."""
 
 import sys
 from pathlib import Path
@@ -6,7 +6,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR.parent / "skills" / "skill-creator" / "scripts"))
 
-from create_skill import main
+from skill_create import main
 
 
 def test_out_dir_name_matches_skill_name(tmp_path, monkeypatch):
@@ -16,7 +16,7 @@ def test_out_dir_name_matches_skill_name(tmp_path, monkeypatch):
     
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", [
-        "create_skill.py",
+        "skill_create.py",
         "--name", "test-skill",
         "--category", "productivity",
         "--risk", "safe",
@@ -35,7 +35,7 @@ def test_normal_out_dir_with_subdir_name(tmp_path, monkeypatch):
     
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", [
-        "create_skill.py",
+        "skill_create.py",
         "--name", "test-skill",
         "--category", "productivity",
         "--risk", "safe",

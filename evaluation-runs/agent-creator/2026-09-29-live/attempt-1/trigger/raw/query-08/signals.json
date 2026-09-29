@@ -1,0 +1,9 @@
+{
+  "dispatch": false,
+  "target_read": false,
+  "combined": false,
+  "combined_rule": "dispatch OR target_read",
+  "dispatch_evidence": [],
+  "target_read_evidence": [],
+  "target_skill_path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-d9f0jfvj\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md"
+}

@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "-X",
+    "utf8",
+    "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\run_live_evaluation.py",
+    "--_scenario-worker",
+    "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\attempt-1\\scenario-jobs\\repair-without_skill.json"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4",
+  "timeout_seconds": 480,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:37:11.399098+00:00"
+}

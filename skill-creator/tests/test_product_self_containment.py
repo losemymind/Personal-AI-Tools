@@ -1,7 +1,7 @@
 """Self-containment scan for the skill-creator artifact (dev-only release gate).
 
-Mirror of agent-creator's test_product_self_containment.py. The shipped validator
-(validate_skills.py) only resolves backtick/link references inside SKILL.md —
+The shipped validator (skill_validate.py) only resolves backtick/link references
+inside SKILL.md —
 references/*.md legitimately cite generic and upstream paths, so a dir-wide
 dangling scan inside the validator would false-positive. That leaves the
 artifact-wide "every *.md ref resolves somewhere inside the artifact, and none
@@ -49,7 +49,7 @@ def clean_fenced(content: str) -> str:
 
 def extract_path_token(cand: str) -> str:
     """Pull the artifact-internal path token out of a command-like ref
-    (`python scripts/validate_skills.py ...` -> `scripts/validate_skills.py`)."""
+    (`python scripts/skill_validate.py ...` -> `scripts/skill_validate.py`)."""
     for token in cand.split():
         for known in (*KNOWN_TOP, *DEV_ONLY_MARKERS):
             if token == known or token.startswith(known + "/"):

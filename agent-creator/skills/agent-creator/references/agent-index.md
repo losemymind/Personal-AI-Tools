@@ -29,42 +29,42 @@
 - `path` 在单个源内唯一（行按 `source_repo + path` 识别）。
 - 内含 FTS5 全文检索表 `agents_fts`，匹配 name/description/category/tools。
 
-FTS5 的 `unicode61` 分词器不切分中文，因此**含中文（CJK）的查询**由 `search_agent_index.py` 自动降级为对 name/description/category/tools 的子串 `LIKE` 匹配（按空格分词 AND；`%`/`_` 已转义），可直接用中文检索 `agency-zh` 的中文代理。英文/ASCII 查询仍走 FTS5。
+FTS5 的 `unicode61` 分词器不切分中文，因此**含中文（CJK）的查询**由 `agent_index_search.py` 自动降级为对 name/description/category/tools 的子串 `LIKE` 匹配（按空格分词 AND；`%`/`_` 已转义），可直接用中文检索 `agency-zh` 的中文代理。英文/ASCII 查询仍走 FTS5。
 
 ## 使用
 
 ```bash
 # 检索全库（默认所有源）
-python scripts/search_agent_index.py "code review"
-python scripts/search_agent_index.py "code review" --category security
+python scripts/agent_index_search.py "code review"
+python scripts/agent_index_search.py "code review" --category security
 
 # 按源检索
-python scripts/search_agent_index.py "frontend" --source agency
-python scripts/search_agent_index.py "前端" --source agency-zh
-python scripts/search_agent_index.py "programmer" --source ccgs
+python scripts/agent_index_search.py "frontend" --source agency
+python scripts/agent_index_search.py "前端" --source agency-zh
+python scripts/agent_index_search.py "programmer" --source ccgs
 
 # 查看索引状态（含按源分布）/ 分类分布
-python scripts/search_agent_index.py --stats
-python scripts/search_agent_index.py --list-categories
+python scripts/agent_index_search.py --stats
+python scripts/agent_index_search.py --list-categories
 
 # JSON 输出（便于程序化处理）
-python scripts/search_agent_index.py "review" --json
+python scripts/agent_index_search.py "review" --json
 ```
 
 ## 构建与更新（多源）
 
 ```bash
 # 全量重建所有源（默认：下载各源 tarball → 构建 → 自动清理）
-python scripts/build_agent_index.py
+python scripts/agent_index_build.py
 
 # 只重建某个源
-python scripts/build_agent_index.py --source agency
-python scripts/build_agent_index.py --source ccgs
-python scripts/build_agent_index.py --source agency-zh
+python scripts/agent_index_build.py --source agency
+python scripts/agent_index_build.py --source ccgs
+python scripts/agent_index_build.py --source agency-zh
 
 # 从本地已 clone/解压的仓库构建（避免重复下载；需与 --source 单值搭配）
-python scripts/build_agent_index.py --source agency --from-extracted <本地仓库目录>
-python scripts/build_agent_index.py --source agency --no-dl   # 在当前目录（该源 checkout）扫描，同样需 --source 单值
+python scripts/agent_index_build.py --source agency --from-extracted <本地仓库目录>
+python scripts/agent_index_build.py --source agency --no-dl   # 在当前目录（该源 checkout）扫描，同样需 --source 单值
 ```
 
 **同步策略：** 手动触发（推荐）。索引文件已提交入仓库，用户克隆即得索引；日常更新上游用 `--source <单源>` 按需同步。结构变更（新增/改名源）时用全量重建。注意构建会下载源 tarball，网络不可用时用 `--from-extracted` 指向本地 checkout。

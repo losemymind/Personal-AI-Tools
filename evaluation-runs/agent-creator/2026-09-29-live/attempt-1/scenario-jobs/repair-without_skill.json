@@ -1,0 +1,33 @@
+{
+  "run_dir": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\attempt-1\\iteration-1\\eval-repair\\without_skill\\run-1",
+  "input_dir": "E:\\GitHub\\Personal-AI-Tools\\evaluation-runs\\agent-creator\\2026-09-29-live\\fixtures\\repair",
+  "prompt": "按照 inputs/brief.md 修复 inputs/bug-triager 代理，并交付要求的两个客户端包及 outputs/verification.json。必须完成文件，不只给建议。不要改输入或真实客户端配置。需求已经给定，可自主完成这次修复。",
+  "skill_dir": null,
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-82fuv_z4",
+  "public_config": {
+    "model": "deepseek/deepseek-flash",
+    "small_model": "deepseek/deepseek-flash",
+    "share": "disabled",
+    "autoupdate": false,
+    "mcp": {},
+    "plugin": [],
+    "agent": {
+      "build": {
+        "steps": 32
+      }
+    },
+    "permission": {
+      "*": "allow",
+      "webfetch": "deny",
+      "websearch": "deny",
+      "question": "deny",
+      "task": "deny",
+      "external_directory": "deny",
+      "skill": {
+        "*": "deny",
+        "agent-creator": "allow",
+        "customize-opencode": "deny"
+      }
+    }
+  }
+}

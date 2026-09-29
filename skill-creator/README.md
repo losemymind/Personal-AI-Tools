@@ -21,7 +21,7 @@ skill-creator/                     ← 开发工作区（本目录）
 成品 `skills/skill-creator/` 必须**不依赖上层任何文件或工具**：
 - 内部引用（`scripts/`、`references/` 等）一律以成品目录自身为根书写。
 - 不得引用本工作区的 `INSTALL.md`、`tests/`、`README.md`（那是 dev-only，不进成品）。
-- 由成品 `validate_skills.py --strict --dir skills/skill-creator` 自检把关（引用悬空/指向不存在的路径即失败）。
+- 由成品 `skill_validate.py --strict --dir skills/skill-creator` 自检把关（引用悬空/指向不存在的路径即失败）。
 - dev-only `tests/test_product_self_containment.py` 补 SKILL.md 之外的覆盖：扫成品**全 md**（fenced 豁免；跳过 `examples/`、`evolutions/`）的 dev-only/悬空引用，并断言成品根无 `AGENTS.md`/`INSTALL.md`。
 
 ## 常用命令
@@ -33,14 +33,14 @@ skill-creator/                     ← 开发工作区（本目录）
 python -m pytest tests/ -q
 
 # 成品 strict 自检：frontmatter/章节/安全护栏 + 引用不悬空
-python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/skill-creator
+python skills/skill-creator/scripts/skill_validate.py --strict --dir skills/skill-creator
 ```
 
 ## 来源与沿革
 
 本技能（成品 `skills/skill-creator/`）参考并融合了以下三个 skill-creator 实现：
 
-- **[anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/skill-creator)**（`skills/skill-creator/`，Anthropic 官方；与 `anthropics/claude-plugins-official` 的插件版同 blob sha，以其为官方源）：方法论主体与量化评测工具链移植来源（基线双跑/子代理编排、`aggregate_benchmark.py` / `run_eval.py` / `run_loop.py` / `utils.py` 头部与 `references/benchmark-schema.md` 标注移植自其 `scripts/` / `agents/` / `references/`）。
+- **[anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/skill-creator)**（`skills/skill-creator/`，Anthropic 官方；与 `anthropics/claude-plugins-official` 的插件版同 blob sha，以其为官方源）：方法论主体与量化评测工具链移植来源（基线双跑/子代理编排、`skill_benchmark.py` / `skill_eval.py` / `skill_optimize.py` / `skill_utils.py` 头部与 `references/benchmark-schema.md` 标注移植自其 `scripts/` / `agents/` / `references/`）。
 - **[ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills/tree/master/skill-creator)**（`skill-creator/`，Apache-2.0）：官方 Anthropic skill-creator 在流行 awesome-list 中的公开分发副本（内容同官方主线：`SKILL.md` + `scripts/`），作为参考入口，与方法论源同源。
 - **[antongulin/opencode-skill-creator](https://github.com/antongulin/opencode-skill-creator)**（Apache-2.0；Anthropic 官方版的开源 opencode 移植）：贡献描述优化闭环增量（高分描述作 few-shot 先例 + 触发失败分类）。
 
@@ -48,36 +48,53 @@ python skills/skill-creator/scripts/validate_skills.py --strict --dir skills/ski
 
 另有两类非「skill-creator 方法论」依赖保留其真实来源标注（不在收敛范围）：
 - 成品「先查后建」的**上游技能库索引**来自 [sickn33/agentic-awesome-skills](https://github.com/sickn33/agentic-awesome-skills)（`aas`）、[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)（`addy`），以及 [anthropics/skills](https://github.com/anthropics/skills)（`anthropics`）、[ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)（`composiohq`）、[Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills)（`coevoskills`，稀疏 API 取数 `meta_skills/`）、[mattpocock/skills](https://github.com/mattpocock/skills)（`mattpocock`，两层嵌套 `skills/<category>/<name>/`）、[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)（`karpathy`，`karpathy-guidelines`）。
-- 成品 `references/` 若干文档头部与 `validate_skills.py` 标注「基于 agentic-awesome-skills 适配」——代码级真实出处，保留。
+- 成品 `references/` 若干文档头部与 `skill_validate.py` 标注「基于 agentic-awesome-skills 适配」——代码级真实出处，保留。
 
 具体吸收点与对比择优记录见成品 `references/` 文档头与 `evolutions/`。
 
-## 上游对比与升级（2026-09-09）
+## 演进记录与上下文压缩（2026-09-29）
 
-以两个方法论源为准做了系统对比调研（仓库、目录、SKILL.md 全文实抓）：[anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/skill-creator)（`skills/skill-creator/`，Anthropic 官方）与 [antongulin/opencode-skill-creator](https://github.com/antongulin/opencode-skill-creator)（其官方版的开源 opencode 移植）；ComposioHQ/awesome-claude-skills 的 `skill-creator/` 为官方方法论的分发副本，不作独立对比源。两者的方法论、脚本与我们的核心高度重叠，我们已属严格超集（量化评测/盲测/evolutions 是独有）。
+成品 `evolutions/` 已将 49 份日期记录和原 README 合并为 8 文件：一个阅读入口、六个主题摘要、一份旧记录映射。来源、决策、关键验证与未解决事项保留；重复审计过程、过时版本流水和已被替代的规则归并。
 
-**可吸收优点（已并入成品，见下方升级清单）**：
-1. **结构化评审回流 → agent 评审闭环（无人工）**：把「需要评分和审核」的事务交给评审子代理（`agents/reviewer.md`）产出结构化 `review.json`（`pass`/`revise` + 可执行修复项），驱动 agent1↔agent2 自动迭代直到通过。
-2. **description 即唯一触发面 + 硬约束**（anthropics/skills 写作规范 + antongulin）：`description` 是唯一门面、≤1024 字符、禁占位符，强化我们的 description 规范与校验。
-3. **references 引用纪律量化**（anthropics/skills 渐进披露规范）：references 一层深链接、>100 行加目录、超大文件给 grep 模式——硬规则化渐进披露。
-4. **基线行为门（RED→GREEN）+ evals 随技能发布**：无技能基线失败在前、写后带技能必须消除失败，否则技能不成立；`evals/`（triggers.json + scenarios + holdout）随技能入库、改动必回归。它是编排规范而非纯脚本，引入为流程与文件格式约定。
-5. **发布纪律**：入库前 secret 扫描、隔离安装实测、PR/tag 后再放行，禁止直推默认分支——沉淀为本仓库的入库/发布纪律。
-6. **gold-standard 先例注入 + 失败分类 taxonomy**（antongulin）：description 优化时把本次运行中 test 分最高的 description 当 few-shot 先例注入改进提示；触发失败分 false_negative/false_positive/run_error 并各配 remediation 模板。落地为 description 优化闭环增强（参考其机制，Python 化）。
+| 历史主题 | 当前证据入口（成品内） |
+|---|---|
+| 09-03 写作纪律、09-04 编排、09-09 描述规范、09-10 AI 评审、09-17 CoEvo 取舍 | [methodology](skills/skill-creator/evolutions/methodology.md) |
+| 量化工具、真机信号/隔离、指标契约、独立最终测试 | [evaluation](skills/skill-creator/evolutions/evaluation.md) |
+| 多轮验证器审计、安全扫描与结构评分 | [validation](skills/skill-creator/evolutions/validation.md) |
+| 字段精简、白名单、安装、自包含与命名 | [distribution](skills/skill-creator/evolutions/distribution.md) |
+| 09-10 四源、09-17 CoEvo、09-23 mattpocock/karpathy、09-29 检索与逐源状态 | [indexing](skills/skill-creator/evolutions/indexing.md) |
+| 七个入库技能的导入/比较依据 | [library-decisions](skills/skill-creator/evolutions/library-decisions.md) |
 
-**升级落地清单（成品 `skills/skill-creator/`）**：`evolutions/` 记录（description-and-ref-discipline / red-green-gate-and-release-discipline / gold-standards-description-precedent 三条 + 2026-09-10 `adopt-agent-review-loop`）；`SKILL.md` 扩 description 硬约束/引用纪律/RED→GREEN 判定、发布纪律与 description 先例注入闭环、**agent 评审闭环（阶段 6）**；`references/skill-writing-guide.md` 与 `quality-bar.md`（7→8 项）同步增强；stage7 补 eval 集审阅（改由评审子代理执行）、holdout 与失败分类纪律；`run_loop.py` 落地 gold-standard 先例注入；`validate_skills.py` 增 description advisory。验证器/评测脚本纯增量，pytest 全绿、成品 strict 自检、能力库 strict 校验均通过。
+按成品 `evolutions/README.md` 的问题路由读取；查原文件名时用 `evolutions/record-map.md`。后续同主题直接更新摘要并标日期，新事件可先独立记账再合并。来源台账、审计、当前文档与测试应同步改引用，不能把缺失原文解释为免除证据要求。
 
-**2026-09-10 跟进（版本 0.7.0）**：评审改为 **agent 评审闭环（无人工）**——新增评审子代理 `agents/reviewer.md`，阶段 6 由 agent1↔agent2 自动迭代；阶段 7 查询集审阅改由评审子代理执行；阶段 8 `VERIFICATION.md` 降为可选留痕；`run_loop.py` 落地 gold-standard 先例注入。孪生 agent-creator 同步（0.7.0）。
+## 工具与子代理命名统一（2026-09-29）
 
-**2026-09-11 跟进（版本 0.7.1）**：一轮创建器审计修复（不扩功能，仅纠缺陷/对齐文档）。成品侧：`scripts/package_skill.py` 补 `--out` 指向已存在文件的显式守卫（不再泄漏 traceback）；`evolutions/README.md` 记录类型表补全、去掉硬编码类数。孪生 agent-creator 同批修复（`compare_agents` 递归候选发现同时覆盖带 `AGENT.md` 的目录与上游扁平 `<division>/<name>.md`、`adapt_agent` opencode 权限放大、`create_agent` 工具名大小写归一、`build_agent_index` 过期文档、发布门死分支）。记录见两成品 `evolutions/2026-09-11-fix-*`。
+十个命令行脚本统一为 `skill_<用途>.py`，索引采用 `skill_index_<动作>.py`；共享模块改为 `skill_utils.py`，定位模块 `_project_paths.py` 保持原名。完整迁移表见成品 `skills/skill-creator/README.md`，记录见 `skills/skill-creator/evolutions/distribution.md#naming`。外部命令和模块导入需切换新名称；现有参数、输出与退出语义保持不变。仓库调用、安装编排、CI 和独立性门禁已同步。
 
-**2026-09-11 跟进（版本 0.7.2）**：发布门加固。交叉引用门禁覆盖 `.template` 文件并改大小写不敏感（`tools/tests` + 两侧 `test_independence.py`）；skill 侧新增 dev-only `tests/test_product_self_containment.py`，与 agent 侧对等扫描成品**全 md** 的 dev-only/悬空引用（此前仅 `validate_skills.py` 校验 SKILL.md），并修正 `references/skill-anatomy.md` 一处悬空示意路径。记录见 `evolutions/2026-09-11-fix-independence-and-self-containment-gates.md`。
-
-**2026-09-17 跟进（索引源扩容 + 竞品对比）**：新增第五个上游索引源 `coevoskills`（[Zhang-Henry/CoEvoSkills](https://github.com/Zhang-Henry/CoEvoSkills) 的 `meta_skills/skill-creator/`）。该仓库整仓约 600MB（基准任务数据）而技能子树仅约 200KB，故 `build_index.py` 新增可选**稀疏 API 取数**模式（`api_subtree`：scoped trees API 定位子树 + raw 取文件，落成最小 checkout 复用既有扫描/结构统计），索引 4 源 2187 条 → **5 源 2188 条**。同期对该竞品 skill-creator 做方法论对比：与本地同血脉（Anthropic 官方工具链衍生），本地为实质超集（0.98 vs 0.55，扣 schema 口径后仍超集）；上游增量 = 评测结果可视化评审页（`eval-viewer/`）与 run_loop HTML 报告（train/test 区分），已记为学习点、**暂不采纳**（本项目「无人工评审闭环」为既定纪律，需先明确其服务对象）。记录见 `evolutions/2026-09-17-adopt-coevoskills-source.md` 与 `evolutions/2026-09-17-compare-coevoskills.md`。
-
-**2026-09-23 跟进（索引源扩容）**：新增第六个上游索引源 `mattpocock`（[mattpocock/skills](https://github.com/mattpocock/skills)，MIT，「Skills for Real Engineers」，约 1.8MB/38 技能）。该仓库把技能按类别分组到 `skills/<category>/<name>/`（`engineering`/`productivity`/`in-progress`/`misc`），比既有扫描源深一层，故 `build_index.py` 新增可选**两层嵌套扫描**（`skills_nested`：扫描 `<skills_root>/<category>/<name>/SKILL.md`，`path` 保留完整相对路径，frontmatter 无 `category` 时用父目录名兜底），索引 5 源 2188 条 → **6 源 2226 条**。记录见 `evolutions/2026-09-23-adopt-mattpocock-source.md`。
-
-**2026-09-23 跟进（索引源扩容 ②）**：新增第七个上游索引源 `karpathy`（[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)，约 20KB/1 技能 `karpathy-guidelines`）。此为能力库 `coding-discipline` 的**上游原始源**（此前只能经 `aas` 的同源分发副本 `skills/andrej-karpathy` 命中），普通 `skills/*/SKILL.md` 一层扫描即可，直接注册；索引 6 源 2226 条 → **7 源 2227 条**。记录见 `evolutions/2026-09-23-adopt-karpathy-source.md`。
+成品 agents/ 下四份角色指令统一为 skill_grader.md、skill_reviewer.md、skill_comparator.md、skill_analyzer.md，命名规则为 `skill_<角色>.md`。工作流、互相引用、工具注释和测试使用新路径，外部提示词按成品迁移表更新；角色职责与 JSON 产物契约保持不变。
 
 ## 提交说明
 
-本目录改动技能后，跑通上方命令即可 commit/push。
+本目录改动技能后，跑通发布门，更新受影响文档与演进记录，并按仓库根 AGENTS.md 完成 HANDOFF 收尾；提交/推送须用户授权。
+
+## 检索与评测可信度优化（2026-09-29）
+
+- 检索改为名称精确命中 + BM25 字段加权排序，加入离线中英关键词扩展；「代码审查」能召回英文技能，未知词提示补英文检索。
+- 触发报告增加覆盖率和不可用指标语义，以及可选失败退出门；CLI 安装副本实际使用候选 description。
+- description 优化明确 train/validation 选优边界，支持独立最终测试集、CLI 开发/最终评测与确认状态；保留旧报告字段为兼容别名。
+- 对比工具只做静态筛查，空资源目录不加分，采纳需同场景任务证据。
+- 索引 v5 逐源记录成功/尝试时间、状态和已索引数据的 SHA-256；旧索引兼容读取，缺失时间标 unknown。本次保留原 7 源 2227 条快照，不重抓上游。
+
+实现与上游对照见成品 `evolutions/evaluation.md`、`evolutions/indexing.md` 与 `evolutions/validation.md`。
+
+## 第二轮证据完整性优化（2026-09-29）
+
+用户批准六项优化并要求子代理分析审核。场景收集真实产物，触发用结构化证据，基准 v2 按任务配对并保留错误、未知成本、模型与来源；增加可选 --strict。索引 v6 固定远程提交并隔离下载目录，本地来源保守标记 unknown。入口按任务路由，三份新参考承载场景评测、触发优化与安装细节。
+
+子代理独立分析、模块实现和交叉审核发现并修复流内错误/退出码不一致、混合模型回填、嵌套输出被跳过等边界。演进依据见 evaluation 的 evidence-integrity、indexing 的 pinned-revision、methodology 的 task-routing。仅使用本地假客户端和网络模拟做验证，未运行真实模型或修改随包索引数据。
+
+## 真实模型测评（2026-09-29）
+
+随后按用户要求运行 OpenCode 1.18.30 + deepseek/deepseek-flash：新触发集 12 条中 11 条可判定且符合标签、1 条运行超时；隔离后的两任务三组对照，当前/旧版/无目标技能断言通过 16/16、14/16、15/16。旧版在不完整配对上误报整体增益，当前版正确拒绝；小样本不足以证明普遍增益或稳定提速。
+
+完整原始事件、真实产物、污染批次与重跑、独立评分、用量和复现命令见 [真实测评报告](../evaluation-runs/skill-creator/2026-09-29-live/REPORT.md)。评测资产仅 dev，成品仍为唯一源；旧版快照留在仓库外。产品总结归入 evolutions/evaluation 的 live-2026-09-29，不为本次测试改写描述或产品逻辑。

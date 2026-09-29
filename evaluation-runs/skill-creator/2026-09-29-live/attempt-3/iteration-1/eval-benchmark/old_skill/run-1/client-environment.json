@@ -1,0 +1,30 @@
+{
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\skill-live-env-s2vdya7s",
+  "isolated_user_directories": true,
+  "public_config": {
+    "model": "deepseek/deepseek-flash",
+    "small_model": "deepseek/deepseek-flash",
+    "share": "disabled",
+    "autoupdate": false,
+    "permission": {
+      "*": "allow",
+      "webfetch": "deny",
+      "websearch": "deny",
+      "question": "deny",
+      "task": "deny",
+      "external_directory": "deny",
+      "skill": {
+        "*": "deny",
+        "skill-creator": "allow",
+        "customize-opencode": "allow"
+      }
+    },
+    "mcp": {},
+    "plugin": [],
+    "agent": {
+      "build": {
+        "steps": 24
+      }
+    }
+  }
+}

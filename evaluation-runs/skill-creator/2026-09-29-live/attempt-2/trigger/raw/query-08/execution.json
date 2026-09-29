@@ -1,0 +1,12 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\skill-live-env-mbxaddwb",
+  "duration_seconds": 13.093,
+  "model": null,
+  "models": [],
+  "total_tokens": 34830,
+  "tokens_source": "opencode_step_finish_total",
+  "total_tool_calls": 4,
+  "tool_calls_source": "structured_tool_events"
+}

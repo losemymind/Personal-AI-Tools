@@ -1,0 +1,88 @@
+{
+  "synthetic": true,
+  "comparable": false,
+  "delta_available": false,
+  "reason": "Only 1 of 2 observed eval_id+run_number keys is a valid pair. eval-b/without_skill/run-1 is a hard execution error (metrics.json returncode=1, status=error, grading.json missing), so key (b,1) has no completed baseline run. The paired key set is limited to (a,1): with_skill run-1 (pass_rate 1.0, completed) vs without_skill run-1 (pass_rate 0.0, completed). Per the benchmark contract a pass-rate delta is withheld unless every observed key is fully paired, so benchmark.json reports delta.pass_rate=null. The one descriptive paired difference is +1.00 pass_rate (with_skill - without_skill) on eval a only, plus time +2.0s on that same pair; both are single-sample and not a delta estimate. Token delta is unavailable and was NOT recorded as zero: tokens n=0 and mean=null for both configurations.",
+  "limitations": [
+    "All iteration-1 records (runs, grading, timing, model names) are synthetic/artificial fixtures; they are not real client calls, model behavior, or measured cost and support no claim about real skill performance.",
+    "Incomplete pairing: expected_pairs=2, paired_samples=1, coverage=0.5; eval b baseline errored, so no overall with_skill-vs-without_skill gain can be inferred.",
+    "No valid pass-rate/time/token delta is emitted; the +1.00 pass-rate and +2.0s observed on eval a rest on a single pair and cannot establish significance or causality.",
+    "Sample size is one run per scenario/configuration (runs_per_configuration=2 total discovered, 1 per eval); variance and flakiness cannot be assessed.",
+    "Token/tool-call measurements were never supplied (tokens n=0, mean=null); unknown cost is treated as unavailable, never as zero.",
+    "execution_status covers only what the synthetic fixtures recorded; coverage counts discovered run directories and cannot prove that planned-but-absent runs/scenarios were executed.",
+    "Without-skill pass rate (0%, n=1) reflects a single completed run whose grading is itself an artificial fixture assertion, not a verified artifact inspection.",
+    "synthetic=true and provenance fields describe fabricated data; executor_model/client (synthetic-fixture-model / synthetic-client) are fixture labels, not real identity evidence."
+  ],
+  "benchmark_artifact": "outputs/benchmark.json",
+  "markdown_artifact": "outputs/benchmark.md",
+  "generated_by": "skill-creator/scripts/skill_benchmark.py (schema_version 2, strict mode; reports retained on exit 1)",
+  "run_status": {
+    "with_skill": {
+      "attempted": 2,
+      "completed": 2,
+      "errors": 0,
+      "incomplete": 0,
+      "coverage": 1.0,
+      "valid_pass_rate_samples": 2,
+      "valid_time_samples": 2,
+      "valid_token_samples": 0
+    },
+    "without_skill": {
+      "attempted": 2,
+      "completed": 1,
+      "errors": 1,
+      "incomplete": 0,
+      "coverage": 0.5,
+      "valid_pass_rate_samples": 1,
+      "valid_time_samples": 2,
+      "valid_token_samples": 0
+    }
+  },
+  "pairing": {
+    "expected_pairs": 2,
+    "paired_samples": 1,
+    "coverage": 0.5,
+    "duplicate_keys": [],
+    "identity_mismatches": [],
+    "paired_keys": [
+      {"eval_id": "a", "run_number": 1}
+    ],
+    "unpaired_keys": [
+      {"eval_id": "b", "run_number": 1, "cause": "without_skill baseline run errored (returncode=1, missing grading.json)"}
+    ]
+  },
+  "metric_samples_valid": {
+    "pass_rate": 3,
+    "time_seconds": 4,
+    "tokens": 0
+  },
+  "evidence_based_differences": [
+    {
+      "eval_id": "a",
+      "run_number": 1,
+      "metric": "pass_rate",
+      "primary": 1.0,
+      "baseline": 0.0,
+      "difference": 1.0,
+      "evidence": "both runs status=completed in benchmark.json",
+      "note": "single pair; not a valid aggregate delta"
+    },
+    {
+      "eval_id": "a",
+      "run_number": 1,
+      "metric": "time_seconds",
+      "primary": 10.0,
+      "baseline": 8.0,
+      "difference": 2.0,
+      "evidence": "timing.json.total_duration_seconds for both runs",
+      "note": "single pair; synthetic duration"
+    }
+  ],
+  "unsupported_differences": [
+    {"metric": "pass_rate", "value": null, "reason": "incomplete pairing"},
+    {"metric": "time_seconds", "value": null, "reason": "incomplete pairing"},
+    {"metric": "tokens", "value": null, "reason": "no token measurements supplied; missing not imputed as zero"}
+  ],
+  "overall_skill_gain_inferable": false,
+  "execution_note": "Analysis used the skill-provided aggregator on read-only inputs/iteration-1; only outputs/benchmark.json, outputs/benchmark.md, and outputs/conclusion.json were written. inputs/ was not modified."
+}

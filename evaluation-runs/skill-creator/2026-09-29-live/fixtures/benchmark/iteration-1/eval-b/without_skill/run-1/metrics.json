@@ -1,0 +1,14 @@
+{
+  "synthetic": true,
+  "client": "synthetic-client",
+  "model": "synthetic-fixture-model",
+  "models": [
+    "synthetic-fixture-model"
+  ],
+  "model_source": "synthetic_fixture",
+  "returncode": 1,
+  "timed_out": false,
+  "status": "error",
+  "error": "Synthetic execution failure; grading was not produced.",
+  "provenance": "Artificial fixture record, not execution telemetry."
+}

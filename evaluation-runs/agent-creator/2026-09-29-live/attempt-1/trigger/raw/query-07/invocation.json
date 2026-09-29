@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+    "--pure",
+    "run",
+    "--format",
+    "json",
+    "-m",
+    "deepseek/deepseek-flash",
+    "只整理这份发布记录：unit=passed，integration=failed，security=缺失。列出发布风险，不创建代理，也不执行发布。"
+  ],
+  "cwd": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-ymbmr5op\\workspace",
+  "timeout_seconds": 90,
+  "environment": "isolated child; credentials omitted",
+  "started_at": "2026-09-29T11:33:15.829491+00:00"
+}

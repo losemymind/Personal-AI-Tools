@@ -1,0 +1,12 @@
+[
+  {
+    "name": "customize-opencode",
+    "description": "Use ONLY when the user is editing or creating opencode's own configuration: opencode.json, opencode.jsonc, files under .opencode/, or files under ~/.config/opencode/. Also use when creating or fixing opencode agents, subagents, skills, plugins, MCP servers, or permission rules. Do not use for the user's own application code, or for any project that is not configuring opencode itself.",
+    "location": "<built-in>"
+  },
+  {
+    "name": "agent-creator",
+    "description": "创建、改进并验证个人工作流代理（Agents）。当用户需要从零创建代理、把反复出现的工作角色或子代理需求沉淀为代理、修改或优化现有代理、评估代理质量、或为 claude/opencode/codex/deepseek 等客户端管理代理时使用。当用户提到「创建agent」「写个代理」「agent-creator」「把这个角色做成代理」等说法时，使用本技能。",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\agent-live-env-d9f0jfvj\\workspace\\.opencode\\skills\\agent-creator\\SKILL.md"
+  }
+]

@@ -1,0 +1,109 @@
+{
+  "expectations": [
+    {
+      "text": "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+      "passed": true,
+      "evidence": "三个指定产物存在且JSON可解析，SHA-256与artifacts.json相同；Markdown逐run/配置/配对/Delta数值与JSON对应（但Delta正确性另在第5条判失败）。"
+    },
+    {
+      "text": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+      "passed": true,
+      "evidence": "benchmark.runs保留4次尝试；configurations中with_skill attempted/completed/errors=2/2/0，without_skill=2/1/1；b基线status=error/returncode=1/pass_rate=null，未丢掉失败记录。"
+    },
+    {
+      "text": "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+      "passed": true,
+      "evidence": "configurations.coverage分别1.0与0.5；a无技能completed但pass_rate=0，b无技能error无有效分数，区分了有效评分失败和执行失败。errors与incomplete重叠被明确说明，冻结此条不要求其互斥。"
+    },
+    {
+      "text": "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+      "passed": true,
+      "evidence": "pairing possible_pairs=2、valid_pairs=1、pair_coverage=0.5；pairs只有a/run1有效，b因无基线评分无效。"
+    },
+    {
+      "text": "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+      "passed": false,
+      "evidence": "失败：benchmark.deltas.pass_rate available=true/value=1.0，basis明确with n=2 vs without n=1；run_summary.delta.pass_rate=+1.00、time_seconds=+3.0，Markdown标题Evidence-supported deltas将其标可用。时间+3实际来自(10+12)/2-8，不是唯一配对a的10-8=2；不能因note称单对而把未配对均值当有效整体差值。"
+    },
+    {
+      "text": "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+      "passed": true,
+      "evidence": "4项runs.tokens均null；run_summary两配置tokens=null；valid_metric_samples.tokens两组均0/supplied=false；Markdown标not supplied，未填零或估算成本。"
+    },
+    {
+      "text": "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+      "passed": true,
+      "evidence": "runs.time_seconds保留10/8/12/5秒，b基线失败时长5秒未消失；synthetic=true、provenance_note与Markdown头明确人工夹具。完成样本统计排除失败时间，但原始时长被保留，满足冻结断言。"
+    },
+    {
+      "text": "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+      "passed": false,
+      "evidence": "失败：conclusion.synthetic=true、comparable=false，但delta_available=true（要求false），delta_available_scope中pass_rate/time_seconds也true。文字承认不能推断整体收益，无法消除机器字段与冻结要求的矛盾。"
+    },
+    {
+      "text": "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。",
+      "passed": true,
+      "evidence": "input-integrity与冻结15文件路径/SHA-256完全相同。transcript:56真实运行工作区旧聚合器、74/77/80写修正代码、83执行、91解析JSON、94核验输入哈希；38次调用无全局技能发现、网络、安装或另起模型。71外部temp write被拒后改本工作区outputs，未观察到成功越界写。"
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 2,
+    "total": 9,
+    "pass_rate": 0.7777777777777778
+  },
+  "execution_metrics": {
+    "client": "opencode",
+    "model": "deepseek/deepseek-flash",
+    "models": [],
+    "total_tokens": 977234,
+    "tokens_source": "opencode_step_finish_total",
+    "total_tool_calls": 38,
+    "tool_calls_source": "structured_tool_events",
+    "model_source": "requested",
+    "requested_model": "deepseek/deepseek-flash",
+    "skill": "skill-creator",
+    "returncode": 0,
+    "timed_out": false,
+    "output_chars": 355950,
+    "status": "completed",
+    "error": null,
+    "artifact_count": 3,
+    "artifact_collection_errors": 0
+  },
+  "timing": {
+    "total_duration_seconds": 137.785,
+    "timed_out": false
+  },
+  "user_notes_summary": {
+    "uncertainties": [
+      "固定synthetic夹具的一次真实模型执行，不足以宣称统计显著性或泛化效果。"
+    ],
+    "needs_review": [
+      "本组errors与incomplete为重叠维度，与新版聚合器互斥状态定义不同；冻结断言未要求该互斥契约，未追加扣分。",
+      "未配对差值仍标available=true，最终字段与谨慎文字矛盾；详见失败断言5、8。",
+      "transcript:71工作区外temp写入被拒绝，后改outputs；没有成功越界写证据。"
+    ],
+    "workarounds": []
+  },
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+        "reason": "若要比较完整报告协议，下版冻结前明确errors/incomplete是否互斥；本次不事后更改。"
+      }
+    ],
+    "overall": "7/9；以交付产物和真实工具记录判定，不只依赖文字结论。"
+  },
+  "grading_metadata": {
+    "reviewer": "benchmark subagent",
+    "reviewed_at": "2026-09-29T10:35:01.208815+00:00",
+    "scenario_id": 2,
+    "configuration": "old_skill",
+    "assertions_frozen": true,
+    "input_records_synthetic": true,
+    "live_model_run": true,
+    "global_tool_contamination_observed": false,
+    "session_model_audit": "evidence-audit.json: deepseek/deepseek-flash"
+  }
+}

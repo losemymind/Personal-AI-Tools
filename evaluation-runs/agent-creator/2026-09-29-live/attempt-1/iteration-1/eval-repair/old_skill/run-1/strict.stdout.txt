@@ -1,0 +1,6 @@
+🔍 Validating agents in: E:\GitHub\Personal-AI-Tools\evaluation-runs\agent-creator\2026-09-29-live\attempt-1\iteration-1\eval-repair\old_skill\run-1\outputs\artifacts\outputs\bug-triager
+⚙️  Mode: STRICT (CI)
+
+📊 Checked 1 agents.
+
+✨ All agents passed validation!

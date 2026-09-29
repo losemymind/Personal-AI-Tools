@@ -1,0 +1,19 @@
+{
+  "client": "opencode",
+  "model": "deepseek/deepseek-flash",
+  "models": [],
+  "total_tokens": 192061,
+  "tokens_source": "opencode_step_finish_total",
+  "total_tool_calls": 24,
+  "tool_calls_source": "structured_tool_events",
+  "model_source": "requested",
+  "requested_model": "deepseek/deepseek-flash",
+  "skill": null,
+  "returncode": 0,
+  "timed_out": false,
+  "output_chars": 114956,
+  "status": "completed",
+  "error": null,
+  "artifact_count": 3,
+  "artifact_collection_errors": 0
+}

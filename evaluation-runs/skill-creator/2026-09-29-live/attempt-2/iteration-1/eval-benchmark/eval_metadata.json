@@ -1,0 +1,17 @@
+{
+  "eval_id": 2,
+  "eval_name": "benchmark",
+  "prompt": "请审查 inputs/iteration-1 中的技能与无技能基准记录。可用时使用随技能提供的基准工具；没有工具时直接读取 JSON 并完成等价分析。请把所有发现的运行尝试纳入汇总，核对执行状态、评分是否有效，并按 eval_id 与 run 编号检查两组可比性。不要跳过缺失评分或运行错误，不要将缺失成本记为零。\n\n输出 outputs/benchmark.json 与 outputs/benchmark.md，列出逐次运行状态、每配置 attempted/completed/errors/incomplete/coverage、有效指标样本数、配对数量与覆盖，以及有证据支持的差值；无依据的差值应不可用。另输出 outputs/conclusion.json，至少包含 synthetic、comparable、delta_available、reason 和 limitations，明确能否从这些记录推断整体技能增益。请实际执行汇总或校验并简述证据边界，不要修改输入。\n\n执行边界：只在当前临时工作区内读取已提供输入并写入 outputs/；inputs/ 必须保持不变。禁止写入全局配置、联网、安装软件、调用另一个模型或启动子代理。现有本地工具可直接使用；可用时使用随技能提供的工具，不可用时可用 Python 标准库完成同等工作。任务已获授权，无需等待确认；非关键选择采用合理默认并简短记录。不要把 synthetic 夹具数据称为真实测量。",
+  "assertions": [
+    "outputs/benchmark.json、outputs/benchmark.md 和 outputs/conclusion.json 均存在，JSON 可解析且 Markdown 与 JSON 一致。",
+    "全部四次运行尝试均保留：with_skill attempted=2/completed=2/errors=0；without_skill attempted=2/completed=1/errors=1，失败的 eval-b/without_skill/run-1 未被静默丢弃或当作正常评分。",
+    "with_skill 完成覆盖率为 1.0，without_skill 为 0.5；明确区分执行错误与有效评分失败。",
+    "仅 eval-a/run-1 构成完整有效配对，paired_samples=1、expected_pairs=2、配对 coverage=0.5；不会跨场景或重复编号配对。",
+    "整体通过率增益 delta 不可用（null/N/A），不能将两组未完整配对的均值差或幸存配对差当作整体增益。",
+    "所有缺失 token 值和 token 均值保留 null/N/A，有效 n=0；不得填零、由字符数猜测或虚构模型使用量。",
+    "观测耗时 10/8/12/5 秒被如实保留或汇总，明确它们来自 synthetic 输入；失败尝试的 5 秒不从运行记录中消失。",
+    "conclusion.json 明确 synthetic=true、comparable=false、delta_available=false，指出未完成配对、失败运行和缺失成本限制；不宣称统计显著、真实技能改善或真实模型成本。",
+    "inputs/ 整棵目录保持不变；通过实际工具或代码读取/计算，而不是只写口头结论；本次直接完成，无联网、安装软件、全局写入或另起模型。"
+  ],
+  "fixture_is_synthetic": true
+}

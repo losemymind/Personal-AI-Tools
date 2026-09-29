@@ -1,0 +1,62 @@
+{
+  "started_at": "2026-09-29T10:18:37.150253+00:00",
+  "exe": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\@openworkdesktop\\resources\\sidecars\\opencode.exe",
+  "client_version": "1.18.30",
+  "model": "deepseek/deepseek-flash",
+  "model_source": "requested",
+  "public_config": {
+    "model": "deepseek/deepseek-flash",
+    "small_model": "deepseek/deepseek-flash",
+    "share": "disabled",
+    "autoupdate": false,
+    "permission": {
+      "*": "allow",
+      "webfetch": "deny",
+      "websearch": "deny",
+      "question": "deny",
+      "task": "deny",
+      "external_directory": "deny"
+    },
+    "mcp": {},
+    "plugin": [],
+    "agent": {
+      "build": {
+        "steps": 24
+      }
+    }
+  },
+  "baseline_discovery": [
+    {
+      "name": "customize-opencode",
+      "description": "Use ONLY when the user is editing or creating opencode's own configuration: opencode.json, opencode.jsonc, files under .opencode/, or files under ~/.config/opencode/. Also use when creating or fixing opencode agents, subagents, skills, plugins, MCP servers, or permission rules. Do not use for the user's own application code, or for any project that is not configuring opencode itself.",
+      "location": "<built-in>"
+    }
+  ],
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\skill-live-env-q56mz8xg",
+  "head": "f68cfc8da398e76a8f344cffc0e6ae8729af364c",
+  "query_sha256": "ee3fe14006944a18767d907c224115b9150d4676310711ae992a3ec2b0dc6d2f",
+  "fixtures_sha256": {
+    "benchmark/fixture_metadata.json": "c60a29ec5c55cabbffd849142970f552d01cce7c43a34adbd9fa3bd666987795",
+    "benchmark/iteration-1/eval-a/eval_metadata.json": "39ef43c2ca5cde9b92505c3e735f0a849bf96d72f07c76e31916bbedad3c1f4e",
+    "benchmark/iteration-1/eval-a/with_skill/run-1/grading.json": "28d7bdec1881eaf75f818dccdd2e975e414dc56237e1e025f370a270493c3018",
+    "benchmark/iteration-1/eval-a/with_skill/run-1/metrics.json": "6f7e5c11659c9244a8bd4d4148c0642a0f37d64f567957ad4e7f62088ef8099b",
+    "benchmark/iteration-1/eval-a/with_skill/run-1/timing.json": "1e1972749f2ca84b3440299768e388a699dc63822f36d73d34b60966b4da0bac",
+    "benchmark/iteration-1/eval-a/without_skill/run-1/grading.json": "ee1126412382eb478ee69dc427b5c61fb86e87aaedb701af445ad7d907c4ac86",
+    "benchmark/iteration-1/eval-a/without_skill/run-1/metrics.json": "6f7e5c11659c9244a8bd4d4148c0642a0f37d64f567957ad4e7f62088ef8099b",
+    "benchmark/iteration-1/eval-a/without_skill/run-1/timing.json": "714ed16f90fb9b7af1cfa00dfd7ef694eec3f1d8834f1bfd0dd8bd1c53f5671e",
+    "benchmark/iteration-1/eval-b/eval_metadata.json": "cd79221f00dc92270fc29b68ca0cb4bb9b1f9f470daa960433fe4583a86874cd",
+    "benchmark/iteration-1/eval-b/with_skill/run-1/grading.json": "aa8c631f48950f6741cbc24783bf283e4724d9154c935dd3b1131b7d8f82c452",
+    "benchmark/iteration-1/eval-b/with_skill/run-1/metrics.json": "6f7e5c11659c9244a8bd4d4148c0642a0f37d64f567957ad4e7f62088ef8099b",
+    "benchmark/iteration-1/eval-b/with_skill/run-1/timing.json": "7762e499542eba9876b81080bb5cfa4eb85c1a2d11b301b853e636c78347eb68",
+    "benchmark/iteration-1/eval-b/without_skill/run-1/metrics.json": "44baad76f83c72ef208745c37fccc70330c8ce13e09183755422cb86f7231d97",
+    "benchmark/iteration-1/eval-b/without_skill/run-1/timing.json": "71d7cf1756d542c595c1f60f08762405b862052f6007ee236fc30dffeb0f4097",
+    "benchmark/README.md": "cce357c749464d461728b4c89e00b64c2e9726b2401d0cd40cdf273f7ec36801",
+    "rename/asset-note/README.md": "307e983b7943f230e6bec76fa1d8f699725f317b57b7b624464a06a35f08bff2",
+    "rename/asset-note/references/checklist.md": "7334e063bad729dfb55f64340ad9294a9206f2b8358eecebdb57ff94b19dab60",
+    "rename/asset-note/SKILL.md": "1a6f8d59fc0cfb8c956197c3fd4d8e65e243237447330561f4e074626f818963",
+    "rename/fixture_metadata.json": "e09e24963bb2733565cf11e8829b0f872834d0b4f8ecb43de59876c5de42ba99",
+    "rename/README.md": "336099d9bbec5308f8a32232a25b3dc85741dfac2d805fa2b75ab67d38510b5d"
+  },
+  "scenario_sha256": "a792e9fc81bf240e5426d8f421db88c7525e8b6185e74aff5bdc375700b9b227",
+  "limits": "One run per query/task, single model; no task-quality claim from trigger signal. XDG isolation is not a security sandbox."
+}

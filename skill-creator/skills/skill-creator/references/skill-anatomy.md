@@ -205,6 +205,6 @@ description: "任何创意工作之前你 MUST 使用此技能…"
 1. 阅读 3-5 个现有技能以查看不同风格
 2. 使用 `templates/SKILL.template.md` 创建
 3. 用你的 AI 助手测试
-4. 通过运行 `validate_skills.py` 验证后提交
+4. 通过运行 `skill_validate.py` 验证后提交
 
 **记住：每个专家都曾经是初学者。从简单开始，从反馈中学习，随时间改进。**

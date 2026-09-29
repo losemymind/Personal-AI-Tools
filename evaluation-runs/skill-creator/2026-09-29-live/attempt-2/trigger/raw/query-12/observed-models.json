@@ -1,0 +1,72 @@
+{
+  "source": "opencode_local_session_metadata",
+  "models": [
+    "deepseek/deepseek-flash"
+  ],
+  "messages": [
+    {
+      "message_id": "msg_0ecb28f230017pjd9Vfq8StFyi",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb2a0e90013217eWo0xHHgzz",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb2a918001QRW4h3i7Gz4oh0",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb2b5d9001lElYlk8hgsOeDi",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb2d3b5001nhFR1lMEKVVx5m",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb2ffaa001dC74nHkUsx1vAS",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb3331b001BEGNpImSTBUo6x",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb42e2d001A8FzzwQIImlA7U",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": "tool-calls"
+    },
+    {
+      "message_id": "msg_0ecb443bf001hyoLV5cMY2o2Ck",
+      "session_id": "ses_f134d727affeuulKVHOoa0AREc",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "finish": null
+    }
+  ],
+  "billing": "unknown; client cost=0 is not a billing statement"
+}

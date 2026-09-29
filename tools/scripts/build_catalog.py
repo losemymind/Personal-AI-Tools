@@ -195,7 +195,7 @@ def header(kind: str) -> str:
     if kind == "agent":
         lines.append(
             "> 落地前转换：仓库规范形 frontmatter 复制到 claude/opencode 前，先用 "
-            "`python agent-creator/skills/agent-creator/scripts/adapt_agent.py <目录> --client <claude|opencode> --out <落点>` 转换。\n"
+            "`python agent-creator/skills/agent-creator/scripts/agent_adapt.py <目录> --client <claude|opencode> --out <落点>` 转换。\n"
         )
     return "\n".join(lines) + "\n"
 

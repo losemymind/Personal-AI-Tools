@@ -1,0 +1,24 @@
+{
+  "synthetic": true,
+  "comparable": false,
+  "delta_available": false,
+  "reason": "Only 1 of 2 planned eval pairs has a valid grade on both sides: eval b's without_skill run failed (returncode 1, status=error) and produced no grading.json. Aggregated (unpaired) means compare 2 with_skill runs against 1 without_skill run and therefore cannot establish a gain. Token measurements were not supplied. The single complete pair (eval a) shows with_skill 1.0 vs without_skill 0.0 on a 1-assertion synthetic check, which is insufficient to infer an overall skill gain.",
+  "overall_skill_gain_inferable": false,
+  "observed_pair_complete": [
+    {
+      "eval_id": "a",
+      "run_number": 1,
+      "pass_rate_delta": 1.0,
+      "assertions": 1,
+      "synthetic": true
+    }
+  ],
+  "limitations": [
+    "All inputs are synthetic fixtures, not real model runs or measured telemetry.",
+    "1 of 2 planned baseline runs errored, so coverage is incomplete and the groups are unbalanced.",
+    "Each eval has 1 assertion and 1 run; no variance estimate or statistical power.",
+    "Token/cost measurements were not supplied; missing costs are unavailable, not zero.",
+    "Aggregated means from unequal sample counts are not an evidence-supported delta."
+  ],
+  "evidence_boundary": "Evidence supports only: eval a, run 1, with_skill passed and without_skill failed its single synthetic assertion. No claim about overall with_skill vs without_skill gain is supported."
+}

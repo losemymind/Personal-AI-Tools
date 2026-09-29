@@ -1,0 +1,11 @@
+已交付。
+
+**产出**
+- 规范源：`outputs/bug-triager/AGENT.md` + `references/report-format.md`
+- OpenCode 包：`outputs/packages/opencode/bug-triager/`（tools 数组已转 permission 对象）
+- Claude 包：`outputs/packages/claude/bug-triager/`（`tools: Read, Grep, Glob`）
+- `outputs/verification.json`
+
+**关键修复**：改为中文只读 subagent，保留 `name: bug-triager`/`mode: subagent`/`color: "#2563EB"`，删除 version、tags、tools_clients、source；tools 限 read/grep/glob，permission 默认 deny 并放行三者；正文含角色定位、必须做/拒绝做、与权限一致的说明、升级路径、可验收完成标准，证据不足记 `unknown`、不臆造根因。
+
+**验证**（如实记录）：OpenCode 1.18.30 原生加载通过（`bug-triager (subagent)`）；规范源文件因按 brief 用 tools 数组被 OpenCode 原生拒绝（预期，故由包转换）。Claude 原生加载未执行（CLI 缺失）；无独立审核，仅为作者自检。inputs 未改，未安装到真实用户目录。

@@ -1,10 +1,10 @@
 # 代理解剖（Agent Anatomy）
 
-解释 AGENT.md 文件的每个组成部分与底层工作原理，与 skill-anatomy 平行。
+解释 AGENT.md 文件的每个组成部分与底层工作原理。
 
 ## 基本文件夹结构
 
-代理定义有两种等价形态，`validate_agents.py` 两种都接受，按目标库/客户端的加载方式选择：
+代理定义有两种等价形态，`agent_validate.py` 两种都接受，按目标库/客户端的加载方式选择：
 
 ```
 # 目录形态（--layout dir）：代理需捆绑 references/ 时用

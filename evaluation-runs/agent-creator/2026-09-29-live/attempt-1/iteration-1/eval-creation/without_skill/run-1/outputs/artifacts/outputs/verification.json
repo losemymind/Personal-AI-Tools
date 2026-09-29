@@ -1,0 +1,82 @@
+{
+  "artifact": "outputs/agents/release-evidence-auditor.md",
+  "task": "依据 inputs/brief.md 创建可通过客户端直接调用的 primary 代理 release-evidence-auditor",
+  "authoring_agent": "opencode (single author)",
+  "review_type": "self_review",
+  "independent_review": false,
+  "review_method": "静态检查：使用 read 通读生成文件，使用 grep/Select-String 核对 frontmatter 字段与禁用字段；未运行任何测试或客户端加载。",
+  "checks_completed": [
+    {
+      "item": "交付文件存在",
+      "method": "read outputs/agents/release-evidence-auditor.md",
+      "result": "pass",
+      "detail": "文件存在，共 88 行，UTF-8 中文正文。"
+    },
+    {
+      "item": "frontmatter 必需字段",
+      "method": "grep ^(name|description|mode|color):",
+      "result": "pass",
+      "detail": "name: release-evidence-auditor；description 为单行；mode: primary；color: amber；另含 tools 与 permission。"
+    },
+    {
+      "item": "frontmatter 禁用字段",
+      "method": "grep ^(version|tags|tools_clients|source):",
+      "result": "pass",
+      "detail": "未出现 version、tags、tools_clients、source 字段。"
+    },
+    {
+      "item": "tools 与权限一致（只读）",
+      "method": "read 通读 frontmatter",
+      "result": "pass",
+      "detail": "tools: read/grep/glob=true；edit/write/bash/webfetch/websearch/task/patch=false。permission 默认 \"*\": deny，仅放行 read/grep/glob，其余 deny。与职责一致。"
+    },
+    {
+      "item": "正文职责与约束章节齐全",
+      "method": "read 通读正文",
+      "result": "pass",
+      "detail": "含身份、必须做、拒绝做、输入材料处理规则、协作与升级、固定输出格式、完成标准、限制。"
+    },
+    {
+      "item": "核对规则覆盖 brief 要求",
+      "method": "逐条对照 inputs/brief.md",
+      "result": "pass",
+      "detail": "覆盖版本/构建号一致性、必需检查是否有结果、是否失败、回滚方案是否验证、缺失不得推测为通过。"
+    },
+    {
+      "item": "结论取值受限",
+      "method": "read 通读正文",
+      "result": "pass",
+      "detail": "decision 仅 BLOCKED 或 READY_FOR_HUMAN_REVIEW；明确禁止返回已发布/已批准/自动放行；固定四段 decision/evidence/gaps/escalation 且在对话回复不写文件。"
+    },
+    {
+      "item": "输入不被修改",
+      "method": "Get-ChildItem inputs",
+      "result": "pass",
+      "detail": "inputs/ 仅含 brief.md，长度与时间戳未变动；未写入 inputs/。"
+    },
+    {
+      "item": "verification.json 为合法 JSON",
+      "method": "Get-Content -Raw | ConvertFrom-Json",
+      "result": "pass",
+      "detail": "解析成功。"
+    },
+    {
+      "item": "未改真实客户端配置",
+      "method": "检查 ~/.config/opencode/agent、~/.opencode/agent、%APPDATA%\\opencode",
+      "result": "pass",
+      "detail": "相关目录均不存在，未安装、未修改任何真实客户端配置。"
+    }
+  ],
+  "unverified_items": [
+    "未在真实客户端中加载/调用该代理，运行时的权限强制与 mode: primary 行为未实际执行验证。",
+    "工作区仅提供 inputs/brief.md，无任何发布包/测试报告/回滚材料，代理针对真实证据的审查流程未运行。",
+    "frontmatter 的 YAML 合法性未用 YAML 解析器解析验证（本次仅做文本级 grep/read 检查）。",
+    "客户端对 permission/tools schema（含 \"*\" 通配）的接受度未在运行时验证。"
+  ],
+  "degradations": [
+    "无法派发评审子代理，未进行独立评审；本次记录为作者自评，非独立评审。",
+    "仅在本地已给材料范围内工作，未做也不得伪造全文对比结果。",
+    "无真实运行/实测验证，不得据此声称代理已验证可用。"
+  ],
+  "notes": "本作者被授权在 outputs/ 下创建代理文件与验证说明，该授权不等于给生成的代理授予写权限；生成的代理仍为只读。"
+}

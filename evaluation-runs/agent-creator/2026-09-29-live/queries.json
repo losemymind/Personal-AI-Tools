@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "query": "请把只读日志审查员这个角色做成可复用的代理，放 outputs/log-reader.md。只允许 read/grep/glob，负责找异常证据，缺数据交还调用者，不允许修代码。已授权你创建这个定义文件。",
+    "should_trigger": true,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 2,
+    "query": "改进 inputs/sample-agent.md 这份代理定义：补齐职责边界、最小权限和完成标准，写到 outputs/log-reader.md；保持只读身份，不改输入。",
+    "should_trigger": true,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 3,
+    "query": "我们每次发布都需要固定负责人核对测试证据。把这个负责人固化为一个中文 subagent 定义，写 outputs/release-auditor.md：只读、缺检查就升级、不执行发布。",
+    "should_trigger": true,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 4,
+    "query": "把 inputs/sample-agent.md 的代理定义适配为 OpenCode 能加载的格式，输出 outputs/log-reader.md，只生成文件，不安装到全局。",
+    "should_trigger": true,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 5,
+    "query": "解释 Markdown 中 > 引用块与代码围栏的区别，各举一个最短例子。",
+    "should_trigger": false,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 6,
+    "query": "帮我直接审查这段 Python：def first(xs): return xs[0]。指出一个边界问题并给修正建议，不需要创建任何代理或角色定义。",
+    "should_trigger": false,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 7,
+    "query": "只整理这份发布记录：unit=passed，integration=failed，security=缺失。列出发布风险，不创建代理，也不执行发布。",
+    "should_trigger": false,
+    "input_dir": "fixtures/trigger"
+  },
+  {
+    "id": 8,
+    "query": "把“检查失败后交还负责人决定”翻译成自然英文，并给一个更简短版本。",
+    "should_trigger": false,
+    "input_dir": "fixtures/trigger"
+  }
+]

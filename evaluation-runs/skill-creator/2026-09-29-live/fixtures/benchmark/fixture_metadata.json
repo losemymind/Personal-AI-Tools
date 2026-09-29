@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "fixture_id": "incomplete-benchmark-v1",
+  "purpose": "All input run records are synthetic. Only the live model analysis quality is measured.",
+  "planned_scenarios": [
+    "a",
+    "b"
+  ],
+  "configurations": [
+    "with_skill",
+    "without_skill"
+  ],
+  "runs_per_scenario_configuration": 1,
+  "token_measurements": "not supplied"
+}

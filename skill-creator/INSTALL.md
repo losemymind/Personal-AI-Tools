@@ -36,10 +36,10 @@ cd skills/skill-creator     # 成品目录（在 skill-creator 工作区根执�
 python -c "import yaml; print('PyYAML OK')"
 
 # 成品目录完整且有效（--dir . = 以本目录为根校验自身）
-python scripts/validate_skills.py --strict --dir .
+python scripts/skill_validate.py --strict --dir .
 ```
 
-完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（12 个脚本）、`agents/`（grader/reviewer/comparator/analyzer 四个子代理指令）、`indexes/upstream.db`、`references/`、`templates/`、`examples/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db` 与 `examples/`）都会导致安装后方法论不完整。
+完整目录必须包含：`SKILL.md`、`README.md`、`scripts/`（命令行脚本与共享模块）、`agents/`（skill_grader.md、skill_reviewer.md、skill_comparator.md、skill_analyzer.md 四份子代理指令）、`indexes/upstream.db`、`references/`、`templates/`、`examples/`、`evolutions/`。缺任何一项（尤其 `indexes/upstream.db` 与 `examples/`）都会导致安装后方法论不完整。
 
 ## 2. 安装（放置目录）
 
@@ -63,13 +63,13 @@ Copy-Item -Recurse skills/skill-creator "$root\.opencode\skills\skill-creator"
 cd <安装目录>     # 例如 ~/.claude/skills/skill-creator
 
 # 1) 自校验：安装副本在自身位置可通过严格验证（--dir .）
-python scripts/validate_skills.py --strict --dir .
+python scripts/skill_validate.py --strict --dir .
 
 # 2) 索引完整性：应显示 7 个来源共 2227 条（离线可用，无需联网）
-python scripts/search_index.py --stats
+python scripts/skill_index_search.py --stats
 
 # 3) 关键资源就位
-python -c "from pathlib import Path; [print(p, p.exists()) for p in map(Path, ['indexes/upstream.db','references','templates','examples','scripts/validate_skills.py'])]"
+python -c "from pathlib import Path; [print(p, p.exists()) for p in map(Path, ['indexes/upstream.db','references','templates','examples','scripts/skill_validate.py'])]"
 ```
 
 任一项失败：删除该安装目录，修复来源后重新放置，不要带病交付。

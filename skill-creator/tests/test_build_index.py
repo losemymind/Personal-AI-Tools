@@ -1,4 +1,4 @@
-"""Tests for build_index.py multi-source registry and helpers.
+"""Tests for skill_index_build.py multi-source registry and helpers.
 
 Pins the source registry (aas/addy/anthropics/composiohq/coevoskills/mattpocock/karpathy),
 root-scoped dir scanning (skills_root may be empty), two-level category scanning,
@@ -7,12 +7,13 @@ meta, and best-effort temp cleanup.
 """
 
 import importlib.util
+import json
 import sqlite3
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-BUILD_INDEX = REPO_ROOT / "skills" / "skill-creator" / "scripts" / "build_index.py"
+BUILD_INDEX = REPO_ROOT / "skills" / "skill-creator" / "scripts" / "skill_index_build.py"
 
 SKILL_MD = """---
 name: {name}
@@ -26,7 +27,7 @@ risk: safe
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location("build_index", BUILD_INDEX)
+    spec = importlib.util.spec_from_file_location("skill_index_build", BUILD_INDEX)
     mod = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(mod)
@@ -163,7 +164,7 @@ def test_fetch_sparse_checkout_writes_subtree_files(monkeypatch, tmp_path):
         lambda repo, branch, subtree: ["meta_skills/skill-creator/SKILL.md"],
     )
     monkeypatch.setattr(mod, "_read_url", lambda url, timeout=60: b"---\nname: skill-creator\n---\n")
-    src = {"repo": "Zhang-Henry/CoEvoSkills", "branch": "main", "api_subtree": "meta_skills"}
+    src = {"repo": "Zhang-Henry/CoEvoSkills", "branch": "main", "api_subtree": "meta_skills", "upstream_commit": "a" * 40}
     root = mod.fetch_sparse_checkout(src, tmp_path / "sparse")
     assert (root / "meta_skills" / "skill-creator" / "SKILL.md").is_file()
     # returned root is shaped like the repo root, so skills_root resolves
@@ -178,7 +179,7 @@ def test_fetch_sparse_checkout_retries_then_raises(monkeypatch, tmp_path):
         raise OSError("simulated network error")
 
     monkeypatch.setattr(mod, "_read_url", boom)
-    src = {"repo": "owner/repo", "branch": "main", "api_subtree": "meta_skills"}
+    src = {"repo": "owner/repo", "branch": "main", "api_subtree": "meta_skills", "upstream_commit": "a" * 40}
     try:
         mod.fetch_sparse_checkout(src, tmp_path / "sparse")
     except mod.SourceUnavailable as e:
@@ -190,6 +191,7 @@ def test_fetch_sparse_checkout_retries_then_raises(monkeypatch, tmp_path):
 def test_load_source_checkout_uses_sparse_when_api_subtree(monkeypatch, tmp_path):
     """api_subtree sources never touch the tarball path."""
     mod = _load_module()
+    monkeypatch.setattr(mod, "_api_json", lambda *a, **kw: {"sha": "a" * 40})
 
     def boom(source, dest):  # pragma: no cover - must not be called
         raise AssertionError("tarball download used for a sparse source")
@@ -316,9 +318,11 @@ def test_cleanup_tmp_keep_is_noop():
 def test_offline_keeps_existing_db_and_exits_zero(monkeypatch, tmp_path):
     """Download failure + existing DB => keep committed rows, exit 0 (no fail)."""
     mod = _load_module()
+    monkeypatch.setattr(mod, "_api_json", lambda *a, **kw: {"sha": "a" * 40})
     db = tmp_path / "upstream.db"
     mod.build_db([_entry("keep-me", "sickn33/agentic-awesome-skills")], tmp_path, db)
-    before = db.read_bytes()
+    with sqlite3.connect(db) as conn:
+        before = dict(conn.execute("SELECT key, value FROM meta"))
 
     monkeypatch.setattr(mod, "DB_PATH", db)
 
@@ -326,7 +330,7 @@ def test_offline_keeps_existing_db_and_exits_zero(monkeypatch, tmp_path):
         raise mod.SourceUnavailable("simulated offline")
 
     monkeypatch.setattr(mod, "download_tarball", boom)
-    monkeypatch.setattr(sys, "argv", ["build_index.py", "--source", "aas"])
+    monkeypatch.setattr(sys, "argv", ["skill_index_build.py", "--source", "aas"])
 
     rc = mod.main()
     assert rc == 0
@@ -334,12 +338,18 @@ def test_offline_keeps_existing_db_and_exits_zero(monkeypatch, tmp_path):
     names = {r[0] for r in conn.execute("SELECT name FROM skills")}
     conn.close()
     assert names == {"keep-me"}  # untouched
-    assert db.read_bytes() == before
+    with sqlite3.connect(db) as conn:
+        after = dict(conn.execute("SELECT key, value FROM meta"))
+    key = "source_status:sickn33/agentic-awesome-skills"
+    assert json.loads(after[key])["last_success"] == json.loads(before[key])["last_success"]
+    assert json.loads(after[key])["status"] == "unavailable"
+    assert after["built_at"] == before["built_at"]
 
 
 def test_offline_without_db_fails(monkeypatch, tmp_path):
     """Download failure + no DB => hard failure (nothing to fall back on)."""
     mod = _load_module()
+    monkeypatch.setattr(mod, "_api_json", lambda *a, **kw: {"sha": "a" * 40})
     db = tmp_path / "upstream.db"
     monkeypatch.setattr(mod, "DB_PATH", db)
 
@@ -347,7 +357,7 @@ def test_offline_without_db_fails(monkeypatch, tmp_path):
         raise mod.SourceUnavailable("simulated offline")
 
     monkeypatch.setattr(mod, "download_tarball", boom)
-    monkeypatch.setattr(sys, "argv", ["build_index.py", "--source", "aas"])
+    monkeypatch.setattr(sys, "argv", ["skill_index_build.py", "--source", "aas"])
 
     rc = mod.main()
     assert rc == 1
@@ -374,7 +384,7 @@ def test_multi_source_degrade_preserves_offline_rows(monkeypatch, tmp_path):
         return tmp_path, [_entry(source["name"] + "-new", source["repo"])]
 
     monkeypatch.setattr(mod, "load_source_checkout", fake_load)
-    monkeypatch.setattr(sys, "argv", ["build_index.py", "--source", "all"])
+    monkeypatch.setattr(sys, "argv", ["skill_index_build.py", "--source", "all"])
 
     rc = mod.main()
     assert rc == 0

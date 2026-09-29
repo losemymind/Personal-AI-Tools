@@ -1,0 +1,32 @@
+{
+  "state_root": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-env-nogd7oe2",
+  "isolated_user_directories": true,
+  "public_config": {
+    "model": "deepseek/deepseek-flash",
+    "small_model": "deepseek/deepseek-flash",
+    "share": "disabled",
+    "autoupdate": false,
+    "mcp": {},
+    "plugin": [],
+    "agent": {
+      "build": {
+        "steps": 8
+      }
+    },
+    "permission": {
+      "*": "allow",
+      "webfetch": "deny",
+      "websearch": "deny",
+      "question": "deny",
+      "task": "deny",
+      "external_directory": "deny",
+      "skill": {
+        "*": "deny",
+        "agent-creator": "allow",
+        "customize-opencode": "deny"
+      }
+    }
+  },
+  "credential_storage": "child environment only",
+  "limitations": "Discovery/home isolation is not an operating-system sandbox"
+}

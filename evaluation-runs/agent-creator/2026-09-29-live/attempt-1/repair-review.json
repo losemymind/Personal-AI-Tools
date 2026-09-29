@@ -1,0 +1,522 @@
+{
+  "schema_version": 1,
+  "review_type": "independent_anonymous_labels_non_blind",
+  "blind": false,
+  "date": "2026-09-29",
+  "anonymous_pack": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-repair-review-cl9qt_d8",
+  "protocol_sha256": "33eaeb459d1f167db6f0585e8e2566f5375283c458c4526831cceafccb44092d",
+  "criteria_sha256": "2ed963fcbbd9e69977ebfe0313c64bd1d3a24c415762fc8ae760ac8b9d5aeff2",
+  "brief_sha256": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+  "reviewer_tools_sha256": {
+    "agent_validate.py": "43fea97417855aaeb459ac26a468f52da2a6b7285a9e1bc4243e4f1ad39795e0",
+    "agent_adapt.py": "529a68ca53f2f33b1618ee8d85eadab13393cf657939a88cd6094d164f184b09"
+  },
+  "method_and_limits": [
+    "独立审核但不是严格盲评：未提供组标签，原始脚本名、工具调用和路径可推断条件；本报告仅使用 case-X/Y/Z。",
+    "每组单个修复样本；B1-B10 是交付、权限契约和证据合规计数，不等同实际分诊质量或普遍能力提升。",
+    "未调用模型 API、未运行原生客户端、未修改产物；仅实际执行当前 strict CLI 和对应客户端 post-check 函数。",
+    "B9 通过表示已执行验证/独立性/原生加载等级有证据，不表示 verification.json 所有理由和语义解释都正确；不实或未证实措辞单独保留。",
+    "B10 采用冻结范围，不把同次隔离状态目录中的自生成临时副本事后改算全局安装。",
+    "当前 post-check 仅检查配置形状；Z 的 default 键被接受但不构成默认拒绝，B6 因语义权限失败。"
+  ],
+  "raw_evidence_unchanged_during_review_write": true,
+  "evidence_sha256": {
+    "criteria.json": "2ed963fcbbd9e69977ebfe0313c64bd1d3a24c415762fc8ae760ac8b9d5aeff2",
+    "case-X/input-integrity.json": "8b226ba02a028c9bb3106fc9be0d4dd93deae011ace400c30f6a4e19df537ad5",
+    "case-X/metrics.json": "c5351996579e53de3395aba2f030d3af88d8bb41413746b983be7aa26e683429",
+    "case-X/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "case-X/stdout.jsonl": "26c025bc15cca9da013da899835e6d786f42aa47ad7357408847f4e89f63f408",
+    "case-X/outputs/response.txt": "4b3d6b3f2fa85ae7bc20307ae1cfb11d4c426aed06cc5b975a9c42fce69b09ba",
+    "case-X/outputs/artifacts/outputs/verification.json": "efe976f98ca6badeb39e7f9a4e39d350da3c4434491f9d1ea2e451f99fde2d3f",
+    "case-X/outputs/artifacts/outputs/bug-triager/AGENT.md": "61f1eafb6430b22d5d5a579af182b9969055825da73857efa16f31dc0f01b48b",
+    "case-X/outputs/artifacts/outputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-X/outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md": "a1be3b5519c38cf787c19c59a36d53a6ce786d7659d55b3d174ca284cfa1221a",
+    "case-X/outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-X/outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md": "e1335ebc9128d969eb9b14c226fbde6c2963a9b47ca0a50afd75e24fadd958ba",
+    "case-X/outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-Y/input-integrity.json": "8b226ba02a028c9bb3106fc9be0d4dd93deae011ace400c30f6a4e19df537ad5",
+    "case-Y/metrics.json": "3d6ff01d171385b9c70889e3b2aca648dda89849d25367a75dc65015e84595a2",
+    "case-Y/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "case-Y/stdout.jsonl": "3f5028bd107d8f59325c1021ea31a38cfbb1205ac5d31848456774eb012a610f",
+    "case-Y/outputs/response.txt": "3d08d1188c7df8ce2c810ec5be654f527f889db7a0a699230b6c7e046068253c",
+    "case-Y/outputs/artifacts/outputs/verification.json": "ab8845078b3a876b0654a81c5dd66d22da94d9b33ee2b257c70725737bf58f47",
+    "case-Y/outputs/artifacts/outputs/bug-triager/AGENT.md": "c523571287fe3122c8cca73341db7098684add4c701a7351809b799fe10dd41e",
+    "case-Y/outputs/artifacts/outputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-Y/outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md": "53d971241c61525296aabc753f37a4c4dde6ad10ed799d659435c5863b3a873b",
+    "case-Y/outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-Y/outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md": "8b13bba4f2b377c8d8f028ed8fd93ff8c2aa7068f3e153949fc4c5e6e62c5525",
+    "case-Y/outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-Z/input-integrity.json": "8b226ba02a028c9bb3106fc9be0d4dd93deae011ace400c30f6a4e19df537ad5",
+    "case-Z/metrics.json": "3dee3cbe52e3ee7fc5e39aa50b776f79c5915bf9a416dca3ba172e4bd8a5edf6",
+    "case-Z/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "case-Z/stdout.jsonl": "f23c034ad62aa1371bc7f773ccc2c28d3c683ac89684b2be0e5bdb35ac7ef5e8",
+    "case-Z/outputs/response.txt": "f774949304b2b7fc2b3cfa3ad5a6eb1964fb566b82438314798774de874cf478",
+    "case-Z/outputs/artifacts/outputs/verification.json": "5456c62ea67d389bb348d9a1bd2883495ccaea39a42d763297bf58aac5e06f1a",
+    "case-Z/outputs/artifacts/outputs/bug-triager/AGENT.md": "7a90af27b990002c056b0bdf405843f9d9775b3e068dd4dcbe868e9f99a8bcce",
+    "case-Z/outputs/artifacts/outputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-Z/outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md": "4c8be5459917e5f4a519e6d2bc1b1f74edb8445c45e691f1fbc602a7338b12fb",
+    "case-Z/outputs/artifacts/outputs/packages/claude/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "case-Z/outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md": "1706b348d3356d33390252f961b479ada9564efcefcf72fd8a220d106a4cfead",
+    "case-Z/outputs/artifacts/outputs/packages/opencode/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+    "inputs/brief.md": "8127229a444badcdc524af7448482f8d34dc55d2c2411e740208c93ff81ca640",
+    "inputs/bug-triager/AGENT.md": "3a30e9303e5921e8e51c73bc39fae81f4e1e97793a55aecaa814549382c6f031",
+    "inputs/bug-triager/references/report-format.md": "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+  },
+  "cases": [
+    {
+      "case": "case-X",
+      "summary": {
+        "passed": 10,
+        "failed": 0,
+        "total": 10
+      },
+      "checks": [
+        {
+          "id": "B1",
+          "criterion": "B1 规范代理与references/report-format.md均在指定目录，链接可解析且源参考内容保留",
+          "status": "pass",
+          "evidence": "规范 AGENT.md 与相对 references/report-format.md 齐备且链接可解析；规范及两客户端包的参考文件均与源文件逐字节一致。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md",
+            "outputs/artifacts/outputs/bug-triager/references/report-format.md"
+          ]
+        },
+        {
+          "id": "B2",
+          "criterion": "B2 name/mode/color正确，description针对分诊，移除version/tags/tools_clients/source等元数据",
+          "status": "pass",
+          "evidence": "name=bug-triager，mode=subagent，color 为带引号的 #2563EB；中文 description 针对缺陷分诊；version/tags/tools_clients/source 已去除。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B3",
+          "criterion": "B3 tools只读三工具，permission默认deny加逐项allow，不保留全局allow或写/执行授权",
+          "status": "pass",
+          "evidence": "规范 tools 恰为 read/grep/glob；permission 使用通配默认 deny、三读取 allow，并显式拒绝写入、执行、联网和派发。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B4",
+          "criterion": "B4 正文删除直接修复/猜根因/派发，补必须做/拒绝做、协作升级、完成标准",
+          "status": "pass",
+          "evidence": "正文明确必须做/拒绝做、协作升级及完成标准，禁止直接修复、猜测根因和派发。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B5",
+          "criterion": "B5 缺证据为unknown，保留id/severity/impact/evidence/unknowns/owner/next_action汇报契约",
+          "status": "pass",
+          "evidence": "缺证据字段为 unknown，按观察到的影响判严重性；保留 id/severity/impact/evidence/unknowns/owner/next_action 七字段。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B6",
+          "criterion": "B6 OpenCode包包含本地参考，frontmatter无tools数组，permission禁止未授权工具且post-check通过",
+          "status": "pass",
+          "evidence": "OpenCode 包含本地 reference，无 tools 数组；通配默认 deny 加三读取 allow，禁止其余工具；当前 agent_adapt post-check 通过。",
+          "sources": [
+            "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B7",
+          "criterion": "B7 Claude包包含本地参考，tools为Read/Grep/Glob字符串且post-check通过",
+          "status": "pass",
+          "evidence": "Claude 包含本地 reference，tools 为 Read, Grep, Glob 字符串；当前 agent_adapt post-check 通过。没有 Claude 原生加载证据。",
+          "sources": [
+            "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B8",
+          "criterion": "B8 规范产物agent_validate --strict实际通过（由测评器复核）",
+          "status": "pass",
+          "evidence": "审核者实际执行当前 agent_validate.py --strict --dir 规范目录，exit 0，Checked 1 agents，All agents passed validation。",
+          "sources": [
+            "reviewer_checks.strict"
+          ]
+        },
+        {
+          "id": "B9",
+          "criterion": "B9 verification.json有证据支撑实际校验，自评不冒充独立评审/真实客户端加载",
+          "status": "pass",
+          "evidence": "作者 strict、打包、参考 hash 有实际命令输出；independent=false，原生加载明确未执行，没有把自评写成独立审核。“无 OpenCode 运行时”的未执行理由缺证据，不采信。",
+          "sources": [
+            "stdout.jsonl:50",
+            "stdout.jsonl:53",
+            "stdout.jsonl:61",
+            "stdout.jsonl:65",
+            "outputs/artifacts/outputs/verification.json"
+          ]
+        },
+        {
+          "id": "B10",
+          "criterion": "B10 输入不变，无全局安装或工作区外创建器/验证器借用",
+          "status": "pass",
+          "evidence": "输入 source_before/source/after 的三个文件哈希一致；原始工具路径未见全局安装或工作区外创建器/验证器借用。",
+          "sources": [
+            "input-integrity.json",
+            "stdout.jsonl:50",
+            "stdout.jsonl:53"
+          ]
+        }
+      ],
+      "reviewer_checks": {
+        "strict": {
+          "command": [
+            "python",
+            "-B",
+            "E:\\GitHub\\Personal-AI-Tools\\agent-creator\\skills\\agent-creator\\scripts\\agent_validate.py",
+            "--strict",
+            "--dir",
+            "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-repair-review-cl9qt_d8\\case-X\\outputs\\artifacts\\outputs\\bug-triager"
+          ],
+          "actually_executed": true,
+          "returncode": 0,
+          "agent_count": 1,
+          "errors": [],
+          "advisories": []
+        },
+        "postchecks": {
+          "opencode": {
+            "status": "pass",
+            "actually_executed": true,
+            "function": "agent_adapt.check_opencode_frontmatter",
+            "method": "split_frontmatter + parse_frontmatter + post-check on existing package, without adapting or rewriting"
+          },
+          "claude": {
+            "status": "pass",
+            "actually_executed": true,
+            "function": "agent_adapt.check_claude_frontmatter",
+            "method": "split_frontmatter + parse_frontmatter + post-check on existing package, without adapting or rewriting"
+          }
+        },
+        "reference_sha256": [
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+        ]
+      },
+      "observations": [
+        "verification.json 未探测便断言“本环境无 OpenCode 客户端运行时或会话”，与真实作者客户端背景不符。可证实的是没有执行原生加载，不能证实工具不存在。",
+        "stdout.jsonl:62 的 Get-FileHash 不存在，null 比较仍打印 True，不能采用；作者在 :65 用 Python hashlib 重新计算，确证 reference 完整。",
+        "“无独立评审子代理派发通道”无单独探测；可证实的是独立评审没有发生。"
+      ]
+    },
+    {
+      "case": "case-Y",
+      "summary": {
+        "passed": 10,
+        "failed": 0,
+        "total": 10
+      },
+      "checks": [
+        {
+          "id": "B1",
+          "criterion": "B1 规范代理与references/report-format.md均在指定目录，链接可解析且源参考内容保留",
+          "status": "pass",
+          "evidence": "规范 AGENT.md 与相对 references/report-format.md 齐备且链接可解析；规范及两客户端包的参考文件均与源文件逐字节一致。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md",
+            "outputs/artifacts/outputs/bug-triager/references/report-format.md"
+          ]
+        },
+        {
+          "id": "B2",
+          "criterion": "B2 name/mode/color正确，description针对分诊，移除version/tags/tools_clients/source等元数据",
+          "status": "pass",
+          "evidence": "name=bug-triager，mode=subagent，color 为带引号的 #2563EB；中文 description 针对缺陷分诊；version/tags/tools_clients/source 已去除。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B3",
+          "criterion": "B3 tools只读三工具，permission默认deny加逐项allow，不保留全局allow或写/执行授权",
+          "status": "pass",
+          "evidence": "规范 tools 恰为 read/grep/glob；permission 使用通配默认 deny、三读取 allow，并显式拒绝写入、执行、联网和派发。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B4",
+          "criterion": "B4 正文删除直接修复/猜根因/派发，补必须做/拒绝做、协作升级、完成标准",
+          "status": "pass",
+          "evidence": "正文明确必须做/拒绝做、协作升级及完成标准，禁止直接修复、猜测根因和派发。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B5",
+          "criterion": "B5 缺证据为unknown，保留id/severity/impact/evidence/unknowns/owner/next_action汇报契约",
+          "status": "pass",
+          "evidence": "缺证据字段为 unknown，按观察到的影响判严重性；保留 id/severity/impact/evidence/unknowns/owner/next_action 七字段。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B6",
+          "criterion": "B6 OpenCode包包含本地参考，frontmatter无tools数组，permission禁止未授权工具且post-check通过",
+          "status": "pass",
+          "evidence": "OpenCode 包含本地 reference，无 tools 数组；通配默认 deny 加三读取 allow，禁止其余工具；当前 agent_adapt post-check 通过。",
+          "sources": [
+            "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B7",
+          "criterion": "B7 Claude包包含本地参考，tools为Read/Grep/Glob字符串且post-check通过",
+          "status": "pass",
+          "evidence": "Claude 包含本地 reference，tools 为 Read, Grep, Glob 字符串；当前 agent_adapt post-check 通过。没有 Claude 原生加载证据。",
+          "sources": [
+            "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B8",
+          "criterion": "B8 规范产物agent_validate --strict实际通过（由测评器复核）",
+          "status": "pass",
+          "evidence": "审核者实际执行当前 agent_validate.py --strict --dir 规范目录，exit 0，Checked 1 agents，All agents passed validation。",
+          "sources": [
+            "reviewer_checks.strict"
+          ]
+        },
+        {
+          "id": "B9",
+          "criterion": "B9 verification.json有证据支撑实际校验，自评不冒充独立评审/真实客户端加载",
+          "status": "pass",
+          "evidence": "作者打包、三个目录 strict 及 PyYAML 审计 all_pass=true 有工具输出；独立评审、原生加载明确未执行。“没有 OpenCode”理由缺证据；失败的 Get-FileHash 不作为完整性证据。",
+          "sources": [
+            "stdout.jsonl:33",
+            "stdout.jsonl:39",
+            "stdout.jsonl:48",
+            "stdout.jsonl:56",
+            "outputs/artifacts/outputs/verification.json"
+          ]
+        },
+        {
+          "id": "B10",
+          "criterion": "B10 输入不变，无全局安装或工作区外创建器/验证器借用",
+          "status": "pass",
+          "evidence": "输入 source_before/source/after 的三个文件哈希一致；原始工具路径未见全局安装或工作区外创建器/验证器借用。",
+          "sources": [
+            "input-integrity.json",
+            "stdout.jsonl:33",
+            "stdout.jsonl:39"
+          ]
+        }
+      ],
+      "reviewer_checks": {
+        "strict": {
+          "command": [
+            "python",
+            "-B",
+            "E:\\GitHub\\Personal-AI-Tools\\agent-creator\\skills\\agent-creator\\scripts\\agent_validate.py",
+            "--strict",
+            "--dir",
+            "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-repair-review-cl9qt_d8\\case-Y\\outputs\\artifacts\\outputs\\bug-triager"
+          ],
+          "actually_executed": true,
+          "returncode": 0,
+          "agent_count": 1,
+          "errors": [],
+          "advisories": []
+        },
+        "postchecks": {
+          "opencode": {
+            "status": "pass",
+            "actually_executed": true,
+            "function": "agent_adapt.check_opencode_frontmatter",
+            "method": "split_frontmatter + parse_frontmatter + post-check on existing package, without adapting or rewriting"
+          },
+          "claude": {
+            "status": "pass",
+            "actually_executed": true,
+            "function": "agent_adapt.check_claude_frontmatter",
+            "method": "split_frontmatter + parse_frontmatter + post-check on existing package, without adapting or rewriting"
+          }
+        },
+        "reference_sha256": [
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+        ]
+      },
+      "observations": [
+        "未探测便称“本环境无 OpenCode 运行时/客户端”；应仅写未执行原生加载，不能把推测当环境事实。",
+        "stdout.jsonl:56 的 Get-FileHash 失败，尽管 shell wrapper exit 0；审核采用冻结 input-integrity 及参考字节哈希，不把该命令当验证成功。",
+        "实际 strict 与 PyYAML 审计仅证明各自静态规则通过。"
+      ]
+    },
+    {
+      "case": "case-Z",
+      "summary": {
+        "passed": 7,
+        "failed": 3,
+        "total": 10
+      },
+      "checks": [
+        {
+          "id": "B1",
+          "criterion": "B1 规范代理与references/report-format.md均在指定目录，链接可解析且源参考内容保留",
+          "status": "pass",
+          "evidence": "规范 AGENT.md 与相对 references/report-format.md 齐备且链接可解析；规范及两客户端包的参考文件均与源文件逐字节一致。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md",
+            "outputs/artifacts/outputs/bug-triager/references/report-format.md"
+          ]
+        },
+        {
+          "id": "B2",
+          "criterion": "B2 name/mode/color正确，description针对分诊，移除version/tags/tools_clients/source等元数据",
+          "status": "pass",
+          "evidence": "name=bug-triager，mode=subagent，color 为带引号的 #2563EB；中文 description 针对缺陷分诊；version/tags/tools_clients/source 已去除。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B3",
+          "criterion": "B3 tools只读三工具，permission默认deny加逐项allow，不保留全局allow或写/执行授权",
+          "status": "fail",
+          "evidence": "tools 白名单准确，但 permission 为 default: deny，缺少 \"*\": deny。原生列表将 default 作为独立权限名，并保留通配 allow，无法满足默认拒绝和只读权限。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md",
+            "stdout.jsonl:59"
+          ]
+        },
+        {
+          "id": "B4",
+          "criterion": "B4 正文删除直接修复/猜根因/派发，补必须做/拒绝做、协作升级、完成标准",
+          "status": "pass",
+          "evidence": "正文明确必须做/拒绝做、协作升级及完成标准，禁止直接修复、猜测根因和派发。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B5",
+          "criterion": "B5 缺证据为unknown，保留id/severity/impact/evidence/unknowns/owner/next_action汇报契约",
+          "status": "pass",
+          "evidence": "缺证据字段为 unknown，按观察到的影响判严重性；保留 id/severity/impact/evidence/unknowns/owner/next_action 七字段。",
+          "sources": [
+            "outputs/artifacts/outputs/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B6",
+          "criterion": "B6 OpenCode包包含本地参考，frontmatter无tools数组，permission禁止未授权工具且post-check通过",
+          "status": "fail",
+          "evidence": "reference、无 tools 数组及当前 schema post-check 均通过，但没有实际默认拒绝。原生 bug-triager 权限列表保留 *:allow，无 edit/bash deny，后加的是 permission=default/action=deny。CLI 接受配置不代表未授权工具被禁；本审核未执行实际写入/命令攻击测试。",
+          "sources": [
+            "outputs/artifacts/outputs/packages/opencode/bug-triager/AGENT.md",
+            "stdout.jsonl:59"
+          ]
+        },
+        {
+          "id": "B7",
+          "criterion": "B7 Claude包包含本地参考，tools为Read/Grep/Glob字符串且post-check通过",
+          "status": "pass",
+          "evidence": "Claude 包含本地 reference，tools 为 Read, Grep, Glob 字符串；当前 agent_adapt post-check 通过。没有 Claude 原生加载证据。",
+          "sources": [
+            "outputs/artifacts/outputs/packages/claude/bug-triager/AGENT.md"
+          ]
+        },
+        {
+          "id": "B8",
+          "criterion": "B8 规范产物agent_validate --strict实际通过（由测评器复核）",
+          "status": "fail",
+          "evidence": "审核者实际执行当前 strict：exit 1，缺少 ## 职责范围 与 ## 协作协议；另提示缺少通配默认拒绝。",
+          "sources": [
+            "reviewer_checks.strict"
+          ]
+        },
+        {
+          "id": "B9",
+          "criterion": "B9 verification.json有证据支撑实际校验，自评不冒充独立评审/真实客户端加载",
+          "status": "pass",
+          "evidence": "原生列表加载声明有实际命令支撑：规范数组探测 exit 1，客户端包 exit 0 出现 bug-triager (subagent)；independent_audit=false，没有声称独立审核或真实分诊模型运行。静态权限解释错误及 YAML 解析措辞不采信为权限生效证据。",
+          "sources": [
+            "stdout.jsonl:29",
+            "stdout.jsonl:32",
+            "stdout.jsonl:35",
+            "stdout.jsonl:56",
+            "stdout.jsonl:59",
+            "outputs/artifacts/outputs/verification.json"
+          ]
+        },
+        {
+          "id": "B10",
+          "criterion": "B10 输入不变，无全局安装或工作区外创建器/验证器借用",
+          "status": "pass",
+          "evidence": "三输入 source_before/source/after 哈希一致，无全局安装或外部创建器/验证器借用证据。确有 cwd 外、同次隔离 state/temp/opencode/native-check 中的自生成代理临时副本；该事实保留，不事后扩大 B10。",
+          "sources": [
+            "input-integrity.json",
+            "stdout.jsonl:47",
+            "stdout.jsonl:50",
+            "stdout.jsonl:53"
+          ]
+        }
+      ],
+      "reviewer_checks": {
+        "strict": {
+          "command": [
+            "python",
+            "-B",
+            "E:\\GitHub\\Personal-AI-Tools\\agent-creator\\skills\\agent-creator\\scripts\\agent_validate.py",
+            "--strict",
+            "--dir",
+            "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\agent-live-repair-review-cl9qt_d8\\case-Z\\outputs\\artifacts\\outputs\\bug-triager"
+          ],
+          "actually_executed": true,
+          "returncode": 1,
+          "agent_count": 1,
+          "errors": [
+            "Missing '## 职责范围' section (identity boundary required)",
+            "Missing '## 协作协议' section (when called / how to report)"
+          ],
+          "advisories": [
+            "permission 缺默认拒绝 \"*\": deny"
+          ]
+        },
+        "postchecks": {
+          "opencode": {
+            "status": "pass",
+            "actually_executed": true,
+            "function": "agent_adapt.check_opencode_frontmatter",
+            "method": "split_frontmatter + parse_frontmatter + post-check on existing package, without adapting or rewriting"
+          },
+          "claude": {
+            "status": "pass",
+            "actually_executed": true,
+            "function": "agent_adapt.check_claude_frontmatter",
+            "method": "split_frontmatter + parse_frontmatter + post-check on existing package, without adapting or rewriting"
+          }
+        },
+        "reference_sha256": [
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20",
+          "6816464b7a102806243b000a2db7d4ffa1c0d22163b281e754a96d8796fa1c20"
+        ]
+      },
+      "observations": [
+        "permission.default=deny 被解析为名为 default 的规则，未覆盖通配 allow。verification 的“正文与权限一致”结论错误，B3/B6 已失败。",
+        "所谓“解析 YAML”实际主要是 PowerShell 正则提取/打印 frontmatter，没有独立 YAML parser/脚本布尔断言的证据。本审核仅采信实际输出及原生配置解析，不升级验证等级。",
+        "原生 agent list 是实际加载证据；没有 bug-triager 的真实缺陷分诊模型调用，不可等同下游任务成功。",
+        "stdout.jsonl:47 复制自生成规范代理至同次隔离 state/temp/opencode/native-check，位于 cwd 外；:50/:53 的外部 workdir 调用被拒。不是全局安装或外部创建器借用，不事后扩大 B10。",
+        "strict 缺少固定标题导致 B8 失败；正文仍有分工/拒绝/升级语义，故 B4 通过。"
+      ]
+    }
+  ]
+}

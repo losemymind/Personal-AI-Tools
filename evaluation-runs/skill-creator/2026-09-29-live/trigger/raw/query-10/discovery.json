@@ -1,0 +1,42 @@
+[
+  {
+    "name": "customize-opencode",
+    "description": "Use ONLY when the user is editing or creating opencode's own configuration: opencode.json, opencode.jsonc, files under .opencode/, or files under ~/.config/opencode/. Also use when creating or fixing opencode agents, subagents, skills, plugins, MCP servers, or permission rules. Do not use for the user's own application code, or for any project that is not configuring opencode itself.",
+    "location": "<built-in>"
+  },
+  {
+    "name": "systematic-debugging",
+    "description": "Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\examples\\systematic-debugging\\SKILL.md"
+  },
+  {
+    "name": "react-best-practices",
+    "description": "Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Use when writing new React components or Next.js pages, implementing data fetching (client or server-side), or reviewing code for performance issues.",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\examples\\react-best-practices\\SKILL.md"
+  },
+  {
+    "name": "loki-mode",
+    "description": "Version 2.35.0 | PRD to Production | Zero Human Intervention > Research-enhanced: OpenAI SDK, DeepMind, Anthropic, AWS Bedrock, Agent SDK, HN Production (2025)",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\examples\\loki-mode\\SKILL.md"
+  },
+  {
+    "name": "skill-creator",
+    "description": "创建、改进并验证个人工作流技能（Skills）。当用户需要从零创建技能、把反复出现的工作流沉淀为技能、修改或优化现有技能、评估技能触发与质量、或为 claude/opencode/codex/deepseek 等客户端打包安装指定技能时使用。也适用于「创建skill」「写个技能」「skill-creator」「把xx做成技能」等请求。",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\SKILL.md"
+  },
+  {
+    "name": "copywriting",
+    "description": "Write rigorous, conversion-focused marketing copy for landing pages and emails. Enforces brief confirmation and strict no-fabrication rules.",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\examples\\copywriting\\SKILL.md"
+  },
+  {
+    "name": "brainstorming",
+    "description": "Use before creative or constructive work (features, architecture, behavior). Transforms vague ideas into validated designs through disciplined reasoning and collaboration.",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\examples\\brainstorming\\SKILL.md"
+  },
+  {
+    "name": "git-pushing",
+    "description": "Safely stage, commit, and push intended git changes with conventional commit messages. Use for ordinary non-release pushes when explicitly asked to push, save work remotely, or share a completed change.",
+    "location": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\eval-yg6vhox4\\.opencode\\skills\\skill-creator\\examples\\git-pushing\\SKILL.md"
+  }
+]
